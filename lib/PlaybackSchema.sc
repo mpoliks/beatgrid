@@ -82,7 +82,7 @@ PlaybackSchema {
 				1, {(~fxMBus!modifier) ++ (~fxMBus!modifier2)},
 				2, {(~fxMBus!modifier) ++ (~fxMBus!modifier2)},
 				3, {(~fxMBus!modifier) ++ (~fxMBus!modifier2)},
-				4, {(~fxMBus!modifier) ++ (~dryMBus!modifier2)},
+				4, {(~fxMBus!modifier) ++ (~dryBus!modifier2)},
 			),
 			result = temp.scramble[0];
 			result;

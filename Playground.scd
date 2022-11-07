@@ -105,35 +105,44 @@ First, create the pattern with:*/
 Keep in mind that the pattern generation and playback mechanisms are separate -
 if you want a new pattern for an instrument, generate it first before turning on playback!
 
+We've added swing to this!
+
 You can execute these line by line - simply put your cursor on a given line and hit SHIFT->ENTER*/
 
-n = ~p.generate_pattern(~seed, \bass, 3);
-b = ~b.go(n, \bass, 3, "C#").play(quant:(60/(~tempo) * 4));
+x = ~p.generate_pattern(~seed, \bass, 3); // Pattern Gen!
+y = ~b.go(x, \bass, 3, "C#").play(quant:(60/(~tempo) * 4)); // Sequence Gen!
+b = Pchain(~reTime, y, (swingBase: 0.25, swingAmount: 0.1, swingThreshold: 0.05)).play(quant:(60/(~tempo) * 4)); //Playback with swing!
 b.stop
 
-n = ~p.generate_pattern(~seed, \kick, 1);
-k = ~b.go(n, \kick, 2, nil).play(quant:(60/(~tempo) * 4));
+x = ~p.generate_pattern(~seed, \kick, 2);
+y = ~b.go(x, \kick, 2, nil);
+k = Pchain(~reTime, y, (swingBase: 0.25, swingAmount: 0.1, swingThreshold: 0.05)).play(quant:(60/(~tempo) * 4));
 k.stop
 
-n = ~p.generate_pattern(~seed, \snare, 1);
-s = ~b.go(n, \snare, 2, nil).play(quant:(60/(~tempo) * 4));
+x = ~p.generate_pattern(~seed, \snare, 2);
+y = ~b.go(x, \snare, 2, nil);
+s = Pchain(~reTime, y, (swingBase: 0.25, swingAmount: 0.1, swingThreshold: 0.05)).play(quant:(60/(~tempo) * 4));
 s.stop
 
-n = ~p.generate_pattern(~seed, \clap, 1);
-c = ~b.go(n, \clap, 2, nil).play(quant:(60/(~tempo) * 4));
+x = ~p.generate_pattern(~seed, \clap, 3);
+y = ~b.go(x, \clap, 3, nil);
+c = Pchain(~reTime, y, (swingBase: 0.25, swingAmount: 0.1, swingThreshold: 0.05)).play(quant:(60/(~tempo) * 4));
 c.stop
 
-n = ~p.generate_pattern(~seed, \hat, 2);
-h = ~b.go(n, \hat, 2, nil).play(quant:(60/(~tempo) * 4));
+x = ~p.generate_pattern(~seed, \hat, 3);
+y = ~b.go(x, \hat, 3, nil);
+h = Pchain(~reTime, y, (swingBase: 0.25, swingAmount: 0.1, swingThreshold: 0.05)).play(quant:(60/(~tempo) * 4));
 h.stop
 
 // Remember you need to pass a key for loops and hits!
-n = ~p.generate_pattern(~seed, \loop, 2);
-l = ~b.go(n, \loop, 2, "C#").play(quant:(60/(~tempo) * 4));
+x = ~p.generate_pattern(~seed, \loop, 2);
+y = ~b.go(x, \loop, 2, "C#");
+l = Pchain(~reTime, y, (swingBase: 0.25, swingAmount: 0.1, swingThreshold: 0.05)).play(quant:(60/(~tempo) * 4));
 l.stop
 
-n = ~p.generate_pattern(~seed, \hit, 2);
-t = ~b.go(n, \hit, 2, "C#").play(quant:(60/(~tempo) * 4));
+x = ~p.generate_pattern(~seed, \hit, 4);
+y = ~b.go(x, \hit, 4, "C#");
+t = Pchain(~reTime, y, (swingBase: 0.25, swingAmount: 0.1, swingThreshold: 0.05)).play(quant:(60/(~tempo) * 4));
 t.stop
 
 /* This is stereo only for now - passing outputs is EASY.
@@ -143,11 +152,9 @@ There are some other tweak that need to happen:
 		Right now, these patterns are looping and not concatenating.
 		Concatenation will be handled by the conductor, but you can see how easy it is to generate patterns.
 		Bear in mind that the longer your seed is, the longer the patterns you'll be generating (for now).
-	b. Swing:
-		This is very much on the grid, but I will add some microtiming adjustments for swing based on pattern.
-	c. Dynamic FX:
+	b. Dynamic FX:
 		Right now, there's just a few hamfisted reverbs.
 		These will be refined once I have a more powerful computer to spit out x# reverbs and delays on demand.
-	d. The Conductor / Full System Integration
+	c. The Conductor / Full System Integration
 		Obviously this is just a POC and that work comes once we come to an agreement about what's happening here.
 
