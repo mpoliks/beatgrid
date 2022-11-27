@@ -115,6 +115,18 @@ s.waitForBoot {
 		Out.ar(out, sig);
 	}).add;
 
+	SynthDef(\delay, {
+		arg in, out, delayTime = 0.33333, decayTime = 1.4, hcut = 12000, lcut = 200, amp = 0.2;
+		var sig = In.ar(in, 2),
+		lfo1 = SinOsc.kr(0.02, 0.0, 1.0, 500),
+		lfo2 = SinOsc.kr(0.01, 1.0, 1.0, 400);
+		sig = AllpassC.ar(sig, 1.0, 60/(~tempo) * delayTime, decayTime);
+		sig = LPF.ar(sig, hcut - lfo1);
+		sig = HPF.ar(sig, lcut + lfo2);
+		sig = sig * amp;
+		Out.ar(out, sig);
+	}).add;
+
 	SynthDef(\mixIO, { // compressor and limiter on the mix bus
 		arg out = 0, in = 0;
 		var sig = In.ar(in, 2);
@@ -144,10 +156,16 @@ s.waitForBoot {
 		[\in, ~dryBus, \out, ~mixBus], ~dryGroup);
 	~revSOut = Synth(\hdVerb,
 		[\in, ~fxSBus, \out, ~mixBus, \predelay, 0.01, \decay, 1.0], ~fxGroup);
+	~dlySOut = Synth(\delay,
+		[\in, ~fxSBus, \out, ~mixBus, \delayTime, 0.66666, \decayTime, 0.4], ~fxGroup);
 	~revMOut = Synth(\hdVerb,
 		[\in, ~fxMBus, \out, ~mixBus, \predelay, 0.05, \decay, 2.0], ~fxGroup);
+	~dlyMOut = Synth(\delay,
+		[\in, ~fxSBus, \out, ~mixBus, \delayTime, 0.75, \decayTime, 0.2], ~fxGroup);
 	~revLOut = Synth(\hdVerb,
 		[\in, ~fxLBus, \out, ~mixBus, \predelay, 0.05, \decay, 4.0], ~fxGroup);
+	~dlyLOut = Synth(\delay,
+		[\in, ~fxSBus, \out, ~mixBus, \delayTime, 0.5, \decayTime, 0.2], ~fxGroup);
 	~mixOut = Synth(\mixIO,
 		[\in, ~mixBus, \out, 0], ~mixGroup);
 
@@ -190,3 +208,11 @@ s.waitForBoot {
 
 };
 )
+
+
+x = EventManager.new(~seed, 1, "F#", 0.1)
+y = TransitionManager.new()
+y.transition(nil, x);
+
+z = EventManager.new(~seed, 4, "F#", 0.1)
+y.transition(x, z)

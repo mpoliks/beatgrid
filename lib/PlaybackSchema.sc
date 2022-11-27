@@ -372,11 +372,9 @@ PlaybackSchema {
 	go {
 		arg pattern, instrument, intensity, key;
 		var dir, pbind;
-		instrument.postln;
-		if (instrument.asString == "bass", { "hm".postln; } );
 		if ((instrument.asString != "bass") && (instrument.asString != "loop") && (instrument.asString != "hit"),
-			{ "nokey".postln; dir = ~buffers.at(instrument.asString).at(intensity); },
-			{ dir = ~buffers.at(instrument.asString).at(key.asString).at(intensity); "success".postln; });
+			{ dir = ~buffers.at(instrument.asString).at(intensity); },
+			{ dir = ~buffers.at(instrument.asString).at(key.asString).at(intensity); });
 
 		pbind = switch (instrument,
 			\bass, {this.bass(pattern, intensity, dir)},
