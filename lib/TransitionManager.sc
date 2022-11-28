@@ -15,16 +15,20 @@ TransitionManager {
 
 		if (prev_event.notNil, {
 
+			"WORKING: Initiating New Transition".postln;
+
 			seq.do({
 
 				arg inst;
 				var intvl = 2.pow(rrand(1,5));
 
+				("WORKING: Will Halt" + inst + "in" + intvl.asString + "Measures").postln;
+
 				Q.uant((60/(~tempo) * (4 * intvl)), {
 					prev_event.streaming.at(inst).stop;
 					prev_event.streaming.removeAt(inst);
 					prev_event.offramping.remove(inst);
-					("stopped" + inst.asString).postln;
+					("OK: Stopped" + inst.asString).postln;
 					this.onramp(inst, event);
 				});
 
@@ -33,6 +37,7 @@ TransitionManager {
 			});
 		},
 		{
+			"WORKING: Starting New Piece".postln;
 			seq.do({
 
 				arg inst;
@@ -51,12 +56,16 @@ TransitionManager {
 		var intvl = 2.pow(rrand(1,4)),
 		qval = 60/(~tempo) * (4 * intvl);
 
+		("WORKING: Will Play" + inst + "in" + intvl.asString + "Measures").postln;
+
 		event.streaming.putAll(
 			Dictionary[
 				inst -> Pchain(
 					~reTime,
 					event.schemas.at(inst,
-						(swingBase: 0.25, swingAmount: event.swing_, swingThreshold: 0.05)
+						(swingBase: 0.25,
+						swingAmount: event.swing_,
+						swingThreshold: 0.05)
 				).play(quant:qval);
 			)
 			]);
@@ -65,7 +74,7 @@ TransitionManager {
 
 		Q.uant(qval, {
 			event.onramping.remove(inst);
-				("starting" + inst.asString).postln;
+				("OK: Playing" + inst.asString).postln;
 			});
 
 	}

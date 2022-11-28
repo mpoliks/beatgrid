@@ -61,6 +61,7 @@ s.waitForBoot {
 			arg f_;
 			var samples = Array.new;
 			if ((f_.folderName != "F#") && (f_.folderName != "C#"), {
+				("OK: Processsing" + f_.entries.size.asString + "files from" + f_.asString).postln;
 				f_.entries.do({ arg path;
 					samples = samples.add(Buffer.read(s, path.fullPath));});
 				bufs.at(f.folderName)
@@ -71,6 +72,7 @@ s.waitForBoot {
 				f_.folders.do({
 					arg f__;
 					var samples_ = Array.new;
+					("OK: Processsing" + f__.entries.size.asString + "files from" + f__.asString).postln;
 					f__.entries.do({ arg path;
 						samples_ = samples_.add(Buffer.read(s, path.fullPath));});
 					bufs.at(f.folderName).at(f_.folderName)
@@ -157,15 +159,17 @@ s.waitForBoot {
 	~revSOut = Synth(\hdVerb,
 		[\in, ~fxSBus, \out, ~mixBus, \predelay, 0.01, \decay, 1.0], ~fxGroup);
 	~dlySOut = Synth(\delay,
-		[\in, ~fxSBus, \out, ~mixBus, \delayTime, 0.66666, \decayTime, 0.4], ~fxGroup);
+		[\in, ~fxSBus, \out, ~mixBus, \delayTime, 0.66666, \decayTime, 0.1], ~fxGroup);
+	~dlySOut2 = Synth(\delay,
+		[\in, ~fxSBus, \out, ~mixBus, \delayTime, 0.75, \decayTime, 0.1], ~fxGroup);
 	~revMOut = Synth(\hdVerb,
 		[\in, ~fxMBus, \out, ~mixBus, \predelay, 0.05, \decay, 2.0], ~fxGroup);
 	~dlyMOut = Synth(\delay,
-		[\in, ~fxSBus, \out, ~mixBus, \delayTime, 0.75, \decayTime, 0.2], ~fxGroup);
+		[\in, ~fxMBus, \out, ~mixBus, \delayTime, 0.75, \decayTime, 0.1], ~fxGroup);
 	~revLOut = Synth(\hdVerb,
 		[\in, ~fxLBus, \out, ~mixBus, \predelay, 0.05, \decay, 4.0], ~fxGroup);
 	~dlyLOut = Synth(\delay,
-		[\in, ~fxSBus, \out, ~mixBus, \delayTime, 0.5, \decayTime, 0.2], ~fxGroup);
+		[\in, ~fxLBus, \out, ~mixBus, \delayTime, 0.5, \decayTime, 0.1], ~fxGroup);
 	~mixOut = Synth(\mixIO,
 		[\in, ~mixBus, \out, 0], ~mixGroup);
 
@@ -198,21 +202,11 @@ s.waitForBoot {
     	};
 	});
 
-	SystemClock.sched(0.0, {
-		~t = Date.getDate;
-		1;
-		}
-	);
-
-	"LOADED".postln;
+	"OK: Loaded - Program Ready To Run".postln;
 
 };
 )
 
+c = Conductor.new()
 
-x = EventManager.new(~seed, 1, "F#", 0.1)
-y = TransitionManager.new()
-y.transition(nil, x);
-
-z = EventManager.new(~seed, 4, "F#", 0.1)
-y.transition(x, z)
+c.conduct(~seed)

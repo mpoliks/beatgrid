@@ -88,11 +88,6 @@ PlaybackSchema {
 			result;
 		});
 
-		buf.postln;
-		dur.postln;
-		amps.postln;
-		outs.postln;
-
 		^Pbind(
 			\instrument, \playback,
 			\dur, Pseq(dur, inf),
@@ -372,6 +367,8 @@ PlaybackSchema {
 	go {
 		arg pattern, instrument, intensity, key;
 		var dir, pbind;
+
+		("WORKING: Generating Schemas for" + instrument.asString).postln;
 		if ((instrument.asString != "bass") && (instrument.asString != "loop") && (instrument.asString != "hit"),
 			{ dir = ~buffers.at(instrument.asString).at(intensity); },
 			{ dir = ~buffers.at(instrument.asString).at(key.asString).at(intensity); });

@@ -143,7 +143,7 @@ PatternGen {
 	//----------------------------------------------HIT
 	hit_pattern {
 		arg pattern, intensity;
-		var return_;
+		var return_, alt;
 		switch (intensity,
 
 			0, {
@@ -208,6 +208,9 @@ PatternGen {
 				return_ = (temp / 2)++(temp / 2);
 			},
 		);
+
+		alt = return_.scramble;
+		return_ = return_++return_++return_++alt;
 
 		^return_;
 	}
@@ -324,6 +327,7 @@ PatternGen {
 		var processed_seed = this.interpret(input),
 		model = this.model_weights(processed_seed),
 		pattern = this.interpolate(model, processed_seed);
+		("WORKING: Printing Patterns for" + instrument.asString).postln;
 		^this.post_process(pattern, instrument, intensity);
 	}
 

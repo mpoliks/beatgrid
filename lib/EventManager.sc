@@ -32,13 +32,18 @@ EventManager {
 					inst -> p.generate_pattern(
 						seed, inst, intensity)
 			]);
+
 			schemas.putAll(
 				Dictionary[
 					inst -> g.go(
 						patterns.at(inst), inst, intensity, key);
 			]);
 
+
 		});
+
+		"OK: Pattern Gen Complete".postln;
+		"OK: Schema Gen Complete".postln;
 
 	}
 
