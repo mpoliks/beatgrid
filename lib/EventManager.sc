@@ -1,6 +1,6 @@
 EventManager {
 
-	var <patterns, <schemas, <instruments, <streaming, <offramping, <onramping, <swing_;
+	var <patterns, <schemas, <instruments, <streaming, <offramping, <onramping, <swing_, <hash;
 
 	*new {
 		arg seed, intensity, key, swing;
@@ -15,6 +15,8 @@ EventManager {
 
 		var p = PatternGen.new(),
 		g = PlaybackSchema.new();
+
+		hash = rrand(1, 10000);
 
 		instruments = [	\bass, \kick, \snare, \clap, \hat, \loop, \hit ];
 		onramping = List.new();

@@ -1,6 +1,6 @@
 Conductor {
 
-	var <current_time, <event_time, <current_event, <next_event, <transition;
+	var <current_time, <event_time, <current_event, <next_event, <transition, <>flag = true;
 
 	*new { ^super.new.init() }
 
@@ -13,7 +13,7 @@ Conductor {
 		arg seed;
 		var intensity_level, minute = event_time.minute % 13, key = ["F#", "C#"], next = rrand(2,5);
 
-		if (((event_time.hour < 11) || (event_time.hour > 17)), { intensity_level = 0; });
+		if (((event_time.hour < 11) || (event_time.hour >= 17)), { intensity_level = 0; });
 		if (((event_time.hour >= 11) && (event_time.hour < 14)), { intensity_level = 1; });
 		if (((event_time.hour >= 14) && (event_time.hour < 16)), { intensity_level = 2; });
 
@@ -21,10 +21,14 @@ Conductor {
 		if (((minute >= 4) && (minute < 8)), { intensity_level = intensity_level + 1; });
 		if (((minute >= 8) && (minute < 13)), { intensity_level = intensity_level + 2; });
 
-		next_event = EventManager.new(seed, intensity_level, key[rrand(0,1)], 0.1);
+		if (flag, {
+			next_event = EventManager.new(seed, intensity_level, key[rrand(0,1)], 0.1);
+		},
+		{
+			next_event = nil;
+		});
 
 		transition = TransitionManager.new();
-
 		transition.transition(current_event, next_event);
 
 		current_event = next_event;
@@ -36,6 +40,8 @@ Conductor {
 			event_time.minute = event_time.minute % 60;
 			event_time.hour = event_time.hour + 1;
 		});
+
+		("OK: Next Event Will Play At:" + event_time.asString).postln;
 	}
 
 

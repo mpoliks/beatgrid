@@ -1,5 +1,7 @@
 TransitionManager {
 
+	var <prev_event, <event;
+
 	*new {
 		^super.new.init()
 	}
@@ -9,9 +11,13 @@ TransitionManager {
 
 	transition {
 
-		arg prev_event, event;
+		arg previous, next;
 
-		var seq = event.instruments.scramble;
+		var instruments = [	\bass, \kick, \snare, \clap, \hat, \loop, \hit ],
+		seq = instruments.scramble;
+
+		prev_event = previous;
+		event = next;
 
 		if (prev_event.notNil, {
 
@@ -25,11 +31,14 @@ TransitionManager {
 				("WORKING: Will Halt" + inst + "in" + intvl.asString + "Measures").postln;
 
 				Q.uant((60/(~tempo) * (4 * intvl)), {
+					prev_event.streaming.at(inst).patterns[1].stop;
+					prev_event.streaming.at(inst).patterns[1].free;
 					prev_event.streaming.at(inst).stop;
+					prev_event.streaming.at(inst).free;
 					prev_event.streaming.removeAt(inst);
 					prev_event.offramping.remove(inst);
 					("OK: Stopped" + inst.asString).postln;
-					this.onramp(inst, event);
+					if (event.notNil, { this.onramp(inst, event); } , { "WARN: Offramp Without Reset".postln; });
 				});
 
 				prev_event.offramping.add(inst);

@@ -119,7 +119,7 @@ PlaybackSchema {
 			intensity.linlin(0, 4, 600, 200)),
 		amps = Array.fill((pattern.size * modifier), {
 			arg i;
-			var amp = rrand(~clapLevel / 3, ~clapLevel);
+			var amp = rrand(~clapLevel / 4, ~clapLevel);
 			if (i % pattern.size == 0, { amp = amp * onbeat });
 			amp;
 		}),
@@ -168,7 +168,7 @@ PlaybackSchema {
 		lcut = intensity.linlin(0, 4, 40, 40),
 		amps = Array.fill((pattern.size * modifier), {
 			arg i;
-			var amp = rrand(~snareLevel / 3, ~snareLevel);
+			var amp = rrand(~snareLevel / 4, ~snareLevel);
 			if (i % pattern.size == 0, { amp = amp * onbeat });
 			amp;
 		}),

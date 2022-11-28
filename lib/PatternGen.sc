@@ -192,7 +192,7 @@ PatternGen {
 				if (temp.sum % 16.0 != 0.0, {
 					temp = temp.insert(choose_,
 						16.0 - (temp.sum % 16.0))});
-				return_ = temp * 2;
+				return_ = temp ++ temp;
 			},
 
 			4, {

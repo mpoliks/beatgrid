@@ -88,7 +88,7 @@ s.waitForBoot {
 	SynthDef(\playback, { // playback synth
 		arg rate = 1, atk = 0.001, rel = 1.4, lcut = 20, hcut = 20000, pan = 0,
 			buf, amp = 1.0, out;
-		var sig = PlayBuf.ar(1, buf, BufRateScale.ir(buf) * rate, doneAction: 2),
+		var sig = PlayBuf.ar(2, buf, BufRateScale.ir(buf) * rate, doneAction: 2),
 		env = EnvGen.kr( Env.new([0,1,0], [atk, rel], [1, -1]), doneAction:2);
 		sig = HPF.ar(sig, lcut);
 		sig = LPF.ar(sig, hcut);
@@ -99,7 +99,7 @@ s.waitForBoot {
 	SynthDef(\playbackP, { // playback synth (with pitch management)
 		arg rate = 1, atk = 0.001, rel = 1.4, lcut = 20, hcut = 20000,
 			repitch = 1.0, pdisp = 0.0, tdisp = 0.0, pan = 0, buf, amp = 1.0, out;
-		var sig = PlayBuf.ar(1, buf, BufRateScale.ir(buf) * rate, doneAction: 2),
+		var sig = PlayBuf.ar(2, buf, BufRateScale.ir(buf) * rate, doneAction: 2),
 		env = EnvGen.kr( Env.new([0,1,0], [atk, rel], [1, -1]), doneAction:2);
 		sig = HPF.ar(sig, lcut);
 		sig = LPF.ar(sig, hcut);
@@ -169,7 +169,9 @@ s.waitForBoot {
 	~revLOut = Synth(\hdVerb,
 		[\in, ~fxLBus, \out, ~mixBus, \predelay, 0.05, \decay, 4.0], ~fxGroup);
 	~dlyLOut = Synth(\delay,
-		[\in, ~fxLBus, \out, ~mixBus, \delayTime, 0.5, \decayTime, 0.1], ~fxGroup);
+		[\in, ~fxLBus, \out, ~mixBus, \delayTime, 0.75, \decayTime, 0.1], ~fxGroup);
+	~dlyLOut2 = Synth(\delay,
+		[\in, ~fxLBus, \out, ~mixBus, \delayTime, 1.25, \decayTime, 0.1], ~fxGroup);
 	~mixOut = Synth(\mixIO,
 		[\in, ~mixBus, \out, 0], ~mixGroup);
 
@@ -210,3 +212,12 @@ s.waitForBoot {
 c = Conductor.new()
 
 c.conduct(~seed)
+
+c.flag=false
+
+c.transition.prev_event.hash
+c.transition.event.hash
+c.transition.event.offramping
+c.transition.event.onramping
+
+c.inspect
