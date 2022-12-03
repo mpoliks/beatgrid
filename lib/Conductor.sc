@@ -19,7 +19,7 @@ Conductor {
 
 		if (((minute >= 0) && (minute < 4)), { intensity_level = intensity_level + 0; });
 		if (((minute >= 4) && (minute < 8)), { intensity_level = intensity_level + 1; });
-		if (((minute >= 8) && (minute < 13)), { intensity_level = intensity_level + 2; });
+		if (((minute >= 8) && (minute <= 13)), { intensity_level = intensity_level + 2; });
 
 		if (flag, {
 			next_event = EventManager.new(seed, intensity_level, key[rrand(0,1)], 0.1);

@@ -18,7 +18,7 @@ EventManager {
 
 		hash = rrand(1, 10000);
 
-		instruments = [	\bass, \kick, \snare, \clap, \hat, \loop, \hit ];
+		instruments = [	\bass, \kick, \snare, \clap, \hat, \loop, \hit, \aux ];
 		onramping = List.new();
 		offramping = List.new();
 

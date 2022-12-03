@@ -220,7 +220,7 @@ PlaybackSchema {
 		envScl = pattern.size * 32 * modifier2 * modifier3,
 		env = (Array.series(envScl, 0.0, 1.0 / envScl)) ++
 			(Array.series(envScl, 1.0, -1.0 / envScl)),
-		amps = Array.fill((envScl), {
+		amps = Array.fill((envScl * 2), {
 			arg i;
 			var amp = rrand(~hatLevel / 1.1, ~hatLevel);
 			if (modifier <= 2, { amp = amp * env[i];  });
@@ -364,6 +364,73 @@ PlaybackSchema {
 			);
 	}
 
+	aux {
+		arg pattern, intensity, dir;
+		var buffer_variation = rrand(2, ((intensity + 2) * 4)),
+		buf = Array.fill(buffer_variation, {
+			arg i;
+			dir.scramble[0];
+		}),
+		modifier = rrand(1, 4),
+		modifier2 = rrand(1, 4),
+		modifier3 = rrand(1, 4),
+		dur = 60 / (pattern * ~tempo),
+		onbeat = rrand(0, 1),
+		hcut = rrand(800, 14000),
+		lcut = rrand(40, 4000),
+		pitch = Array.fill(modifier2 * modifier, {
+			var temp = [0.25, 0.5, 1.0, 2.0, 4.0],
+			try = [0.2, 0.4, 0.2, 0.4, 0.2].windex;
+			temp[try];
+		}),
+
+		envScl = 128 * modifier2 * modifier3,
+
+		env = ((Array.series(envScl, 0.0, 1.0 / envScl)) ++
+			(Array.series(envScl, 1.0, -1.0 / envScl)) * 16000),
+
+		hcuts = Array.fill((envScl * 2), {
+			arg i;
+			var cut = 1000 + env[i];
+			cut;
+		}),
+
+		amps = Array.fill((pattern.size * modifier), {
+			arg i;
+			var amp = rrand(~auxLevel / 2.0, ~auxLevel);
+			if (i % pattern.size == 0, { amp = amp * onbeat });
+			amp;
+		}),
+
+		pans = Array.fill((pattern.size * modifier2), {
+			rrand(-0.8, 0.8);
+		}),
+
+		outs = Array.fill((modifier2 * modifier3), {
+			var temp = switch (intensity,
+				0, {~fxLBus!modifier ++ ~fxLBus!modifier2},
+				1, {~fxMBus!modifier ++ ~fxLBus!modifier2},
+				2, {~fxMBus!modifier ++ ~fxLBus!modifier2},
+				3, {~fxMBus!modifier ++ ~fxLBus!modifier2},
+				4, {~fxMBus!modifier ++ ~fxLBus!modifier2},
+			),
+			result = temp.scramble[0];
+			result;
+		});
+
+		^Pbind(
+			\instrument, \playbackP,
+			\dur, Pseq(dur, inf),
+			\buf, Pseq(buf, inf),
+			\repitch, Pseq(pitch, inf),
+			\hcut, Pseq(hcuts, inf),
+			\lcut, Pwhite(lcut / 2, lcut),
+			\amp, Pseq(amps, inf),
+			\pan, Pseq(pans, inf),
+			\out, Pseq(outs, inf)
+			);
+	}
+
 	go {
 		arg pattern, instrument, intensity, key;
 		var dir, pbind;
@@ -380,7 +447,8 @@ PlaybackSchema {
 			\snare, {this.snare(pattern, intensity, dir)},
 			\hat, {this.hat(pattern, intensity, dir)},
 			\loop, {this.loop(pattern, intensity, dir)},
-			\hit, {this.hit(pattern, intensity, dir)}
+			\hit, {this.hit(pattern, intensity, dir)},
+			\aux, {this.aux(pattern, intensity, dir)}
 		);
 
 		^pbind;

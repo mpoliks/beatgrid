@@ -68,6 +68,82 @@ PatternGen {
 		^tempo_values.asArray;
 	}
 
+	//----------------------------------------------KICK
+	kick_pattern {
+		arg pattern, intensity;
+		var return_;
+		switch (intensity,
+
+			0, {
+				var choose = rrand(1,2),
+					choose_ = rrand(0, choose),
+				temp = pattern.reshape(choose);
+				if (temp.sum % 32.0 != 0.0, {
+					temp = temp.insert(choose_,
+						32.0 - (temp.sum % 32.0))});
+				return_ = temp * 4;
+			},
+
+			1, {
+				var choose = rrand(1,3),
+					choose_ = rrand(0, choose),
+				temp = pattern.reshape(choose);
+				if (temp.sum < 8.0, {
+					temp = temp ++ temp;
+				});
+				if (temp.sum % 16.0 != 0.0, {
+					temp = temp.insert(choose_,
+						16.0 - (temp.sum % 16.0))});
+				return_ = temp * 4;
+			},
+
+			2, {
+				var choose = rrand(1,3),
+					choose_ = rrand(0, choose),
+				temp = pattern.reshape(choose);
+				if (temp.sum < 8.0, {
+					temp = temp ++ temp;
+				});
+				if (temp.sum % 16.0 != 0.0, {
+					temp = temp.insert(choose_,
+						16.0 - (temp.sum % 16.0))});
+				return_ = temp * 2;
+			},
+
+			3, {
+				var choose = rrand(1,pattern.size),
+					choose_ = rrand(0, choose),
+				temp = pattern.reshape(choose);
+				if (temp.sum < 8.0, {
+					temp = temp ++ temp;
+				});
+				if (temp.sum % 16.0 != 0.0, {
+					temp = temp.insert(choose_,
+						16.0 - (temp.sum % 16.0))});
+				return_ = temp * 2;
+			},
+
+			4, {
+				var choose = rrand(1,pattern.size),
+					choose_ = rrand(0, choose),
+				temp = pattern.reshape(choose);
+				if (temp.sum < 8.0, {
+					temp = temp ++ temp;
+				});
+				if (temp.sum % 16.0 != 0.0, {
+					temp = temp.insert(choose_,
+						16.0 - (temp.sum % 16.0))});
+				return_ = temp;
+			},
+		);
+
+		return_ = [[4.0, 4.0], [2.0, 2.0], return_, return_, return_];
+		return_ = return_[rrand(0, 4)];
+
+		^return_;
+	}
+
+
 	//----------------------------------------------LONG
 	long_pattern {
 		arg pattern, intensity;
@@ -154,6 +230,8 @@ PatternGen {
 					temp = temp.insert(choose_,
 						32.0 - (temp.sum % 32.0))});
 				return_ = temp * 2;
+				choose_ = rrand(0, 2);
+				if (choose_ == 0, {return_ = return_ / 2} );
 			},
 
 			1, {
@@ -167,6 +245,8 @@ PatternGen {
 					temp = temp.insert(choose_,
 						16.0 - (temp.sum % 16.0))});
 				return_ = temp * 2;
+				choose_ = rrand(0, 2);
+				if (choose_ == 0, {return_ = return_ / 2} );
 			},
 
 			2, {
@@ -180,6 +260,8 @@ PatternGen {
 					temp = temp.insert(choose_,
 						16.0 - (temp.sum % 16.0))});
 				return_ = temp * 2;
+				choose_ = rrand(0, 2);
+				if (choose_ == 0, {return_ = return_ / 2} );
 			},
 
 			3, {
@@ -193,6 +275,8 @@ PatternGen {
 					temp = temp.insert(choose_,
 						16.0 - (temp.sum % 16.0))});
 				return_ = temp ++ temp;
+				choose_ = rrand(0, 2);
+				if (choose_ == 0, {return_ = return_ / 2 });
 			},
 
 			4, {
@@ -212,6 +296,81 @@ PatternGen {
 		alt = return_.scramble;
 		return_ = return_++return_++return_++alt;
 
+		^return_;
+	}
+
+	//----------------------------------------------AUX
+	aux_pattern {
+		arg pattern, intensity;
+		var return_;
+		switch (intensity,
+
+			0, {
+				var choose = rrand(1,2),
+					choose_ = rrand(0, choose),
+				temp = pattern.reshape(choose);
+				if (temp.sum % 32.0 != 0.0, {
+					temp = temp.insert(choose_,
+						32.0 - (temp.sum % 32.0))});
+				return_ = (temp * 2) ++ temp ++ (temp / 2) ++ (temp / 4) ++ (temp / 4);
+			},
+
+			1, {
+				var choose = rrand(1,2),
+					choose_ = rrand(0, choose),
+				temp = pattern.reshape(choose);
+				if (temp.sum < 8.0, {
+					temp = temp ++ temp;
+				});
+				if (temp.sum % 16.0 != 0.0, {
+					temp = temp.insert(choose_,
+						16.0 - (temp.sum % 16.0))});
+				return_ = (temp * 2) ++ (temp / 2) ++ (temp / 2) ++ (temp / 2) ++ (temp / 2);
+			},
+
+			2, {
+				var choose = rrand(1,3),
+					choose_ = rrand(0, choose),
+				temp = pattern.reshape(choose);
+				if (temp.sum < 8.0, {
+					temp = temp ++ temp;
+				});
+				if (temp.sum % 16.0 != 0.0, {
+					temp = temp.insert(choose_,
+						16.0 - (temp.sum % 16.0))});
+				return_ = temp ++ (temp / 2) ++ (temp / 4) ++ (temp / 4);
+			},
+
+			3, {
+				var choose = rrand(1,pattern.size / 2),
+					choose_ = rrand(0, choose),
+				temp = pattern.reshape(choose);
+				if (temp.sum < 8.0, {
+					temp = temp ++ temp;
+				});
+				if (temp.sum % 16.0 != 0.0, {
+					temp = temp.insert(choose_,
+						16.0 - (temp.sum % 16.0))});
+				return_ = temp ++ temp;
+			},
+
+			4, {
+				var choose = rrand(1,pattern.size / 2),
+					choose_ = rrand(0, choose),
+				temp = pattern.reshape(choose);
+				if (temp.sum < 8.0, {
+					temp = temp ++ temp;
+				});
+				if (temp.sum % 16.0 != 0.0, {
+					temp = temp.insert(choose_,
+						16.0 - (temp.sum % 16.0))});
+				return_ = temp ++ (temp / 2) ++ (temp / 4) ++ (temp / 4);
+			},
+		);
+
+		return_ = [[0.5, 0.5], [4.0, 4.0], [2.0, 2.0], return_];
+		return_ = return_[rrand(0, 3)];
+		return_.postln;
 		^return_;
 	}
 
@@ -302,6 +461,10 @@ PatternGen {
 			},
 		);
 
+		return_ = [[0.5, 0.5], [1.0, 1.0], ([1.0] ++ (2.0!63) ++ [1.0]), return_, return_];
+		return_ = return_[rrand(0, 4)];
+		return_.postln;
+
 		^return_;
 	}
 
@@ -311,12 +474,13 @@ PatternGen {
 		pattern = pattern.asArray;
 		switch (instrument,
 			\bass, {return = this.long_pattern(pattern, intensity)},
-			\kick, {return = this.long_pattern(pattern, intensity)},
+			\kick, {return = this.kick_pattern(pattern, intensity)},
 			\clap, {return = this.hit_pattern(pattern, intensity)},
 			\snare, {return = this.hit_pattern(pattern, intensity)},
 			\hat, {return = this.hat_pattern(pattern, intensity)},
 			\loop, {return = this.long_pattern(pattern, intensity)},
-			\hit, {return = this.hit_pattern(pattern, intensity)}
+			\hit, {return = this.hit_pattern(pattern, intensity)},
+			\aux, {return = this.aux_pattern(pattern, intensity)}
 		);
 		return = this.time_process(return);
 		^return;
