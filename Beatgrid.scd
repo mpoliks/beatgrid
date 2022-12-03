@@ -39,7 +39,7 @@ s.reboot;
 	~kickLevel = 0.2;
 	~snareLevel = 0.08;
 	~clapLevel = 0.07;
-	~hatLevel = 0.08;
+	~hatLevel = 0.06;
 	~loopLevel = 0.2;
 	~hitLevel = 0.08;
 	~auxLevel = 0.06;

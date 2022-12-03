@@ -22,7 +22,7 @@ Conductor {
 		if (((minute >= 8) && (minute <= 13)), { intensity_level = intensity_level + 2; });
 
 		if (flag, {
-			next_event = EventManager.new(seed, intensity_level, key[rrand(0,1)], 0.1);
+			next_event = EventManager.new(seed, intensity_level, key[rrand(0,1)], 0.2);
 		},
 		{
 			next_event = nil;

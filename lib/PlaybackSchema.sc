@@ -211,15 +211,14 @@ PlaybackSchema {
 		modifier3 = rrand(1, 4),
 		dur = 60 / (pattern * ~tempo),
 		onbeat = rrand(0, 1),
-		hcut = rrand(
-			intensity.linlin(0, 4, 800, 20000),
-			intensity.linlin(0, 4, 2000, 20000)),
 		lcut = rrand(
 			intensity.linlin(0, 4, 90, 500),
 			intensity.linlin(0, 4, 600, 200)),
+
 		envScl = pattern.size * 32 * modifier2 * modifier3,
 		env = (Array.series(envScl, 0.0, 1.0 / envScl)) ++
 			(Array.series(envScl, 1.0, -1.0 / envScl)),
+
 		amps = Array.fill((envScl * 2), {
 			arg i;
 			var amp = rrand(~hatLevel / 1.1, ~hatLevel);
@@ -230,6 +229,18 @@ PlaybackSchema {
 		pans = Array.fill((pattern.size * modifier2), {
 			rrand(-0.3, 0.3);
 		}),
+
+		envScl2 = 128 * modifier2 * modifier3,
+
+		env2 = ((Array.series(envScl2, 0.0, 1.0 / envScl2)) ++
+			(Array.series(envScl2, 1.0, -1.0 / envScl2)) * 16000),
+
+		hcuts = Array.fill((envScl2 * 2), {
+			arg i;
+			var cut = 1000 + env2[i];
+			cut;
+		}),
+
 		outs = Array.fill((modifier2 * modifier3), {
 			var temp = switch (intensity,
 				0, {~fxSBus!modifier ++ ~fxMBus!modifier2},
@@ -246,7 +257,7 @@ PlaybackSchema {
 			\instrument, \playback,
 			\dur, Pseq(dur, inf),
 			\buf, Pseq(buf, inf),
-			\hcut, Pwhite(hcut / 2, hcut),
+			\hcut, Pseq(hcuts, inf),
 			\lcut, Pwhite(lcut / 2, lcut),
 			\amp, Pseq(amps, inf),
 			\pan, Pseq(pans, inf),

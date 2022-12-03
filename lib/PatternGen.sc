@@ -219,7 +219,7 @@ PatternGen {
 	//----------------------------------------------HIT
 	hit_pattern {
 		arg pattern, intensity;
-		var return_, alt;
+		var return_, alt, fill;
 		switch (intensity,
 
 			0, {
@@ -261,7 +261,7 @@ PatternGen {
 						16.0 - (temp.sum % 16.0))});
 				return_ = temp * 2;
 				choose_ = rrand(0, 2);
-				if (choose_ == 0, {return_ = return_ / 2} );
+				if (choose_ == 0, {return_ = return_ / 4} );
 			},
 
 			3, {
@@ -293,8 +293,12 @@ PatternGen {
 			},
 		);
 
-		alt = return_.scramble;
-		return_ = return_++return_++return_++alt;
+
+		fill = rrand(0, 2);
+		if (fill == 0, {
+			alt = return_.scramble;
+			return_ = return_++return_++return_++alt;
+		});
 
 		^return_;
 	}
@@ -316,7 +320,7 @@ PatternGen {
 			},
 
 			1, {
-				var choose = rrand(1,2),
+				var choose = rrand(1,3),
 					choose_ = rrand(0, choose),
 				temp = pattern.reshape(choose);
 				if (temp.sum < 8.0, {
@@ -342,7 +346,7 @@ PatternGen {
 			},
 
 			3, {
-				var choose = rrand(1,pattern.size / 2),
+				var choose = rrand(1, 4),
 					choose_ = rrand(0, choose),
 				temp = pattern.reshape(choose);
 				if (temp.sum < 8.0, {
@@ -355,7 +359,7 @@ PatternGen {
 			},
 
 			4, {
-				var choose = rrand(1,pattern.size / 2),
+				var choose = rrand(1, 4),
 					choose_ = rrand(0, choose),
 				temp = pattern.reshape(choose);
 				if (temp.sum < 8.0, {
