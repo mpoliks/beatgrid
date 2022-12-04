@@ -202,15 +202,21 @@ s.waitForBoot {
 
 )
 
+
+
 s.record();
 
 c = Conductor.new()
 
 c.conduct(~seed)
 
+~mixOut.set(\amp, 0)
+
 c.flag=false
 
-c.transition.prev_event
+c.transition.prev_event.onramping == List[]
+c.transition.prev_event.offramping.size
+c.transition.prev_event.streaming.size
 c.transition.prev_event.streaming.patterns
 c.transition.event.streaming
 

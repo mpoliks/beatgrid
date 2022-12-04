@@ -61,14 +61,14 @@ Conductor {
 			(current_time.minute >= event_time.minute), {
 
 				if (transition.prev_event.notNil, {
-						if ((transition.prev_event.streaming.notNil == true) &&
-							(transition.prev_event.onramping.notNil == true) &&
-							(transition.prev_event.offramping.notNil == true), {
+						if (((transition.prev_event.streaming == Dictionary[]) &&
+							(transition.prev_event.onramping == List[]) &&
+							(transition.prev_event.offramping == List[])), {
 							"WORKING: Moving to Next Event".postln;
 							this.eventPlayer(seed);
 						},
 						{
-							"WARN: Waiting For Transition to Finish!".postln;
+							("WARN: WAITING FOR" + (transition.prev_event.streaming.keys).asString).postln;
 						});
 					},
 					{

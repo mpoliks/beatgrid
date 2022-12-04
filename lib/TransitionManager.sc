@@ -26,7 +26,7 @@ TransitionManager {
 			seq.do({
 
 				arg inst;
-				var intvl = 2.pow(rrand(1,5));
+				var intvl = (2.pow(rrand(1,5))) + (4 * rrand(0,4));
 
 				("WORKING: Will Halt" + inst + "in" + intvl.asString + "Measures").postln;
 
