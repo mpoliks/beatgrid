@@ -374,7 +374,6 @@ PatternGen {
 
 		return_ = [[0.5, 0.5], [4.0, 4.0], [2.0, 2.0], return_];
 		return_ = return_[rrand(0, 3)];
-		return_.postln;
 		^return_;
 	}
 
@@ -467,7 +466,6 @@ PatternGen {
 
 		return_ = [[0.5, 0.5], [1.0, 1.0], ([1.0] ++ (2.0!63) ++ [1.0]), return_, return_];
 		return_ = return_[rrand(0, 4)];
-		return_.postln;
 
 		^return_;
 	}

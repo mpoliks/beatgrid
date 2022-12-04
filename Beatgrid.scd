@@ -1,14 +1,3 @@
-
-
-/*
-some todos:
-- what does scheduling pattern generation look like?
-- how to make a new pattern every x# minutes
-- finalize kits and how they are related
-- create a few rockin' FX
-*/
-
-
 (
 ~hardwareInputs = 1;
 ~hardwareOutputs = 2;
@@ -213,14 +202,22 @@ s.waitForBoot {
 
 )
 
+s.record();
+
 c = Conductor.new()
 
 c.conduct(~seed)
 
 c.flag=false
 
-c.transition.prev_event.hash
-c.transition.event.hash
+c.transition.prev_event
+c.transition.prev_event.streaming.patterns
+c.transition.event.streaming
+
+.at(\bass).patterns[1].stream.p
+
+
+Pchain
 c.transition.event.offramping
 c.transition.event.onramping
 

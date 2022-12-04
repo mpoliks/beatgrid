@@ -6,12 +6,13 @@ Conductor {
 
 	init {
 		event_time = Date.getDate;
+		transition = TransitionManager.new();
 	}
 
 
 	eventPlayer{
 		arg seed;
-		var intensity_level, minute = event_time.minute % 13, key = ["F#", "C#"], next = rrand(2,5);
+		var intensity_level, minute = event_time.minute % 13, key = ["F#", "C#"], next = rrand(1,4);
 
 		if (((event_time.hour < 11) || (event_time.hour >= 17)), { intensity_level = 0; });
 		if (((event_time.hour >= 11) && (event_time.hour < 14)), { intensity_level = 1; });
@@ -58,9 +59,24 @@ Conductor {
 			if(
 			(current_time.hour >= event_time.hour) &&
 			(current_time.minute >= event_time.minute), {
-				"WORKING: Moving to Next Event".postln;
-				this.eventPlayer(seed);
-			});
+
+				if (transition.prev_event.notNil, {
+						if ((transition.prev_event.streaming.notNil == true) &&
+							(transition.prev_event.onramping.notNil == true) &&
+							(transition.prev_event.offramping.notNil == true), {
+							"WORKING: Moving to Next Event".postln;
+							this.eventPlayer(seed);
+						},
+						{
+							"WARN: Waiting For Transition to Finish!".postln;
+						});
+					},
+					{
+						"WORKING: Moving to First Event".postln;
+						this.eventPlayer(seed);
+					});
+
+				});
 
 			1;
 		});

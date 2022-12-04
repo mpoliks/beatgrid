@@ -30,9 +30,11 @@ TransitionManager {
 
 				("WORKING: Will Halt" + inst + "in" + intvl.asString + "Measures").postln;
 
-				Q.uant((60/(~tempo) * (4 * intvl)), {
-					prev_event.streaming.at(inst).patterns[1].stop;
-					prev_event.streaming.at(inst).patterns[1].free;
+				Q.uant(((60/~tempo) * (4 * intvl)), {
+					if(prev_event.streaming.at(inst).notNil, {
+						prev_event.streaming.at(inst).patterns[1].stop;
+						prev_event.streaming.at(inst).patterns[1].free;
+					});
 					prev_event.streaming.at(inst).stop;
 					prev_event.streaming.at(inst).free;
 					prev_event.streaming.removeAt(inst);
@@ -63,7 +65,7 @@ TransitionManager {
 		arg inst, event;
 
 		var intvl = 2.pow(rrand(1,4)),
-		qval = 60/(~tempo) * (4 * intvl);
+		qval = (60/~tempo) * (4 * intvl);
 
 		("WORKING: Will Play" + inst + "in" + intvl.asString + "Measures").postln;
 
