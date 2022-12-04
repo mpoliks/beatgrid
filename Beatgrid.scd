@@ -29,7 +29,7 @@ s.reboot;
 	~snareLevel = 0.08;
 	~clapLevel = 0.07;
 	~hatLevel = 0.05;
-	~loopLevel = 0.2;
+	~loopLevel = 0.13;
 	~hitLevel = 0.08;
 	~auxLevel = 0.06;
 
@@ -119,7 +119,7 @@ s.waitForBoot {
 		sig = AllpassC.ar(sig, 1.0, (60/~tempo) * delayTime, decayTime);
 		sig = LPF.ar(sig, hcut - lfo1);
 		sig = HPF.ar(sig, lcut + lfo2);
-		sig = AnalogVintageDistortion.ar(sig, 0.2);
+		sig = AnalogVintageDistortion.ar(sig, 0.1);
 		sig = sig * amp;
 		Out.ar(out, sig);
 	}).add;
@@ -127,9 +127,10 @@ s.waitForBoot {
 	SynthDef(\mixIO, { // compressor and limiter on the mix bus
 		arg out = 0, in = 0, amp = 0.01;
 		var sig = In.ar(in, 2);
-		sig = Compander.ar(sig,	sig, thresh: 0.5, slopeBelow: 1.0,
-			slopeAbove: 0.25, clampTime: 0.01, relaxTime: 0.01);
+		//sig = Compander.ar(sig,	sig, thresh: 0.5, slopeBelow: 1.0, slopeAbove: 0.25, clampTime: 0.01, relaxTime: 0.01);
+		sig = DCompressor.ar(sig);
 		sig = sig * amp;
+		sig = BPeakEQ.ar(sig, 100, 1.0, 4.0);
 		sig = AnalogTape.ar(sig, 0.5, 0.3, 0.3);
 		sig = Limiter.ar(sig, level: 0.94, dur: 0.1);
 		Out.ar(out, sig);
@@ -217,18 +218,3 @@ c.conduct(~seed)
 ~mixOut.set(\amp, 0)
 
 c.flag=false
-
-c.transition.prev_event.onramping == List[]
-c.transition.prev_event.offramping.size
-c.transition.prev_event.streaming.size
-c.transition.prev_event.streaming.patterns
-c.transition.event.streaming
-
-.at(\bass).patterns[1].stream.p
-
-
-Pchain
-c.transition.event.offramping
-c.transition.event.onramping
-
-c.inspect
