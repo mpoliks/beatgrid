@@ -155,7 +155,7 @@ s.waitForBoot {
 	~dryOut = Synth(\patchCord,
 		[\in, ~dryBus, \out, ~mixBus], ~dryGroup);
 	~revSOut = Synth(\hdVerb,
-		[\in, ~fxSBus, \out, ~mixBus, \predelay, 0.01, \decay, 1.0], ~fxGroup);
+		[\in, ~fxSBus, \out, ~mixBus, \predelay, 0.01, \decay, 0.4], ~fxGroup);
 	~dlySOut = Synth(\delay,
 		[\in, ~fxSBus, \out, ~mixBus, \delayTime, 0.66666, \decayTime, 0.1], ~fxGroup);
 	~dlySOut2 = Synth(\delay,

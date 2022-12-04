@@ -17,6 +17,7 @@ Conductor {
 		if (((event_time.hour < 11) || (event_time.hour >= 17)), { intensity_level = 0; });
 		if (((event_time.hour >= 11) && (event_time.hour < 14)), { intensity_level = 1; });
 		if (((event_time.hour >= 14) && (event_time.hour < 16)), { intensity_level = 2; });
+		if ((event_time.hour == 16), { intensity_level = 1; });
 
 		if (((minute >= 0) && (minute < 4)), { intensity_level = intensity_level + 0; });
 		if (((minute >= 4) && (minute < 8)), { intensity_level = intensity_level + 1; });
