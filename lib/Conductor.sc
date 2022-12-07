@@ -39,6 +39,7 @@ Conductor {
 		current_event = next_event;
 
 		("OK: New Event at Intensity" + intensity_level.asString).postln;
+		("OK: New Event using Kit" + kit.asString).postln;
 
 		event_time.minute = event_time.minute + next;
 		if(event_time.minute >= 60, {
