@@ -11,7 +11,7 @@ EventManager {
 
 	init {
 
-		arg seed, intensity, key, swing;
+		arg seed, intensity, kit, swing;
 
 		var p = PatternGen.new(),
 		g = PlaybackSchema.new();
@@ -38,7 +38,7 @@ EventManager {
 			schemas.putAll(
 				Dictionary[
 					inst -> g.go(
-						patterns.at(inst), inst, intensity, key);
+						patterns.at(inst), inst, intensity, kit);
 			]);
 
 

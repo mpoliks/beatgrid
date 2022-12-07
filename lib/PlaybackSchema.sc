@@ -443,13 +443,12 @@ PlaybackSchema {
 	}
 
 	go {
-		arg pattern, instrument, intensity, key;
+		arg pattern, instrument, intensity, kit;
 		var dir, pbind;
 
 		("WORKING: Generating Schemas for" + instrument.asString).postln;
-		if ((instrument.asString != "bass") && (instrument.asString != "loop") && (instrument.asString != "hit"),
-			{ dir = ~buffers.at(instrument.asString).at(intensity); },
-			{ dir = ~buffers.at(instrument.asString).at(key.asString).at(intensity); });
+
+		dir = ~buffers.at(kit.asString).at(instrument.asString);
 
 		pbind = switch (instrument,
 			\bass, {this.bass(pattern, intensity, dir)},

@@ -52,26 +52,15 @@ s.waitForBoot {
 		f.folders.do({
 			arg f_;
 			var samples = Array.new;
-			if ((f_.folderName != "F#") && (f_.folderName != "C#"), {
-				("OK: Processsing" + f_.entries.size.asString + "files from" + f_.asString).postln;
+
+			("OK: Processsing" + f_.entries.size.asString + "files from" + f_.asString).postln;
 				f_.entries.do({ arg path;
 					samples = samples.add(Buffer.read(s, path.fullPath));});
 				bufs.at(f.folderName)
-					.putAll( Dictionary[f_.folderName.asInteger -> samples]);
-			},
-			{
-				bufs.at(f.folderName).add(f_.folderName -> Dictionary.new);
-				f_.folders.do({
-					arg f__;
-					var samples_ = Array.new;
-					("OK: Processsing" + f__.entries.size.asString + "files from" + f__.asString).postln;
-					f__.entries.do({ arg path;
-						samples_ = samples_.add(Buffer.read(s, path.fullPath));});
-					bufs.at(f.folderName).at(f_.folderName)
-						.putAll(Dictionary[f__.folderName.asInteger -> samples_]);
-				});
-			});
+					.putAll( Dictionary[f_.folderName -> samples]);
 		});
+
+
 		~buffers.putAll(bufs);
 	});
 
@@ -207,13 +196,15 @@ s.waitForBoot {
 
 
 
-
-
 s.record();
+
+
 
 c = Conductor.new()
 
 c.conduct(~seed)
+
+
 
 ~mixOut.set(\amp, 0)
 

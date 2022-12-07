@@ -12,7 +12,10 @@ Conductor {
 
 	eventPlayer{
 		arg seed;
-		var intensity_level, minute = event_time.minute % 13, key = ["F#", "C#"], next = rrand(1,4);
+		var intensity_level,
+		minute = event_time.minute % 13,
+		kit = rrand(0, (~buffers.size -1 )), swing = 0.2,
+		next = rrand(1,4);
 
 		if (((event_time.hour < 11) || (event_time.hour >= 17)), { intensity_level = 0; });
 		if (((event_time.hour >= 11) && (event_time.hour < 14)), { intensity_level = 1; });
@@ -24,7 +27,7 @@ Conductor {
 		if (((minute >= 8) && (minute <= 13)), { intensity_level = intensity_level + 2; });
 
 		if (flag, {
-			next_event = EventManager.new(seed, intensity_level, key[rrand(0,1)], 0.2);
+			next_event = EventManager.new(seed, intensity_level, kit, swing);
 		},
 		{
 			next_event = nil;
