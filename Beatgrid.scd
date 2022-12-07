@@ -71,7 +71,7 @@ s.waitForBoot {
 	SynthDef(\playback, { // playback synth
 		arg rate = 1, atk = 0.001, rel = 1.4, lcut = 20, hcut = 20000, pan = 0,
 			buf, amp = 1.0, out;
-		var sig = PlayBuf.ar(2, buf, BufRateScale.ir(buf) * rate, doneAction: 2),
+		var sig = PlayBuf.ar(1, buf, BufRateScale.ir(buf) * rate, doneAction: 2),
 		env = EnvGen.kr( Env.new([0,1,0], [atk, rel], [1, -1]), doneAction:2);
 		sig = HPF.ar(sig, lcut);
 		sig = LPF.ar(sig, hcut);
@@ -82,7 +82,7 @@ s.waitForBoot {
 	SynthDef(\playbackP, { // playback synth (with pitch management)
 		arg rate = 1, atk = 0.001, rel = 1.4, lcut = 20, hcut = 20000,
 			repitch = 1.0, pdisp = 0.0, tdisp = 0.0, pan = 0, buf, amp = 1.0, out;
-		var sig = PlayBuf.ar(2, buf, BufRateScale.ir(buf) * rate, doneAction: 2),
+		var sig = PlayBuf.ar(1, buf, BufRateScale.ir(buf) * rate, doneAction: 2),
 		env = EnvGen.kr( Env.new([0,1,0], [atk, rel], [1, -1]), doneAction:2);
 		sig = HPF.ar(sig, lcut);
 		sig = LPF.ar(sig, hcut);
@@ -141,6 +141,8 @@ s.waitForBoot {
 
 	s.sync;
 
+	/* UNCOMMENT FOR WET */
+
 	~dryOut = Synth(\patchCord,
 		[\in, ~dryBus, \out, ~mixBus], ~dryGroup);
 	~revSOut = Synth(\hdVerb,
@@ -164,7 +166,27 @@ s.waitForBoot {
 	~dlyLOut3 = Synth(\delay,
 		[\in, ~fxLBus, \out, ~mixBus, \lfo1freq, 0.04, \lfo2freq, 0.05, \delayTime, 1.25, \decayTime, 0.1], ~fxGroup);
 	~mixOut = Synth(\mixIO,
-		[\in, ~mixBus, \out, 0], ~mixGroup);
+		[\in, ~mixBus, \out, 0], ~mixGroup)
+
+	// END UNCOMMENT */
+
+
+	/* UNCOMMENT FOR DRY
+
+	~dryOut = Synth(\patchCord,
+		[\in, ~dryBus, \out, ~mixBus], ~dryGroup);
+
+	~revSOut = Synth(\patchCord,
+		[\in, ~dryBus, \out, ~mixBus], ~dryGroup);
+
+	~revMOut = Synth(\patchCord,
+		[\in, ~dryBus, \out, ~mixBus], ~dryGroup);
+
+	~revLOut = Synth(\patchCord,
+		[\in, ~dryBus, \out, ~mixBus], ~dryGroup);
+
+	// END UNCOMMENT */
+
 
 	s.sync;
 
