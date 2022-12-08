@@ -166,7 +166,7 @@ s.waitForBoot {
 	~dlyLOut3 = Synth(\delay,
 		[\in, ~fxLBus, \out, ~mixBus, \lfo1freq, 0.04, \lfo2freq, 0.05, \delayTime, 1.25, \decayTime, 0.1], ~fxGroup);
 	~mixOut = Synth(\mixIO,
-		[\in, ~mixBus, \out, 0], ~mixGroup)
+		[\in, ~mixBus, \out, 0], ~mixGroup);
 
 	// END UNCOMMENT */
 
