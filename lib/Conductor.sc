@@ -1,6 +1,6 @@
 Conductor {
 
-	var <current_time, <event_time, <current_event, <next_event, <transition, <>flag = true;
+	var <current_time, <>event_time, <current_event, <next_event, <transition, <>kit, <>flag = true;
 
 	*new { ^super.new.init() }
 
@@ -13,8 +13,7 @@ Conductor {
 	eventPlayer{
 		arg seed;
 		var intensity_level,
-		minute = event_time.minute % 13,
-		kit = rrand(0, (~buffers.size -1 )), swing = 0.2,
+		minute = event_time.minute % 13, swing = 0.2, set_kit,
 		next = rrand(1,4);
 
 		if (((event_time.hour < 11) || (event_time.hour >= 17)), { intensity_level = 0; });
@@ -26,8 +25,23 @@ Conductor {
 		if (((minute >= 4) && (minute < 8)), { intensity_level = intensity_level + 1; });
 		if (((minute >= 8) && (minute <= 13)), { intensity_level = intensity_level + 2; });
 
+
+		if (~kitOverride == true,
+			{
+				("OK: Kit Override Engaged. Setting Kit to" + kit.asString).postln;
+				set_kit = kit;
+				~kitOverride = false;
+		},
+			{
+				set_kit = rrand(0, (~buffers.size - 1));
+		});
+
+		("OK: New Event at Intensity" + intensity_level.asString).postln;
+		("OK: New Event using Kit" + set_kit.asString).postln;
+
+
 		if (flag, {
-			next_event = EventManager.new(seed, intensity_level, kit, swing);
+			next_event = EventManager.new(seed, intensity_level, set_kit, swing);
 		},
 		{
 			next_event = nil;
@@ -37,9 +51,6 @@ Conductor {
 		transition.transition(current_event, next_event);
 
 		current_event = next_event;
-
-		("OK: New Event at Intensity" + intensity_level.asString).postln;
-		("OK: New Event using Kit" + kit.asString).postln;
 
 		event_time.minute = event_time.minute + next;
 		if(event_time.minute >= 60, {

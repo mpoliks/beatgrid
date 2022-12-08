@@ -2,6 +2,7 @@
 ~hardwareInputs = 1;
 ~hardwareOutputs = 2;
 ~tempo = 60;
+~kitOverride = false;
 
 
 //ServerOptions.devices;
@@ -217,15 +218,21 @@ s.waitForBoot {
 )
 
 
+// MANUAL ACTIONS:
 
-s.record();
+c = Conductor.new() // STEP 1 TO RUN PATCH (use Shift + Enter)
+
+c.conduct(~seed) // STEP 2 TO RUN PATCH (use Shift + Enter)
 
 
+s.record(); // Shift + Enter to RECORD
 
-c = Conductor.new()
+(
+c.kit = 0; // Command + Enter to force a kit override during the next transition
+~kitOverride = true;
+);
 
-c.conduct(~seed)
-
+c.event_time = Date.getDate; // Shift + Enter to force a transition
 
 
 ~mixOut.set(\amp, 0)
