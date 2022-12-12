@@ -375,7 +375,7 @@ PlaybackSchema {
 			);
 	}
 
-	aux {
+	misc {
 		arg pattern, intensity, dir;
 		var buffer_variation = rrand(2, ((intensity + 2) * 4)),
 		buf = Array.fill(buffer_variation, {
@@ -408,7 +408,7 @@ PlaybackSchema {
 
 		amps = Array.fill((pattern.size * modifier), {
 			arg i;
-			var amp = rrand(~auxLevel / 2.0, ~auxLevel);
+			var amp = rrand(~miscLevel / 2.0, ~miscLevel);
 			if (i % pattern.size == 0, { amp = amp * onbeat });
 			amp;
 		}),
@@ -458,7 +458,7 @@ PlaybackSchema {
 			\hat, {this.hat(pattern, intensity, dir)},
 			\loop, {this.loop(pattern, intensity, dir)},
 			\hit, {this.hit(pattern, intensity, dir)},
-			\aux, {this.aux(pattern, intensity, dir)}
+			\misc, {this.misc(pattern, intensity, dir)}
 		);
 
 		^pbind;

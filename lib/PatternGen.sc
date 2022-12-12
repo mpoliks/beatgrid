@@ -303,8 +303,8 @@ PatternGen {
 		^return_;
 	}
 
-	//----------------------------------------------AUX
-	aux_pattern {
+	//----------------------------------------------MISC
+	misc_pattern {
 		arg pattern, intensity;
 		var return_;
 		switch (intensity,
@@ -482,7 +482,7 @@ PatternGen {
 			\hat, {return = this.hat_pattern(pattern, intensity)},
 			\loop, {return = this.long_pattern(pattern, intensity)},
 			\hit, {return = this.hit_pattern(pattern, intensity)},
-			\aux, {return = this.aux_pattern(pattern, intensity)}
+			\misc, {return = this.misc_pattern(pattern, intensity)}
 		);
 		return = this.time_process(return);
 		^return;
