@@ -4,6 +4,51 @@ PlaybackSchema {
 
 	init { }
 
+	interlace_n_arrays {
+
+		arg input_arrays;
+		var return, null_size = input_arrays[0].size, err_flag = false;
+
+		input_arrays.size.do {
+			arg i;
+			if (input_arrays[i].size != null_size,{
+				"ERR: Spatial Pattern Size Inconsistency".postln;
+				err_flag = true; }); };
+
+		if (err_flag == false, {
+			return = Array.fill(null_size, {
+				arg patt_step; var temp = Array.newClear;
+				input_arrays.size.do({
+					arg array_step;
+					temp = temp ++ input_arrays[array_step][patt_step];
+				});
+				temp;
+			});
+		});
+
+		^return;
+	}
+
+	output_pattern_gen {
+		arg speaker_array, pattern_length = 2, speakers_per_impulse = 2, add_some_random = true;
+		var array_size = speaker_array.size - 1, result;
+
+		result = Array.fill(pattern_length, {
+			var temp_speaker_array = speaker_array.scramble,
+			temp_speakers_per_impulse = speakers_per_impulse;
+			if (add_some_random == true, {
+				temp_speakers_per_impulse = rrand(1, speakers_per_impulse) });
+
+			Array.fill(temp_speakers_per_impulse, {
+				arg c;
+				temp_speaker_array[c];
+			});
+
+		});
+
+		^result;
+	}
+
 	bass {
 		arg pattern, intensity, dir;
 		var buffer_variation = rrand(1, ((intensity + 1) * 4)),
@@ -26,20 +71,24 @@ PlaybackSchema {
 			if (i % pattern.size == 0, { amp = amp * onbeat });
 			amp;
 		}),
-		pans = Array.fill((pattern.size * modifier2), {
-			rrand(-0.3, 0.3);
-		}),
-		outs = Array.fill((modifier2 * modifier3), {
-			var temp = switch (intensity,
-				0, {~fxMBus!modifier ++ ~fxLBus!modifier2},
-				1, {~fxMBus!modifier ++ ~fxLBus!modifier2},
-				2, {~fxSBus!modifier ++ ~fxMBus!modifier2},
-				3, {~fxSBus!modifier ++ ~fxMBus!modifier2},
-				4, {~fxSBus!modifier ++ ~dryBus!modifier2},
-			),
-			result = temp.scramble[0];
-			result;
-		});
+
+
+		outs = this.interlace_n_arrays(
+
+			switch(intensity,
+			0, {[ this.output_pattern_gen(~atrCeiling_fxLBus, 2, 4, false),
+				this.output_pattern_gen(~retAlcove_fxLbus, 2, 4, false) ]},
+			1, {[ this.output_pattern_gen(~atrCeiling_fxMBus, 3, 4, false),
+				this.output_pattern_gen(~retAlcove_fxLbus, 3, 4, false) ]},
+			2, {[ this.output_pattern_gen(~atrCeiling_fxMBus, 3, 3, false),
+				this.output_pattern_gen(~retAlcove_fxMbus, 3, 3, false) ]},
+			3, {[ this.output_pattern_gen(~atrCeiling_fxSBus, 3, 4, false),
+				this.output_pattern_gen(~retAlcove_fxMbus, 3, 4, false) ]},
+			4, {[ this.output_pattern_gen(~atrCeiling_fxSBus, 4, 2, false),
+				this.output_pattern_gen(~retAlcove_fxSbus, 4, 2, false) ]},
+			)
+
+		);
 
 		^Pbind(
 			\instrument, \playback,
@@ -50,8 +99,7 @@ PlaybackSchema {
 			\hcut, Pwhite(hcut / 2, hcut),
 			\lcut, Pwhite(lcut / 2, lcut),
 			\amp, Pseq(amps, inf),
-			\pan, Pseq(pans, inf),
-			\out, Pseq(outs, inf)
+			\out, Pseq(outs, inf);
 			);
 	}
 
@@ -76,17 +124,23 @@ PlaybackSchema {
 			result = temp[try];
 			result;
 		}),
-		outs = Array.fill((modifier2 * modifier3), {
-			var temp = switch (intensity,
-				0, {(~fxMBus!modifier) ++ (~fxMBus!modifier2)},
-				1, {(~fxMBus!modifier) ++ (~fxMBus!modifier2)},
-				2, {(~fxMBus!modifier) ++ (~fxMBus!modifier2)},
-				3, {(~fxMBus!modifier) ++ (~fxMBus!modifier2)},
-				4, {(~fxMBus!modifier) ++ (~dryBus!modifier2)},
-			),
-			result = temp.scramble[0];
-			result;
-		});
+
+		outs = this.interlace_n_arrays(
+
+		switch(intensity,
+			0, {[ this.output_pattern_gen(~atrCeiling_fxLBus, 1, 6, false),
+				this.output_pattern_gen(~retAlcove_fxLbus, 1, 6, false) ]},
+			1, {[ this.output_pattern_gen(~atrCeiling_fxMBus, 1, 6, false),
+				this.output_pattern_gen(~retAlcove_fxLbus, 1, 6, false) ]},
+			2, {[ this.output_pattern_gen(~atrCeiling_fxMBus, 1, 6, false),
+				this.output_pattern_gen(~retAlcove_fxMbus, 2, 6, false) ]},
+			3, {[ this.output_pattern_gen(~atrCeiling_fxSBus, 2, 6, false),
+				this.output_pattern_gen(~retAlcove_fxMbus, 2, 6, false) ]},
+			4, {[ this.output_pattern_gen(~atrCeiling_fxSBus, 2, 6, false),
+				this.output_pattern_gen(~retAlcove_fxSbus, 2, 6, false) ]},
+			)
+
+		);
 
 		^Pbind(
 			\instrument, \playback,
@@ -94,7 +148,6 @@ PlaybackSchema {
 			\buf, Pseq(buf, inf),
 			\hcut, Pwhite(hcut / 1.3, hcut),
 			\amp, Pseq(amps, inf),
-			\pan, 0,
 			\out, Pseq(outs, inf)
 			);
 	}
@@ -123,20 +176,43 @@ PlaybackSchema {
 			if (i % pattern.size == 0, { amp = amp * onbeat });
 			amp;
 		}),
-		pans = Array.fill((pattern.size * modifier2), {
-			rrand(-1.0, 1.0);
-		}),
-		outs = Array.fill((modifier2 * modifier3), {
-			var temp = switch (intensity,
-				0, {~fxMBus!modifier ++ ~fxLBus!modifier2},
-				1, {~fxMBus!modifier ++ ~fxLBus!modifier2},
-				2, {~fxSBus!modifier ++ ~fxMBus!modifier2},
-				3, {~fxSBus!modifier ++ ~fxMBus!modifier2},
-				4, {~fxSBus!modifier ++ ~dryBus!modifier2},
-			),
-			result = temp.scramble[0];
-			result;
-		});
+
+		outs = this.interlace_n_arrays(
+
+			switch(intensity,
+			0, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false),
+				this.output_pattern_gen(~atrWall_fxLbus, 3, 2, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLbus, 3, 2, false),
+				]},
+			1, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 2, false),
+				this.output_pattern_gen(~atrWall_fxLbus, 4, 2, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 4, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLbus, 4, 2, false),
+				]},
+			2, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 5, 2, false),
+				this.output_pattern_gen(~atrWall_fxLbus, 5, 2, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 5, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLbus, 5, 2, false),
+				]},
+			3, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 6, 2, true),
+				this.output_pattern_gen(~atrWall_fxLbus, 6, 2, true),
+				this.output_pattern_gen(~retCeiling_fxLBus, 6, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLbus, 6, 2, false),
+				]},
+			4, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 7, 2, true),
+				this.output_pattern_gen(~atrWall_fxLbus, 7, 2, true),
+				this.output_pattern_gen(~retCeiling_fxLBus, 8, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLbus, 8, 2, true),
+				]},
+			)
+
+		);
 
 		^Pbind(
 			\instrument, \playback,
@@ -145,7 +221,6 @@ PlaybackSchema {
 			\hcut, Pwhite(hcut / 2, hcut),
 			\lcut, Pwhite(lcut / 2, lcut),
 			\amp, Pseq(amps, inf),
-			\pan, Pseq(pans, inf),
 			\out, Pseq(outs, inf)
 			);
 	}
@@ -172,20 +247,44 @@ PlaybackSchema {
 			if (i % pattern.size == 0, { amp = amp * onbeat });
 			amp;
 		}),
-		pans = Array.fill((pattern.size * modifier2), {
-			rrand(-0.4, 0.4);
-		}),
-		outs = Array.fill((modifier2 * modifier3), {
-			var temp = switch (intensity,
-				0, {~fxMBus!modifier ++ ~fxLBus!modifier2},
-				1, {~fxMBus!modifier ++ ~fxLBus!modifier2},
-				2, {~fxSBus!modifier ++ ~fxMBus!modifier2},
-				3, {~fxSBus!modifier ++ ~fxMBus!modifier2},
-				4, {~fxSBus!modifier ++ ~dryBus!modifier2},
-			),
-			result = temp.scramble[0];
-			result;
-		});
+
+		outs = this.interlace_n_arrays(
+
+			switch(intensity,
+			0, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false),
+				this.output_pattern_gen(~atrWall_fxLbus, 3, 2, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLbus, 3, 2, false),
+				]},
+			1, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 2, false),
+				this.output_pattern_gen(~atrWall_fxLbus, 4, 2, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 4, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLbus, 4, 2, false),
+				]},
+			2, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 5, 2, false),
+				this.output_pattern_gen(~atrWall_fxLbus, 5, 2, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 5, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLbus, 5, 2, false),
+				]},
+			3, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 6, 2, true),
+				this.output_pattern_gen(~atrWall_fxLbus, 6, 2, true),
+				this.output_pattern_gen(~retCeiling_fxLBus, 6, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLbus, 6, 2, false),
+				]},
+			4, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 7, 2, true),
+				this.output_pattern_gen(~atrWall_fxLbus, 7, 2, true),
+				this.output_pattern_gen(~retCeiling_fxLBus, 8, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLbus, 8, 2, true),
+				]},
+			)
+
+		);
+
 
 		^Pbind(
 			\instrument, \playback,
@@ -194,7 +293,6 @@ PlaybackSchema {
 			\hcut, Pwhite(hcut / 2, hcut),
 			\lcut, Pwhite(lcut / 2, lcut),
 			\amp, Pseq(amps, inf),
-			\pan, Pseq(pans, inf),
 			\out, Pseq(outs, inf)
 			);
 	}
@@ -226,9 +324,6 @@ PlaybackSchema {
 			if (i % pattern.size == 0, { amp = amp * onbeat });
 			amp;
 		}),
-		pans = Array.fill((pattern.size * modifier2), {
-			rrand(-0.3, 0.3);
-		}),
 
 		envScl2 = 128 * modifier2 * modifier3,
 
@@ -241,17 +336,43 @@ PlaybackSchema {
 			cut;
 		}),
 
-		outs = Array.fill((modifier2 * modifier3), {
-			var temp = switch (intensity,
-				0, {~fxSBus!modifier ++ ~fxMBus!modifier2},
-				1, {~fxSBus!modifier ++ ~fxMBus!modifier2},
-				2, {~fxSBus!modifier ++ ~fxMBus!modifier2},
-				3, {~fxSBus!modifier ++ ~fxSBus!modifier2},
-				4, {~fxSBus!modifier ++ ~dryBus!modifier2},
-			),
-			result = temp.scramble[0];
-			result;
-		});
+		outs = this.interlace_n_arrays(
+
+			switch(intensity,
+			0, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false),
+				this.output_pattern_gen(~atrWall_fxLbus, 3, 2, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLbus, 3, 2, false),
+				]},
+			1, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 2, false),
+				this.output_pattern_gen(~atrWall_fxLbus, 4, 2, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 4, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLbus, 4, 2, false),
+				]},
+			2, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 5, 2, false),
+				this.output_pattern_gen(~atrWall_fxLbus, 5, 2, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 5, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLbus, 5, 2, false),
+				]},
+			3, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 6, 2, true),
+				this.output_pattern_gen(~atrWall_fxLbus, 6, 2, true),
+				this.output_pattern_gen(~retCeiling_fxLBus, 6, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLbus, 6, 2, false),
+				]},
+			4, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 7, 2, true),
+				this.output_pattern_gen(~atrWall_fxLbus, 7, 2, true),
+				this.output_pattern_gen(~retCeiling_fxLBus, 8, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLbus, 8, 2, true),
+				]},
+			)
+
+		);
+
 
 		^Pbind(
 			\instrument, \playback,
@@ -260,7 +381,6 @@ PlaybackSchema {
 			\hcut, Pseq(hcuts, inf),
 			\lcut, Pwhite(lcut / 2, lcut),
 			\amp, Pseq(amps, inf),
-			\pan, Pseq(pans, inf),
 			\out, Pseq(outs, inf)
 			);
 	}
@@ -292,9 +412,7 @@ PlaybackSchema {
 			if (i % pattern.size == 0, { amp = amp * onbeat });
 			amp;
 		}),
-		pans = Array.fill((pattern.size * modifier2), {
-			rrand(-0.8, 0.8);
-		}),
+
 		outs = Array.fill((modifier2 * modifier3), {
 			var temp = switch (intensity,
 				0, {~fxMBus!modifier ++ ~fxLBus!modifier2},
@@ -317,7 +435,6 @@ PlaybackSchema {
 			\hcut, Pwhite(hcut / 2, hcut),
 			\lcut, Pwhite(lcut / 2, lcut),
 			\amp, Pseq(amps, inf),
-			\pan, Pseq(pans, inf),
 			\out, Pseq(outs, inf)
 			);
 	}
@@ -347,20 +464,43 @@ PlaybackSchema {
 			if (i % pattern.size == 0, { amp = amp * onbeat });
 			amp;
 		}),
-		pans = Array.fill((pattern.size * modifier2), {
-			rrand(-0.8, 0.8);
-		}),
-		outs = Array.fill((modifier2 * modifier3), {
-			var temp = switch (intensity,
-				0, {~fxMBus!modifier ++ ~fxLBus!modifier2},
-				1, {~fxMBus!modifier ++ ~fxLBus!modifier2},
-				2, {~fxSBus!modifier ++ ~fxMBus!modifier2},
-				3, {~fxSBus!modifier ++ ~fxMBus!modifier2},
-				4, {~fxSBus!modifier ++ ~fxMBus!modifier2},
-			),
-			result = temp.scramble[0];
-			result;
-		});
+
+		outs = this.interlace_n_arrays(
+
+			switch(intensity,
+			0, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false),
+				this.output_pattern_gen(~atrWall_fxLbus, 3, 2, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLbus, 3, 2, false),
+				]},
+			1, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 2, false),
+				this.output_pattern_gen(~atrWall_fxLbus, 4, 2, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 4, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLbus, 4, 2, false),
+				]},
+			2, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 5, 2, false),
+				this.output_pattern_gen(~atrWall_fxLbus, 5, 2, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 5, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLbus, 5, 2, false),
+				]},
+			3, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 6, 2, true),
+				this.output_pattern_gen(~atrWall_fxLbus, 6, 2, true),
+				this.output_pattern_gen(~retCeiling_fxLBus, 6, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLbus, 6, 2, false),
+				]},
+			4, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 7, 2, true),
+				this.output_pattern_gen(~atrWall_fxLbus, 7, 2, true),
+				this.output_pattern_gen(~retCeiling_fxLBus, 8, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLbus, 8, 2, true),
+				]},
+			)
+
+		);
 
 		^Pbind(
 			\instrument, \playbackP,
@@ -370,7 +510,6 @@ PlaybackSchema {
 			\hcut, Pwhite(hcut / 2, hcut),
 			\lcut, Pwhite(lcut / 2, lcut),
 			\amp, Pseq(amps, inf),
-			\pan, Pseq(pans, inf),
 			\out, Pseq(outs, inf)
 			);
 	}
@@ -413,10 +552,6 @@ PlaybackSchema {
 			amp;
 		}),
 
-		pans = Array.fill((pattern.size * modifier2), {
-			rrand(-0.8, 0.8);
-		}),
-
 		outs = Array.fill((modifier2 * modifier3), {
 			var temp = switch (intensity,
 				0, {~fxLBus!modifier ++ ~fxLBus!modifier2},
@@ -437,7 +572,6 @@ PlaybackSchema {
 			\hcut, Pseq(hcuts, inf),
 			\lcut, Pwhite(lcut / 2, lcut),
 			\amp, Pseq(amps, inf),
-			\pan, Pseq(pans, inf),
 			\out, Pseq(outs, inf)
 			);
 	}

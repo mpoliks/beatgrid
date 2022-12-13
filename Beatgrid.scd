@@ -77,8 +77,7 @@ s.waitForBoot {
 		env = EnvGen.kr( Env.new([0,1,0], [atk, rel], [1, -1]), doneAction:2);
 		sig = HPF.ar(sig, lcut);
 		sig = LPF.ar(sig, hcut);
-		sig = Pan2.ar(sig, pan, amp);
-		Out.ar(out, sig * env);
+		Out.ar(out, sig * env * amp);
 	}).add;
 
 	SynthDef(\playbackP, { // playback synth (with pitch management)
@@ -89,8 +88,7 @@ s.waitForBoot {
 		sig = HPF.ar(sig, lcut);
 		sig = LPF.ar(sig, hcut);
 		sig = PitchShift.ar(sig, 0.2, repitch, pdisp, tdisp);
-		sig = Pan2.ar(sig, pan, amp);
-		Out.ar(out, sig * env);
+		Out.ar(out, sig * env * amp);
 	}).add;
 
 	SynthDef(\hdVerb, { // nice sounding SC reverb
@@ -279,7 +277,7 @@ s.waitForBoot {
 	~w.view.decorator_(FlowLayout(~w.bounds, 10@10, 10@10));
 
 	~mFader = EZSlider.new(
-	~w, Rect(20, 160, 420, 60),
+	~w, Rect(20, 16.0, 420, 60),
 	"Master",
 	ControlSpec.new(0.0, 1.0, \lin, 0.01, 1, ""), {
 		arg slider;
@@ -291,9 +289,7 @@ s.waitForBoot {
 
 	"OK: Loaded - Program Ready To Run".postln;
 
-};
-
-)
+});
 
 
 // MANUAL ACTIONS:
