@@ -139,134 +139,131 @@ s.waitForBoot {
 	~dryGroup = Group.tail(s); ~fxGroup = Group.tail(s); ~mixGroup = Group.tail(s);
 
 
-~atrWall_dryBus = Array.fill(8, { Bus.audio(s, 1) });
-~atrCeiling_dryBus = Array.fill(8, { Bus.audio(s, 1) });
-~retAlcove_dryBus = Array.fill(16, { Bus.audio(s, 1) });
-~retCeiling_dryBus = Array.fill(8, { Bus.audio(s, 1) });
+	~atrWall_dryBus = Array.fill(8, { Bus.audio(s, 1) });
+	~atrCeiling_dryBus = Array.fill(8, { Bus.audio(s, 1) });
+	~retAlcove_dryBus = Array.fill(16, { Bus.audio(s, 1) });
+	~retCeiling_dryBus = Array.fill(8, { Bus.audio(s, 1) });
 
-~atrWall_fxSBus = Array.fill(8, { Bus.audio(s, 1) });
-~atrCeiling_fxSBus = Array.fill(8, { Bus.audio(s, 1) });
-~retAlcove_fxSbus = Array.fill(16, { Bus.audio(s, 1) });
-~retCeiling_fxSBus = Array.fill(8, { Bus.audio(s, 1) });
+	~atrWall_fxSBus = Array.fill(8, { Bus.audio(s, 1) });
+	~atrCeiling_fxSBus = Array.fill(8, { Bus.audio(s, 1) });
+	~retAlcove_fxSbus = Array.fill(16, { Bus.audio(s, 1) });
+	~retCeiling_fxSBus = Array.fill(8, { Bus.audio(s, 1) });
 
-~atrWall_fxMBus = Array.fill(8, { Bus.audio(s, 1) });
-~atrCeiling_fxMBus = Array.fill(8, { Bus.audio(s, 1) });
-~retAlcove_fxMBus = Array.fill(16, { Bus.audio(s, 1) });
-~retCeiling_fxMBus = Array.fill(8, { Bus.audio(s, 1) });
+	~atrWall_fxMBus = Array.fill(8, { Bus.audio(s, 1) });
+	~atrCeiling_fxMBus = Array.fill(8, { Bus.audio(s, 1) });
+	~retAlcove_fxMBus = Array.fill(16, { Bus.audio(s, 1) });
+	~retCeiling_fxMBus = Array.fill(8, { Bus.audio(s, 1) });
 
-~atrWall_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
-~atrCeiling_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
-~retAlcove_fxLbus = Array.fill(16, { Bus.audio(s, 1) });
-~retCeiling_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
+	~atrWall_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
+	~atrCeiling_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
+	~retAlcove_fxLbus = Array.fill(16, { Bus.audio(s, 1) });
+	~retCeiling_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
 
-~mixBus = Array.fill(40, { Bus.audio(s, 1) });
+	~mixBus = Array.fill(40, { Bus.audio(s, 1) });
 
 	s.sync;
 
-~dryPatch = Array.fill(40, {
-	arg i;
-	var buses = ~atrWall_dryBus ++
+	~dryPatch = Array.fill(40, {
+		arg i;
+		var buses = ~atrWall_dryBus ++
 				~atrCeiling_dryBus ++
 				~retAlcove_dryBus ++
 				~retCeiling_dryBus;
 
-	Synth(\patchCord, [\in, buses[i], ~out, ~mixBus[i]], ~dryGroup);
+		Synth(\patchCord, [\in, buses[i], ~out, ~mixBus[i]], ~dryGroup);
 
-});
+	});
 
 
-~dlySPatch = Array.fill(40, {
-	arg i;
-	var buses = ~atrWall_fxSBus ++
+	~dlySPatch = Array.fill(40, {
+		arg i;
+		var buses = ~atrWall_fxSBus ++
 				~atrCeiling_fxSBus ++
 				~retAlcove_fxSBus ++
 				~retCeiling_fxSBus;
-	Synth(\delay,
-		[\in, buses[i], \out, ~mixBus[i],
-		\delayTime, 0.66666, \decayTime, 0.1],
-	~fxGroup);
-});
+		Synth(\delay,
+			[\in, buses[i], \out, ~mixBus[i],
+				\delayTime, 0.66666, \decayTime, 0.1],
+			~fxGroup);
+	});
 
-~dlyS2Patch = Array.fill(40, {
-	arg i;
-	var buses = ~atrWall_fxSBus ++
+	~dlyS2Patch = Array.fill(40, {
+		arg i;
+		var buses = ~atrWall_fxSBus ++
 				~atrCeiling_fxSBus ++
 				~retAlcove_fxSBus ++
 				~retCeiling_fxSBus;
-	Synth(\delay,
-		[\in, buses[i], \out, ~mixBus[i],
-		\delayTime, 0.75, \decayTime, 0.1],
-	~fxGroup);
-});
+		Synth(\delay,
+			[\in, buses[i], \out, ~mixBus[i],
+				\delayTime, 0.75, \decayTime, 0.1],
+			~fxGroup);
+	});
 
-~dlyMPatch = Array.fill(40, {
-	arg i;
-	var buses = ~atrWall_fxMBus ++
+	~dlyMPatch = Array.fill(40, {
+		arg i;
+		var buses = ~atrWall_fxMBus ++
 				~atrCeiling_fxMBus ++
 				~retAlcove_fxMBus ++
 				~retCeiling_fxMBus;
-	Synth(\delay,
-		[\in, buses[i], \out, ~mixBus[i],
-		\lfo1freq, 0.20, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.1],
-	~fxGroup);
-});
+		Synth(\delay,
+			[\in, buses[i], \out, ~mixBus[i],
+				\lfo1freq, 0.20, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.1],
+			~fxGroup);
+	});
 
 
-~dlyM2Patch = Array.fill(40, {
-	arg i;
-	var buses = ~atrWall_fxMBus ++
+	~dlyM2Patch = Array.fill(40, {
+		arg i;
+		var buses = ~atrWall_fxMBus ++
 				~atrCeiling_fxMBus ++
 				~retAlcove_fxMBus ++
 				~retCeiling_fxMBus;
-	Synth(\delay,
-		[\in, buses[i], \out, ~mixBus[i],
-		\lfo1freq, 0.10, \lfo2freq, 0.02, \delayTime, 0.25, \decayTime, 0.07],
-	~fxGroup);
-});
+		Synth(\delay,
+			[\in, buses[i], \out, ~mixBus[i],
+				\lfo1freq, 0.10, \lfo2freq, 0.02, \delayTime, 0.25, \decayTime, 0.07],
+			~fxGroup);
+	});
 
 
-~dlyLPatch = Array.fill(40, {
-	arg i;
-	var buses = ~atrWall_fxLBus ++
+	~dlyLPatch = Array.fill(40, {
+		arg i;
+		var buses = ~atrWall_fxLBus ++
 				~atrCeiling_fxLBus ++
 				~retAlcove_fxLBus ++
 				~retCeiling_fxLBus;
-	Synth(\delay,
-		[\in, buses[i], \out, ~mixBus[i],
-		\lfo1freq, 0.10, \lfo2freq, 0.03, \delayTime, 0.5, \decayTime, 0.2],
-	~fxGroup);
-});
+		Synth(\delay,
+			[\in, buses[i], \out, ~mixBus[i],
+				\lfo1freq, 0.10, \lfo2freq, 0.03, \delayTime, 0.5, \decayTime, 0.2],
+			~fxGroup);
+	});
 
-~dlyL2Patch = Array.fill(40, {
-	arg i;
-	var buses = ~atrWall_fxLBus ++
+	~dlyL2Patch = Array.fill(40, {
+		arg i;
+		var buses = ~atrWall_fxLBus ++
 				~atrCeiling_fxLBus ++
 				~retAlcove_fxLBus ++
 				~retCeiling_fxLBus;
-	Synth(\delay,
-		[\in, buses[i], \out, ~mixBus[i],
-		\lfo1freq, 0.01, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.1],
-	~fxGroup);
-});
+		Synth(\delay,
+			[\in, buses[i], \out, ~mixBus[i],
+				\lfo1freq, 0.01, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.1],
+			~fxGroup);
+	});
 
-~dlyL3Patch = Array.fill(40, {
-	arg i;
-	var buses = ~atrWall_fxLBus ++
+	~dlyL3Patch = Array.fill(40, {
+		arg i;
+		var buses = ~atrWall_fxLBus ++
 				~atrCeiling_fxLBus ++
 				~retAlcove_fxLBus ++
 				~retCeiling_fxLBus;
-	Synth(\delay,
-		[\in, buses[i], \out, ~mixBus[i],
-		\lfo1freq, 0.04, \lfo2freq, 0.05, \delayTime, 1.25, \decayTime, 0.1],
-	~fxGroup);
-});
+		Synth(\delay,
+			[\in, buses[i], \out, ~mixBus[i],
+				\lfo1freq, 0.04, \lfo2freq, 0.05, \delayTime, 1.25, \decayTime, 0.1],
+			~fxGroup);
+	});
 
-~mixPatch = Array.fill(40, {
-
-	arg i;
-	Synth(\mixIO,
-	[\in, ~mixBus[i], \out, i], ~mixGroup);
-
+	~mixPatch = Array.fill(40, {
+		arg i;
+		Synth(\mixIO, [\in, ~mixBus[i], \out, i], ~mixGroup);
 	});
 
 
