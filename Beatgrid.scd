@@ -1,6 +1,6 @@
 (
 ~hardwareInputs = 1;
-~hardwareOutputs = 2;
+~hardwareOutputs = 33;
 ~tempo = 60;
 ~kitOverride = false;
 
@@ -26,14 +26,15 @@ s.reboot;
 		1, 0, 1, 0,
 	];
 
-	~bassLevel = 0.2;
-	~kickLevel = 0.2;
-	~snareLevel = 0.08;
-	~clapLevel = 0.07;
-	~hatLevel = 0.05;
-	~loopLevel = 0.13;
-	~hitLevel = 0.08;
-	~miscLevel = 0.06;
+	~scl = 0.5;
+	~bassLevel = 0.85 * ~scl;
+	~kickLevel = 0.35 * ~scl;
+	~snareLevel = 0.55 * ~scl;
+	~clapLevel = 0.47 * ~scl;
+	~hatLevel = 0.65 * ~scl;
+	~loopLevel = 0.75 * ~scl;
+	~hitLevel = 0.73 * ~scl;
+	~miscLevel = 0.65 * ~scl;
 
 	~loopLen = 20;
 
@@ -41,7 +42,10 @@ s.reboot;
 
 s.waitForBoot {
 
+	s.sync;
+
 	~buffers = Dictionary.new;
+	thisProcess.nowExecutingPath.postln;
 	p = PathName.new(thisProcess.nowExecutingPath.dirname +/+ "Samples/");
 
 	s.sync;
@@ -91,18 +95,10 @@ s.waitForBoot {
 		Out.ar(out, sig * env * amp);
 	}).add;
 
-	SynthDef(\hdVerb, { // nice sounding SC reverb
-		arg in, out, predelay = 1.0, decay = 6.0, lpf1 = 14000, lpf2 = 15000;
-		var sig = In.ar(in, 2);
-		sig = Compander.ar(sig, sig, thresh: 0.5, slopeBelow: 1.0,
-			slopeAbove: 0.25, clampTime: 0.01, relaxTime: 0.09);
-		sig = HDVerb.ar(sig, predelay: predelay, decay: decay, lpf1: lpf1, lpf2: lpf2);
-		Out.ar(out, sig);
-	}).add;
-
 	SynthDef(\delay, {
-		arg in, out, lfo1freq = 0.02, lfo2freq = 0.01, delayTime = 0.33333, decayTime = 1.4, hcut = 12000, lcut = 200, amp = 0.2;
-		var sig = In.ar(in, 2),
+		arg in, out, lfo1freq = 0.02, lfo2freq = 0.01, delayTime = 0.33333,
+			decayTime = 1.4, hcut = 12000, lcut = 200, amp = 0.2;
+		var sig = In.ar(in, 1),
 		lfo1 = SinOsc.kr(lfo1freq, 0.3, 1.0, 7000),
 		lfo2 = SinOsc.kr(lfo2freq, 1.0, 1.0, 7000);
 		sig = AllpassC.ar(sig, 1.0, (60/~tempo) * delayTime, decayTime);
@@ -113,22 +109,21 @@ s.waitForBoot {
 		Out.ar(out, sig);
 	}).add;
 
-	SynthDef(\mixIO, { // compressor and limiter on the mix bus
-		arg out = 0, in = 0, amp = 0.01;
-		var sig = In.ar(in, 2);
-		sig = Compander.ar(sig,	sig, thresh: 0.5, slopeBelow: 1.0, slopeAbove: 0.25, clampTime: 0.01, relaxTime: 0.01);
-		//sig = DCompressor.ar(sig);
+	SynthDef(\mixIO, { // compressor and limiter on the mix Bus
+		arg out = 0, in = 0, amp = 1.0;
+		var sig = In.ar(in, 1);
+		sig = Compander.ar(sig,	sig, thresh: 0.6, slopeBelow: 1.0, slopeAbove: 0.45, clampTime: 0.01, relaxTime: 0.01);
 		sig = sig * amp;
 		sig = BPeakEQ.ar(sig, 100, 1.0, 4.0);
-		//sig = AnalogTape.ar(sig, 0.5, 0.3, 0.3);
 		sig = Limiter.ar(sig, level: 0.94, dur: 0.1);
 		Out.ar(out, sig);
 	}).add;
 
 	SynthDef(\patchCord, {
-		arg in, out, amp = 1;
-		var input = In.ar(in, 2);
-		Out.ar(out, input * amp)
+		arg in, out, amp = 1.0;
+		var sig = In.ar(in, 1);
+		sig = sig * amp;
+		Out.ar(out, sig);
 	}).add;
 
 	s.sync;
@@ -136,44 +131,76 @@ s.waitForBoot {
 	~playbackGroup = Group.tail(s);
 	~dryGroup = Group.tail(s); ~fxGroup = Group.tail(s); ~mixGroup = Group.tail(s);
 
-
 	~atrWall_dryBus = Array.fill(8, { Bus.audio(s, 1) });
 	~atrCeiling_dryBus = Array.fill(8, { Bus.audio(s, 1) });
-	~retAlcove_dryBus = Array.fill(16, { Bus.audio(s, 1) });
+	~retAlcove_dryBus = Array.fill(9, { Bus.audio(s, 1) });
 	~retCeiling_dryBus = Array.fill(8, { Bus.audio(s, 1) });
 
 	~atrWall_fxSBus = Array.fill(8, { Bus.audio(s, 1) });
 	~atrCeiling_fxSBus = Array.fill(8, { Bus.audio(s, 1) });
-	~retAlcove_fxSbus = Array.fill(16, { Bus.audio(s, 1) });
+	~retAlcove_fxSBus = Array.fill(9, { Bus.audio(s, 1) });
 	~retCeiling_fxSBus = Array.fill(8, { Bus.audio(s, 1) });
 
 	~atrWall_fxMBus = Array.fill(8, { Bus.audio(s, 1) });
 	~atrCeiling_fxMBus = Array.fill(8, { Bus.audio(s, 1) });
-	~retAlcove_fxMBus = Array.fill(16, { Bus.audio(s, 1) });
+	~retAlcove_fxMBus = Array.fill(9, { Bus.audio(s, 1) });
 	~retCeiling_fxMBus = Array.fill(8, { Bus.audio(s, 1) });
 
 	~atrWall_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
 	~atrCeiling_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
-	~retAlcove_fxLbus = Array.fill(16, { Bus.audio(s, 1) });
+	~retAlcove_fxLBus = Array.fill(9, { Bus.audio(s, 1) });
 	~retCeiling_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
 
-	~mixBus = Array.fill(40, { Bus.audio(s, 1) });
+	~mixBus = Array.fill(~hardwareOutputs, { Bus.audio(s, 1) });
 
 	s.sync;
 
-	~dryPatch = Array.fill(40, {
+	~dryPatch = Array.fill(~hardwareOutputs, {
 		arg i;
 		var buses = ~atrWall_dryBus ++
 				~atrCeiling_dryBus ++
 				~retAlcove_dryBus ++
 				~retCeiling_dryBus;
 
-		Synth(\patchCord, [\in, buses[i], ~out, ~mixBus[i]], ~dryGroup);
+		Synth(\patchCord, [\in, buses[i], \out, ~mixBus[i]], ~dryGroup);
+
+	});
+
+	~drySPatch = Array.fill(~hardwareOutputs, {
+		arg i;
+		var buses = ~atrWall_fxSBus ++
+				~atrCeiling_fxSBus ++
+				~retAlcove_fxSBus ++
+				~retCeiling_fxSBus;
+
+		Synth(\patchCord, [\in, buses[i], \out, ~mixBus[i]], ~dryGroup);
+
+	});
+
+	~dryMPatch = Array.fill(~hardwareOutputs, {
+		arg i;
+		var buses = ~atrWall_fxMBus ++
+				~atrCeiling_fxMBus ++
+				~retAlcove_fxMBus ++
+				~retCeiling_fxMBus;
+
+		Synth(\patchCord, [\in, buses[i], \out, ~mixBus[i]], ~dryGroup);
 
 	});
 
 
-	~dlySPatch = Array.fill(40, {
+	~dryLPatch = Array.fill(~hardwareOutputs, {
+		arg i;
+		var buses = ~atrWall_fxLBus ++
+				~atrCeiling_fxLBus ++
+				~retAlcove_fxLBus ++
+				~retCeiling_fxLBus;
+
+		Synth(\patchCord, [\in, buses[i], \out, ~mixBus[i]], ~dryGroup);
+
+	});
+
+	~dlySPatch = Array.fill(~hardwareOutputs, {
 		arg i;
 		var buses = ~atrWall_fxSBus ++
 				~atrCeiling_fxSBus ++
@@ -185,7 +212,7 @@ s.waitForBoot {
 			~fxGroup);
 	});
 
-	~dlyS2Patch = Array.fill(40, {
+	~dlyS2Patch = Array.fill(~hardwareOutputs, {
 		arg i;
 		var buses = ~atrWall_fxSBus ++
 				~atrCeiling_fxSBus ++
@@ -197,7 +224,7 @@ s.waitForBoot {
 			~fxGroup);
 	});
 
-	~dlyMPatch = Array.fill(40, {
+	~dlyMPatch = Array.fill(~hardwareOutputs, {
 		arg i;
 		var buses = ~atrWall_fxMBus ++
 				~atrCeiling_fxMBus ++
@@ -210,7 +237,7 @@ s.waitForBoot {
 	});
 
 
-	~dlyM2Patch = Array.fill(40, {
+	~dlyM2Patch = Array.fill(~hardwareOutputs, {
 		arg i;
 		var buses = ~atrWall_fxMBus ++
 				~atrCeiling_fxMBus ++
@@ -223,7 +250,7 @@ s.waitForBoot {
 	});
 
 
-	~dlyLPatch = Array.fill(40, {
+	~dlyLPatch = Array.fill(~hardwareOutputs, {
 		arg i;
 		var buses = ~atrWall_fxLBus ++
 				~atrCeiling_fxLBus ++
@@ -235,7 +262,7 @@ s.waitForBoot {
 			~fxGroup);
 	});
 
-	~dlyL2Patch = Array.fill(40, {
+	~dlyL2Patch = Array.fill(~hardwareOutputs, {
 		arg i;
 		var buses = ~atrWall_fxLBus ++
 				~atrCeiling_fxLBus ++
@@ -247,7 +274,7 @@ s.waitForBoot {
 			~fxGroup);
 	});
 
-	~dlyL3Patch = Array.fill(40, {
+	~dlyL3Patch = Array.fill(~hardwareOutputs, {
 		arg i;
 		var buses = ~atrWall_fxLBus ++
 				~atrCeiling_fxLBus ++
@@ -259,7 +286,8 @@ s.waitForBoot {
 			~fxGroup);
 	});
 
-	~mixPatch = Array.fill(40, {
+
+	~mixPatch = Array.fill(~hardwareOutputs, {
 		arg i;
 		Synth(\mixIO, [\in, ~mixBus[i], \out, i], ~mixGroup);
 	});
@@ -307,8 +335,5 @@ c.kit = 0; // Command + Enter to force a kit override during the next transition
 );
 
 c.event_time = Date.getDate; // Shift + Enter to force a transition
-
-
-~mixOut.set(\amp, 0)
 
 c.flag=false

@@ -77,18 +77,20 @@ PlaybackSchema {
 
 			switch(intensity,
 			0, {[ this.output_pattern_gen(~atrCeiling_fxLBus, 2, 4, false),
-				this.output_pattern_gen(~retAlcove_fxLbus, 2, 4, false) ]},
+				this.output_pattern_gen(~retAlcove_fxLBus, 2, 8, false) ]},
 			1, {[ this.output_pattern_gen(~atrCeiling_fxMBus, 3, 4, false),
-				this.output_pattern_gen(~retAlcove_fxLbus, 3, 4, false) ]},
-			2, {[ this.output_pattern_gen(~atrCeiling_fxMBus, 3, 3, false),
-				this.output_pattern_gen(~retAlcove_fxMbus, 3, 3, false) ]},
+				this.output_pattern_gen(~retAlcove_fxLBus, 3, 8, false) ]},
+			2, {[ this.output_pattern_gen(~atrCeiling_fxMBus, 3, 4, false),
+				this.output_pattern_gen(~retAlcove_fxMBus, 3, 8, false) ]},
 			3, {[ this.output_pattern_gen(~atrCeiling_fxSBus, 3, 4, false),
-				this.output_pattern_gen(~retAlcove_fxMbus, 3, 4, false) ]},
-			4, {[ this.output_pattern_gen(~atrCeiling_fxSBus, 4, 2, false),
-				this.output_pattern_gen(~retAlcove_fxSbus, 4, 2, false) ]},
+				this.output_pattern_gen(~retAlcove_fxMBus, 3, 8, false) ]},
+			4, {[ this.output_pattern_gen(~atrCeiling_fxSBus, 4, 4, false),
+				this.output_pattern_gen(~retAlcove_fxSBus, 4, 8, false) ]},
 			)
 
 		);
+
+		outs.postln;
 
 		^Pbind(
 			\instrument, \playback,
@@ -129,15 +131,15 @@ PlaybackSchema {
 
 		switch(intensity,
 			0, {[ this.output_pattern_gen(~atrCeiling_fxLBus, 1, 6, false),
-				this.output_pattern_gen(~retAlcove_fxLbus, 1, 6, false) ]},
+				this.output_pattern_gen(~retAlcove_fxLBus, 1, 6, false) ]},
 			1, {[ this.output_pattern_gen(~atrCeiling_fxMBus, 1, 6, false),
-				this.output_pattern_gen(~retAlcove_fxLbus, 1, 6, false) ]},
+				this.output_pattern_gen(~retAlcove_fxLBus, 1, 6, false) ]},
 			2, {[ this.output_pattern_gen(~atrCeiling_fxMBus, 1, 6, false),
-				this.output_pattern_gen(~retAlcove_fxMbus, 2, 6, false) ]},
+				this.output_pattern_gen(~retAlcove_fxMBus, 1, 6, false) ]},
 			3, {[ this.output_pattern_gen(~atrCeiling_fxSBus, 2, 6, false),
-				this.output_pattern_gen(~retAlcove_fxMbus, 2, 6, false) ]},
+				this.output_pattern_gen(~retAlcove_fxMBus, 2, 6, false) ]},
 			4, {[ this.output_pattern_gen(~atrCeiling_fxSBus, 2, 6, false),
-				this.output_pattern_gen(~retAlcove_fxSbus, 2, 6, false) ]},
+				this.output_pattern_gen(~retAlcove_fxSBus, 2, 6, false) ]},
 			)
 
 		);
@@ -182,33 +184,33 @@ PlaybackSchema {
 			switch(intensity,
 			0, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~atrWall_fxLbus, 3, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false),
 				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLbus, 3, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 3, 2, false),
 				]},
 			1, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 2, false),
-				this.output_pattern_gen(~atrWall_fxLbus, 4, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false),
 				this.output_pattern_gen(~retCeiling_fxLBus, 4, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLbus, 4, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 4, 2, false),
 				]},
 			2, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 5, 2, false),
-				this.output_pattern_gen(~atrWall_fxLbus, 5, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 5, 2, false),
 				this.output_pattern_gen(~retCeiling_fxLBus, 5, 2, true),
-				this.output_pattern_gen(~retAlcove_fxLbus, 5, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 5, 2, false),
 				]},
 			3, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 6, 2, true),
-				this.output_pattern_gen(~atrWall_fxLbus, 6, 2, true),
+				this.output_pattern_gen(~atrWall_fxLBus, 6, 2, true),
 				this.output_pattern_gen(~retCeiling_fxLBus, 6, 2, true),
-				this.output_pattern_gen(~retAlcove_fxLbus, 6, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 6, 2, false),
 				]},
 			4, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 7, 2, true),
-				this.output_pattern_gen(~atrWall_fxLbus, 7, 2, true),
+				this.output_pattern_gen(~atrWall_fxLBus, 7, 2, true),
 				this.output_pattern_gen(~retCeiling_fxLBus, 8, 2, true),
-				this.output_pattern_gen(~retAlcove_fxLbus, 8, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLBus, 8, 2, true),
 				]},
 			)
 
@@ -253,33 +255,33 @@ PlaybackSchema {
 			switch(intensity,
 			0, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~atrWall_fxLbus, 3, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false),
 				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLbus, 3, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 3, 2, false),
 				]},
 			1, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 2, false),
-				this.output_pattern_gen(~atrWall_fxLbus, 4, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false),
 				this.output_pattern_gen(~retCeiling_fxLBus, 4, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLbus, 4, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 4, 2, false),
 				]},
 			2, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 5, 2, false),
-				this.output_pattern_gen(~atrWall_fxLbus, 5, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 5, 2, false),
 				this.output_pattern_gen(~retCeiling_fxLBus, 5, 2, true),
-				this.output_pattern_gen(~retAlcove_fxLbus, 5, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 5, 2, false),
 				]},
 			3, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 6, 2, true),
-				this.output_pattern_gen(~atrWall_fxLbus, 6, 2, true),
+				this.output_pattern_gen(~atrWall_fxLBus, 6, 2, true),
 				this.output_pattern_gen(~retCeiling_fxLBus, 6, 2, true),
-				this.output_pattern_gen(~retAlcove_fxLbus, 6, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 6, 2, false),
 				]},
 			4, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 7, 2, true),
-				this.output_pattern_gen(~atrWall_fxLbus, 7, 2, true),
+				this.output_pattern_gen(~atrWall_fxLBus, 7, 2, true),
 				this.output_pattern_gen(~retCeiling_fxLBus, 8, 2, true),
-				this.output_pattern_gen(~retAlcove_fxLbus, 8, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLBus, 8, 2, true),
 				]},
 			)
 
@@ -341,33 +343,33 @@ PlaybackSchema {
 			switch(intensity,
 			0, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~atrWall_fxLbus, 3, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false),
 				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLbus, 3, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 3, 2, false),
 				]},
 			1, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 2, false),
-				this.output_pattern_gen(~atrWall_fxLbus, 4, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false),
 				this.output_pattern_gen(~retCeiling_fxLBus, 4, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLbus, 4, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 4, 2, false),
 				]},
 			2, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 5, 2, false),
-				this.output_pattern_gen(~atrWall_fxLbus, 5, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 5, 2, false),
 				this.output_pattern_gen(~retCeiling_fxLBus, 5, 2, true),
-				this.output_pattern_gen(~retAlcove_fxLbus, 5, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 5, 2, false),
 				]},
 			3, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 6, 2, true),
-				this.output_pattern_gen(~atrWall_fxLbus, 6, 2, true),
+				this.output_pattern_gen(~atrWall_fxLBus, 6, 2, true),
 				this.output_pattern_gen(~retCeiling_fxLBus, 6, 2, true),
-				this.output_pattern_gen(~retAlcove_fxLbus, 6, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 6, 2, false),
 				]},
 			4, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 7, 2, true),
-				this.output_pattern_gen(~atrWall_fxLbus, 7, 2, true),
+				this.output_pattern_gen(~atrWall_fxLBus, 7, 2, true),
 				this.output_pattern_gen(~retCeiling_fxLBus, 8, 2, true),
-				this.output_pattern_gen(~retAlcove_fxLbus, 8, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLBus, 8, 2, true),
 				]},
 			)
 
@@ -413,17 +415,44 @@ PlaybackSchema {
 			amp;
 		}),
 
-		outs = Array.fill((modifier2 * modifier3), {
-			var temp = switch (intensity,
-				0, {~fxMBus!modifier ++ ~fxLBus!modifier2},
-				1, {~fxMBus!modifier ++ ~fxLBus!modifier2},
-				2, {~fxSBus!modifier ++ ~fxMBus!modifier2},
-				3, {~fxSBus!modifier ++ ~fxMBus!modifier2},
-				4, {~fxSBus!modifier ++ ~fxMBus!modifier2},
-			),
-			result = temp.scramble[0];
-			result;
-		});
+		outs = this.interlace_n_arrays(
+
+			switch(intensity,
+			0, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 8, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 3, 8, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 3, 8, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 3, 8, false),
+				]},
+			1, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 8, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 4, 8, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 4, 8, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 4, 8, false),
+				]},
+			2, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 5, 8, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 5, 8, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 5, 8, true),
+				this.output_pattern_gen(~retAlcove_fxLBus, 5, 8, false),
+				]},
+			3, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 6, 8, true),
+				this.output_pattern_gen(~atrWall_fxLBus, 6, 8, true),
+				this.output_pattern_gen(~retCeiling_fxLBus, 6, 8, true),
+				this.output_pattern_gen(~retAlcove_fxLBus, 6, 8, false),
+				]},
+			4, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 7, 8, true),
+				this.output_pattern_gen(~atrWall_fxLBus, 7, 8, true),
+				this.output_pattern_gen(~retCeiling_fxLBus, 8, 8, true),
+				this.output_pattern_gen(~retAlcove_fxLBus, 8, 8, true),
+				]},
+			)
+
+		);
+
+		outs.postln;
 
 		^Pbind(
 			\instrument, \playbackP,
@@ -469,34 +498,34 @@ PlaybackSchema {
 
 			switch(intensity,
 			0, {[
-				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~atrWall_fxLbus, 3, 2, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLbus, 3, 2, false),
+				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 3, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 3, 3, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 3, 3, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 3, 3, false),
 				]},
 			1, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 2, false),
-				this.output_pattern_gen(~atrWall_fxLbus, 4, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false),
 				this.output_pattern_gen(~retCeiling_fxLBus, 4, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLbus, 4, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 4, 2, false),
 				]},
 			2, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 5, 2, false),
-				this.output_pattern_gen(~atrWall_fxLbus, 5, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 5, 2, false),
 				this.output_pattern_gen(~retCeiling_fxLBus, 5, 2, true),
-				this.output_pattern_gen(~retAlcove_fxLbus, 5, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 5, 2, false),
 				]},
 			3, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 6, 2, true),
-				this.output_pattern_gen(~atrWall_fxLbus, 6, 2, true),
+				this.output_pattern_gen(~atrWall_fxLBus, 6, 2, true),
 				this.output_pattern_gen(~retCeiling_fxLBus, 6, 2, true),
-				this.output_pattern_gen(~retAlcove_fxLbus, 6, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 6, 2, false),
 				]},
 			4, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 7, 2, true),
-				this.output_pattern_gen(~atrWall_fxLbus, 7, 2, true),
+				this.output_pattern_gen(~atrWall_fxLBus, 7, 2, true),
 				this.output_pattern_gen(~retCeiling_fxLBus, 8, 2, true),
-				this.output_pattern_gen(~retAlcove_fxLbus, 8, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLBus, 8, 2, true),
 				]},
 			)
 
@@ -552,17 +581,42 @@ PlaybackSchema {
 			amp;
 		}),
 
-		outs = Array.fill((modifier2 * modifier3), {
-			var temp = switch (intensity,
-				0, {~fxLBus!modifier ++ ~fxLBus!modifier2},
-				1, {~fxMBus!modifier ++ ~fxLBus!modifier2},
-				2, {~fxMBus!modifier ++ ~fxLBus!modifier2},
-				3, {~fxMBus!modifier ++ ~fxLBus!modifier2},
-				4, {~fxMBus!modifier ++ ~fxLBus!modifier2},
-			),
-			result = temp.scramble[0];
-			result;
-		});
+		outs = this.interlace_n_arrays(
+
+			switch(intensity,
+			0, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 3, 2, false),
+				]},
+			1, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 4, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 4, 2, false),
+				]},
+			2, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 5, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 5, 2, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 5, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLBus, 5, 2, false),
+				]},
+			3, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 6, 2, true),
+				this.output_pattern_gen(~atrWall_fxLBus, 6, 2, true),
+				this.output_pattern_gen(~retCeiling_fxLBus, 6, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLBus, 6, 2, false),
+				]},
+			4, {[
+				this.output_pattern_gen(~atrCeiling_fxLBus, 7, 2, true),
+				this.output_pattern_gen(~atrWall_fxLBus, 7, 2, true),
+				this.output_pattern_gen(~retCeiling_fxLBus, 8, 2, true),
+				this.output_pattern_gen(~retAlcove_fxLBus, 8, 2, true),
+				]},
+			)
+
+		);
 
 		^Pbind(
 			\instrument, \playbackP,
