@@ -8,8 +8,9 @@
 //ServerOptions.devices;
 Server.default.options.numInputBusChannels = ~hardwareInputs;
 Server.default.options.numOutputBusChannels = ~hardwareOutputs;
-s.options.memSize = 65536;
+s.options.memSize = 265536;
 s.options.numBuffers = 8096;
+s.options.sampleRate = 48000;
 s.reboot;
 
 //---- PLACEHOLDER TEMP
@@ -134,59 +135,139 @@ s.waitForBoot {
 
 	s.sync;
 
-	~dryBus = Bus.audio(s, 2);
-	~fxSBus = Bus.audio(s, 2); ~fxMBus = Bus.audio(s, 2); ~fxLBus = Bus.audio(s, 2);
-	~mixBus = Bus.audio(s, 2);
 	~playbackGroup = Group.tail(s);
 	~dryGroup = Group.tail(s); ~fxGroup = Group.tail(s); ~mixGroup = Group.tail(s);
 
+
+~atrWall_dryBus = Array.fill(8, { Bus.audio(s, 1) });
+~atrCeiling_dryBus = Array.fill(8, { Bus.audio(s, 1) });
+~retAlcove_dryBus = Array.fill(16, { Bus.audio(s, 1) });
+~retCeiling_dryBus = Array.fill(8, { Bus.audio(s, 1) });
+
+~atrWall_fxSBus = Array.fill(8, { Bus.audio(s, 1) });
+~atrCeiling_fxSBus = Array.fill(8, { Bus.audio(s, 1) });
+~retAlcove_fxSbus = Array.fill(16, { Bus.audio(s, 1) });
+~retCeiling_fxSBus = Array.fill(8, { Bus.audio(s, 1) });
+
+~atrWall_fxMBus = Array.fill(8, { Bus.audio(s, 1) });
+~atrCeiling_fxMBus = Array.fill(8, { Bus.audio(s, 1) });
+~retAlcove_fxMBus = Array.fill(16, { Bus.audio(s, 1) });
+~retCeiling_fxMBus = Array.fill(8, { Bus.audio(s, 1) });
+
+~atrWall_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
+~atrCeiling_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
+~retAlcove_fxLbus = Array.fill(16, { Bus.audio(s, 1) });
+~retCeiling_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
+
+~mixBus = Array.fill(40, { Bus.audio(s, 1) });
+
 	s.sync;
 
-	/* UNCOMMENT FOR WET */
+~dryPatch = Array.fill(40, {
+	arg i;
+	var buses = ~atrWall_dryBus ++
+				~atrCeiling_dryBus ++
+				~retAlcove_dryBus ++
+				~retCeiling_dryBus;
 
-	~dryOut = Synth(\patchCord,
-		[\in, ~dryBus, \out, ~mixBus], ~dryGroup);
-	~revSOut = Synth(\hdVerb,
-		[\in, ~fxSBus, \out, ~mixBus, \predelay, 0.01, \decay, 0.4], ~fxGroup);
-	~dlySOut = Synth(\delay,
-		[\in, ~fxSBus, \out, ~mixBus, \delayTime, 0.66666, \decayTime, 0.1], ~fxGroup);
-	~dlySOut2 = Synth(\delay,
-		[\in, ~fxSBus, \out, ~mixBus, \delayTime, 0.75, \decayTime, 0.1], ~fxGroup);
-	~revMOut = Synth(\hdVerb,
-		[\in, ~fxMBus, \out, ~mixBus, \predelay, 0.05, \decay, 2.0], ~fxGroup);
-	~dlyMOut = Synth(\delay,
-		[\in, ~fxMBus, \out, ~mixBus, \lfo1freq, 0.20, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.1], ~fxGroup);
-	~dlyMOut2 = Synth(\delay,
-		[\in, ~fxMBus, \out, ~mixBus, \lfo1freq, 0.10, \lfo2freq, 0.02, \delayTime, 0.25, \decayTime, 0.07], ~fxGroup);
-	~revLOut = Synth(\hdVerb,
-		[\in, ~fxLBus, \out, ~mixBus, \predelay, 0.05, \decay, 4.0], ~fxGroup);
-	~dlyLOut = Synth(\delay,
-		[\in, ~fxLBus, \out, ~mixBus, \lfo1freq, 0.10, \lfo2freq, 0.03, \delayTime, 0.5, \decayTime, 0.2], ~fxGroup);
-	~dlyLOut2 = Synth(\delay,
-		[\in, ~fxLBus, \out, ~mixBus, \lfo1freq, 0.01, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.1], ~fxGroup);
-	~dlyLOut3 = Synth(\delay,
-		[\in, ~fxLBus, \out, ~mixBus, \lfo1freq, 0.04, \lfo2freq, 0.05, \delayTime, 1.25, \decayTime, 0.1], ~fxGroup);
-	~mixOut = Synth(\mixIO,
-		[\in, ~mixBus, \out, 0], ~mixGroup);
+	Synth(\patchCord, [\in, buses[i], ~out, ~mixBus[i]], ~dryGroup);
 
-	// END UNCOMMENT */
+});
 
 
-	/* UNCOMMENT FOR DRY
+~dlySPatch = Array.fill(40, {
+	arg i;
+	var buses = ~atrWall_fxSBus ++
+				~atrCeiling_fxSBus ++
+				~retAlcove_fxSBus ++
+				~retCeiling_fxSBus;
+	Synth(\delay,
+		[\in, buses[i], \out, ~mixBus[i],
+		\delayTime, 0.66666, \decayTime, 0.1],
+	~fxGroup);
+});
 
-	~dryOut = Synth(\patchCord,
-		[\in, ~dryBus, \out, ~mixBus], ~dryGroup);
+~dlyS2Patch = Array.fill(40, {
+	arg i;
+	var buses = ~atrWall_fxSBus ++
+				~atrCeiling_fxSBus ++
+				~retAlcove_fxSBus ++
+				~retCeiling_fxSBus;
+	Synth(\delay,
+		[\in, buses[i], \out, ~mixBus[i],
+		\delayTime, 0.75, \decayTime, 0.1],
+	~fxGroup);
+});
 
-	~revSOut = Synth(\patchCord,
-		[\in, ~dryBus, \out, ~mixBus], ~dryGroup);
+~dlyMPatch = Array.fill(40, {
+	arg i;
+	var buses = ~atrWall_fxMBus ++
+				~atrCeiling_fxMBus ++
+				~retAlcove_fxMBus ++
+				~retCeiling_fxMBus;
+	Synth(\delay,
+		[\in, buses[i], \out, ~mixBus[i],
+		\lfo1freq, 0.20, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.1],
+	~fxGroup);
+});
 
-	~revMOut = Synth(\patchCord,
-		[\in, ~dryBus, \out, ~mixBus], ~dryGroup);
 
-	~revLOut = Synth(\patchCord,
-		[\in, ~dryBus, \out, ~mixBus], ~dryGroup);
+~dlyM2Patch = Array.fill(40, {
+	arg i;
+	var buses = ~atrWall_fxMBus ++
+				~atrCeiling_fxMBus ++
+				~retAlcove_fxMBus ++
+				~retCeiling_fxMBus;
+	Synth(\delay,
+		[\in, buses[i], \out, ~mixBus[i],
+		\lfo1freq, 0.10, \lfo2freq, 0.02, \delayTime, 0.25, \decayTime, 0.07],
+	~fxGroup);
+});
 
-	// END UNCOMMENT */
+
+~dlyLPatch = Array.fill(40, {
+	arg i;
+	var buses = ~atrWall_fxLBus ++
+				~atrCeiling_fxLBus ++
+				~retAlcove_fxLBus ++
+				~retCeiling_fxLBus;
+	Synth(\delay,
+		[\in, buses[i], \out, ~mixBus[i],
+		\lfo1freq, 0.10, \lfo2freq, 0.03, \delayTime, 0.5, \decayTime, 0.2],
+	~fxGroup);
+});
+
+~dlyL2Patch = Array.fill(40, {
+	arg i;
+	var buses = ~atrWall_fxLBus ++
+				~atrCeiling_fxLBus ++
+				~retAlcove_fxLBus ++
+				~retCeiling_fxLBus;
+	Synth(\delay,
+		[\in, buses[i], \out, ~mixBus[i],
+		\lfo1freq, 0.01, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.1],
+	~fxGroup);
+});
+
+~dlyL3Patch = Array.fill(40, {
+	arg i;
+	var buses = ~atrWall_fxLBus ++
+				~atrCeiling_fxLBus ++
+				~retAlcove_fxLBus ++
+				~retCeiling_fxLBus;
+	Synth(\delay,
+		[\in, buses[i], \out, ~mixBus[i],
+		\lfo1freq, 0.04, \lfo2freq, 0.05, \delayTime, 1.25, \decayTime, 0.1],
+	~fxGroup);
+});
+
+~mixPatch = Array.fill(40, {
+
+	arg i;
+	Synth(\mixIO,
+	[\in, ~mixBus[i], \out, i], ~mixGroup);
+
+	});
 
 
 	s.sync;

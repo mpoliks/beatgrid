@@ -13,7 +13,7 @@ TransitionManager {
 
 		arg previous, next;
 
-		var instruments = [	\bass, \kick, \snare, \clap, \hat, \loop, \hit, \aux ],
+		var instruments = [	\bass, \kick, \snare, \clap, \hat, \loop, \hit, \misc],
 		seq = instruments.scramble;
 
 		prev_event = previous;
