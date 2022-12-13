@@ -42,10 +42,10 @@ s.reboot;
 
 s.waitForBoot {
 
-	s.sync;
+	//s.sync;
 
 	~buffers = Dictionary.new;
-	thisProcess.nowExecutingPath.postln;
+	//thisProcess.nowExecutingPath.postln;
 	p = PathName.new(thisProcess.nowExecutingPath.dirname +/+ "Samples/");
 
 	s.sync;
@@ -131,25 +131,102 @@ s.waitForBoot {
 	~playbackGroup = Group.tail(s);
 	~dryGroup = Group.tail(s); ~fxGroup = Group.tail(s); ~mixGroup = Group.tail(s);
 
+	/* FOR REFERENCE:
+
+	0 - 7: Atrium Wall Left to Right
+	8 - 9: Atrium Ceiling Left
+	10 - 11: Atrium Subs Left
+	12 - 13: Atrium Ceiling Right
+	14 - 15: Atrium Subs Right
+	16 - 17: Retail Alcove
+	18: Retail Sub L
+	19 - 22: Retail Alcove R
+	23: Retail Sub R
+	24: Retail Alcove R (cont)
+	25 - 32: Ceilings
+
+	*/
+
 	~atrWall_dryBus = Array.fill(8, { Bus.audio(s, 1) });
-	~atrCeiling_dryBus = Array.fill(8, { Bus.audio(s, 1) });
-	~retAlcove_dryBus = Array.fill(9, { Bus.audio(s, 1) });
+	~atrCeiling_dryBus = Array.fill(4, { Bus.audio(s, 1) });
+	~atrSubs_dryBus = Array.fill(4, { Bus.audio(s, 1) });
+	~retAlcove_dryBus = Array.fill(7, { Bus.audio(s, 1) });
 	~retCeiling_dryBus = Array.fill(8, { Bus.audio(s, 1) });
+	~retSubs_dryBus = Array.fill(2, {Bus.audio(s, 1) });
 
 	~atrWall_fxSBus = Array.fill(8, { Bus.audio(s, 1) });
-	~atrCeiling_fxSBus = Array.fill(8, { Bus.audio(s, 1) });
-	~retAlcove_fxSBus = Array.fill(9, { Bus.audio(s, 1) });
+	~atrCeiling_fxSBus = Array.fill(4, { Bus.audio(s, 1) });
+	~atrSubs_fxSBus = Array.fill(4, { Bus.audio(s, 1) });
+	~retAlcove_fxSBus = Array.fill(7, { Bus.audio(s, 1) });
 	~retCeiling_fxSBus = Array.fill(8, { Bus.audio(s, 1) });
+	~retSubs_fxSBus = Array.fill(2, {Bus.audio(s, 1) });
 
 	~atrWall_fxMBus = Array.fill(8, { Bus.audio(s, 1) });
-	~atrCeiling_fxMBus = Array.fill(8, { Bus.audio(s, 1) });
-	~retAlcove_fxMBus = Array.fill(9, { Bus.audio(s, 1) });
+	~atrCeiling_fxMBus = Array.fill(4, { Bus.audio(s, 1) });
+	~atrSubs_fxMBus = Array.fill(4, { Bus.audio(s, 1) });
+	~retAlcove_fxMBus = Array.fill(7, { Bus.audio(s, 1) });
 	~retCeiling_fxMBus = Array.fill(8, { Bus.audio(s, 1) });
+	~retSubs_fxMBus = Array.fill(2, {Bus.audio(s, 1) });
 
 	~atrWall_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
-	~atrCeiling_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
-	~retAlcove_fxLBus = Array.fill(9, { Bus.audio(s, 1) });
+	~atrCeiling_fxLBus = Array.fill(4, { Bus.audio(s, 1) });
+	~atrSubs_fxLBus = Array.fill(4, { Bus.audio(s, 1) });
+	~retAlcove_fxLBus = Array.fill(7, { Bus.audio(s, 1) });
 	~retCeiling_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
+	~retSubs_fxLBus = Array.fill(2, {Bus.audio(s, 1) });
+
+	~drySeq =
+		~atrWall_dryBus ++
+		~atrCeiling_dryBus[0] ++ ~atrCeiling_dryBus[1] ++
+		~atrSubs_dryBus[0] ++ ~atrSubs_dryBus[1] ++
+		~atrCeiling_dryBus[2] ++ ~atrCeiling_dryBus[3] ++
+		~atrSubs_dryBus[2] ++ ~atrSubs_dryBus[3] ++
+		~retAlcove_dryBus[0] ++ ~retAlcove_dryBus[1] ++
+		~retSubs_dryBus[0] ++
+		~retAlcove_dryBus[2] ++ ~retAlcove_dryBus[3] ++ ~retAlcove_dryBus[4] ++ ~retAlcove_dryBus[5] ++
+		~retSubs_dryBus[1] ++
+		~retAlcove_dryBus[6] ++
+		~retCeiling_dryBus;
+
+	~fxSSeq =
+		~atrWall_fxSBus ++
+		~atrCeiling_fxSBus[0] ++ ~atrCeiling_fxSBus[1] ++
+		~atrSubs_fxSBus[0] ++ ~atrSubs_fxSBus[1] ++
+		~atrCeiling_fxSBus[2] ++ ~atrCeiling_fxSBus[3] ++
+		~atrSubs_fxSBus[2] ++ ~atrSubs_fxSBus[3] ++
+		~retAlcove_fxSBus[0] ++ ~retAlcove_fxSBus[1] ++
+		~retSubs_fxSBus[0] ++
+		~retAlcove_fxSBus[2] ++ ~retAlcove_fxSBus[3] ++ ~retAlcove_fxSBus[4] ++ ~retAlcove_fxSBus[5] ++
+		~retSubs_fxSBus[1] ++
+		~retAlcove_fxSBus[6] ++
+		~retCeiling_fxSBus;
+
+
+	~fxMSeq =
+		~atrWall_fxMBus ++
+		~atrCeiling_fxMBus[0] ++ ~atrCeiling_fxMBus[1] ++
+		~atrSubs_fxMBus[0] ++ ~atrSubs_fxMBus[1] ++
+		~atrCeiling_fxMBus[2] ++ ~atrCeiling_fxMBus[3] ++
+		~atrSubs_fxMBus[2] ++ ~atrSubs_fxMBus[3] ++
+		~retAlcove_fxMBus[0] ++ ~retAlcove_fxMBus[1] ++
+		~retSubs_fxMBus[0] ++
+		~retAlcove_fxMBus[2] ++ ~retAlcove_fxMBus[3] ++ ~retAlcove_fxMBus[4] ++ ~retAlcove_fxMBus[5] ++
+		~retSubs_fxMBus[1] ++
+		~retAlcove_fxMBus[6] ++
+		~retCeiling_fxMBus;
+
+	~fxLSeq =
+		~atrWall_fxLBus ++
+		~atrCeiling_fxLBus[0] ++ ~atrCeiling_fxLBus[1] ++
+		~atrSubs_fxLBus[0] ++ ~atrSubs_fxLBus[1] ++
+		~atrCeiling_fxLBus[2] ++ ~atrCeiling_fxLBus[3] ++
+		~atrSubs_fxLBus[2] ++ ~atrSubs_fxLBus[3] ++
+		~retAlcove_fxLBus[0] ++ ~retAlcove_fxLBus[1] ++
+		~retSubs_fxLBus[0] ++
+		~retAlcove_fxLBus[2] ++ ~retAlcove_fxLBus[3] ++ ~retAlcove_fxLBus[4] ++ ~retAlcove_fxLBus[5] ++
+		~retSubs_fxLBus[1] ++
+		~retAlcove_fxLBus[6] ++
+		~retCeiling_fxLBus;
 
 	~mixBus = Array.fill(~hardwareOutputs, { Bus.audio(s, 1) });
 
@@ -157,81 +234,49 @@ s.waitForBoot {
 
 	~dryPatch = Array.fill(~hardwareOutputs, {
 		arg i;
-		var buses = ~atrWall_dryBus ++
-				~atrCeiling_dryBus ++
-				~retAlcove_dryBus ++
-				~retCeiling_dryBus;
-
-		Synth(\patchCord, [\in, buses[i], \out, ~mixBus[i]], ~dryGroup);
+		Synth(\patchCord, [\in, ~drySeq[i], \out, ~mixBus[i]], ~dryGroup);
 
 	});
 
 	~drySPatch = Array.fill(~hardwareOutputs, {
 		arg i;
-		var buses = ~atrWall_fxSBus ++
-				~atrCeiling_fxSBus ++
-				~retAlcove_fxSBus ++
-				~retCeiling_fxSBus;
-
-		Synth(\patchCord, [\in, buses[i], \out, ~mixBus[i]], ~dryGroup);
+		Synth(\patchCord, [\in, ~fxSSeq[i], \out, ~mixBus[i]], ~dryGroup);
 
 	});
 
 	~dryMPatch = Array.fill(~hardwareOutputs, {
 		arg i;
-		var buses = ~atrWall_fxMBus ++
-				~atrCeiling_fxMBus ++
-				~retAlcove_fxMBus ++
-				~retCeiling_fxMBus;
-
-		Synth(\patchCord, [\in, buses[i], \out, ~mixBus[i]], ~dryGroup);
+		Synth(\patchCord, [\in, ~fxMSeq[i], \out, ~mixBus[i]], ~dryGroup);
 
 	});
 
 
 	~dryLPatch = Array.fill(~hardwareOutputs, {
 		arg i;
-		var buses = ~atrWall_fxLBus ++
-				~atrCeiling_fxLBus ++
-				~retAlcove_fxLBus ++
-				~retCeiling_fxLBus;
-
-		Synth(\patchCord, [\in, buses[i], \out, ~mixBus[i]], ~dryGroup);
+		Synth(\patchCord, [\in, ~fxLSeq[i], \out, ~mixBus[i]], ~dryGroup);
 
 	});
 
 	~dlySPatch = Array.fill(~hardwareOutputs, {
 		arg i;
-		var buses = ~atrWall_fxSBus ++
-				~atrCeiling_fxSBus ++
-				~retAlcove_fxSBus ++
-				~retCeiling_fxSBus;
 		Synth(\delay,
-			[\in, buses[i], \out, ~mixBus[i],
+			[\in, ~fxSSeq[i], \out, ~mixBus[i],
 				\delayTime, 0.66666, \decayTime, 0.1],
 			~fxGroup);
 	});
 
 	~dlyS2Patch = Array.fill(~hardwareOutputs, {
 		arg i;
-		var buses = ~atrWall_fxSBus ++
-				~atrCeiling_fxSBus ++
-				~retAlcove_fxSBus ++
-				~retCeiling_fxSBus;
 		Synth(\delay,
-			[\in, buses[i], \out, ~mixBus[i],
+			[\in, ~fxSSeq[i], \out, ~mixBus[i],
 				\delayTime, 0.75, \decayTime, 0.1],
 			~fxGroup);
 	});
 
 	~dlyMPatch = Array.fill(~hardwareOutputs, {
 		arg i;
-		var buses = ~atrWall_fxMBus ++
-				~atrCeiling_fxMBus ++
-				~retAlcove_fxMBus ++
-				~retCeiling_fxMBus;
 		Synth(\delay,
-			[\in, buses[i], \out, ~mixBus[i],
+			[\in, [i], ~fxMSeq[i], \out, ~mixBus[i],
 				\lfo1freq, 0.20, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.1],
 			~fxGroup);
 	});
@@ -239,12 +284,8 @@ s.waitForBoot {
 
 	~dlyM2Patch = Array.fill(~hardwareOutputs, {
 		arg i;
-		var buses = ~atrWall_fxMBus ++
-				~atrCeiling_fxMBus ++
-				~retAlcove_fxMBus ++
-				~retCeiling_fxMBus;
 		Synth(\delay,
-			[\in, buses[i], \out, ~mixBus[i],
+			[\in, ~fxMSeq[i], \out, ~mixBus[i],
 				\lfo1freq, 0.10, \lfo2freq, 0.02, \delayTime, 0.25, \decayTime, 0.07],
 			~fxGroup);
 	});
@@ -252,36 +293,24 @@ s.waitForBoot {
 
 	~dlyLPatch = Array.fill(~hardwareOutputs, {
 		arg i;
-		var buses = ~atrWall_fxLBus ++
-				~atrCeiling_fxLBus ++
-				~retAlcove_fxLBus ++
-				~retCeiling_fxLBus;
 		Synth(\delay,
-			[\in, buses[i], \out, ~mixBus[i],
+			[\in, ~fxLSeq[i], \out, ~mixBus[i],
 				\lfo1freq, 0.10, \lfo2freq, 0.03, \delayTime, 0.5, \decayTime, 0.2],
 			~fxGroup);
 	});
 
 	~dlyL2Patch = Array.fill(~hardwareOutputs, {
 		arg i;
-		var buses = ~atrWall_fxLBus ++
-				~atrCeiling_fxLBus ++
-				~retAlcove_fxLBus ++
-				~retCeiling_fxLBus;
 		Synth(\delay,
-			[\in, buses[i], \out, ~mixBus[i],
+			[\in, ~fxLSeq[i], \out, ~mixBus[i],
 				\lfo1freq, 0.01, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.1],
 			~fxGroup);
 	});
 
 	~dlyL3Patch = Array.fill(~hardwareOutputs, {
 		arg i;
-		var buses = ~atrWall_fxLBus ++
-				~atrCeiling_fxLBus ++
-				~retAlcove_fxLBus ++
-				~retCeiling_fxLBus;
 		Synth(\delay,
-			[\in, buses[i], \out, ~mixBus[i],
+			[\in, ~fxLSeq[i], \out, ~mixBus[i],
 				\lfo1freq, 0.04, \lfo2freq, 0.05, \delayTime, 1.25, \decayTime, 0.1],
 			~fxGroup);
 	});
@@ -297,23 +326,7 @@ s.waitForBoot {
 
 	~reTime = ReTime.new();
 
-	Window.closeAll;
 	s.meter(0, ~hardwareOutputs);
-
-	~w = Window("GUI Controls", Rect(0,-100,440, 80))
-	.front.alwaysOnTop_(true);
-	~w.view.decorator_(FlowLayout(~w.bounds, 10@10, 10@10));
-
-	~mFader = EZSlider.new(
-	~w, Rect(20, 16.0, 420, 60),
-	"Master",
-	ControlSpec.new(0.0, 1.0, \lin, 0.01, 1, ""), {
-		arg slider;
-		~mixOut.set(
-			\amp, slider.value)
-		}, 0.3, false, 80, 45).value_(0.3)
-	.setColors(Color.grey,Color.white);
-
 
 	"OK: Loaded - Program Ready To Run".postln;
 
