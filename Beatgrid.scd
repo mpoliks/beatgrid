@@ -27,14 +27,14 @@ s.reboot;
 ];
 
 ~scl = 0.5;
-~bassLevel = 0.85 * ~scl;
-~kickLevel = 0.60 * ~scl;
+~bassLevel = 0.83 * ~scl;
+~kickLevel = 0.70 * ~scl;
 ~snareLevel = 0.40 * ~scl;
 ~clapLevel = 0.47 * ~scl;
-~hatLevel = 0.5 * ~scl;
-~loopLevel = 0.25 * ~scl;
+~hatLevel = 0.45 * ~scl;
+~loopLevel = 0.60 * ~scl;
 ~hitLevel = 0.50 * ~scl;
-~miscLevel = 0.50 * ~scl;
+~miscLevel = 0.40 * ~scl;
 
 ~loopLen = 60;
 
@@ -45,13 +45,16 @@ s.waitForBoot {
 
 	s.sync;
 	~buffers = Dictionary.new;
+
+	//z = Buffer.cueSoundFile(s, "C:/Users/User/Documents/GitHub/beatgrid/Samples/18/hat/MoonKit17.wav", 0, 33);
+
 	if (thisProcess.nowExecutingPath.notNil == true, {
 		p = PathName.new(thisProcess.nowExecutingPath.dirname +/+ "Samples/");
 	},
 	{
 		"WARN: Windows Pathname Issue".postln;
 		p = PathName.new("C:/Users/User/Documents/GitHub/beatgrid/Samples");
-		// TO FIX STUPID WINDOWS BUG
+		// TO FIX STUPID WINDOWS BUG>
 	});
 
 	s.sync;
@@ -64,42 +67,23 @@ s.waitForBoot {
 		f.folders.do({
 			arg f_;
 			var samples = Array.new;
-
-			f_.folderName.postln;
-
 			("OK: Processsing" + f_.entries.size.asString + "files from" + f_.asString).postln;
-
-			if (f_.folderName == "loop", {
-				f_.entries.do({ arg path;
-					samples = samples.add(Buffer.cueSoundFile(s, path.fullPath, 0, 33));
-					bufs.at(f.folderName).putAll( Dictionary[f_.folderName -> samples]);
-				})
-			});
+			f_.entries.do({ arg path; samples = samples.add(Buffer.read(s, path.fullPath));});
+			bufs.at(f.folderName).putAll( Dictionary[f_.folderName -> samples]);
 		});
 
-		f.folders.do({
-			arg f_;
-			var samples = Array.new;
-			if(f_.folderName != "loop", {
-				f_.entries.do({ arg path;
-					samples = samples.add(Buffer.read(s, path.fullPath));});
-				bufs.at(f.folderName)
-				.putAll( Dictionary[f_.folderName -> samples]);
-			});
-		});
+	~buffers.putAll(bufs);
 
-		~buffers.putAll(bufs);
 	});
 
+	"OK: Loading....".postln;
 	s.sync;
-
-	p.folders.postln;
 
 	if ( p.folders == [], {
 		"ERR: No Samples Found -- Patch WILL NOT RUN".postln; },
 	{
 
-		"OK: Loading....".postln;
+
 
 		SynthDef(\playback, { // playback synth
 			arg rate = 1, atk = 0.001, rel = 1.4, lcut = 20, hcut = 20000, pan = 0,
@@ -123,8 +107,8 @@ s.waitForBoot {
 		}).add;
 
 		SynthDef(\playbackLoop, {
-			arg bufnum, out, amp = 1.0, atk, rel;
-			var sig = DiskIn.ar(33, bufnum),
+			arg buf, out, amp = 1.0, atk, rel;
+			var sig = PlayBuf.ar(33, buf, BufRateScale.ir(buf) * 1.0, doneAction: 2),
 			env = EnvGen.kr( Env.new([0,1,0], [atk, rel], [1, -1]), doneAction:2);
 			Out.ar(out, sig * amp * env);
 		}).add;
@@ -156,7 +140,7 @@ s.waitForBoot {
 		SynthDef(\mixIO, { // compressor and limiter on the mix Bus
 			arg out = 0, in = 0, amp = 1.0;
 			var sig = In.ar(in, 1);
-			sig = Compander.ar(sig,	sig, thresh: 0.55, slopeBelow: 1.1, slopeAbove: 0.45, clampTime: 0.01, relaxTime: 0.01);
+			sig = Compander.ar(sig,	sig, thresh: 0.55, slopeBelow: 1.7, slopeAbove: 0.45, clampTime: 0.01, relaxTime: 0.01);
 			sig = sig * amp;
 			sig = BPeakEQ.ar(sig, 100, 1.0, 1.0);
 			sig = Limiter.ar(sig, level: 0.94, dur: 0.1);
@@ -304,7 +288,7 @@ s.waitForBoot {
 			Synth(\delay, [\in, ~fxMSeq[i], \out, ~mixBus[i], \lfo1freq, 0.10, \lfo2freq, 0.02, \delayTime, 0.25, \decayTime, 0.07], ~fxGroup); });
 
 		~dlyLPatch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.10, \lfo2freq, 0.03, \delayTime, 0.5, \decayTime, 0.2], ~fxGroup); });
+			Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.10, \lfo2freq, 0.03, \delayTime, 0.5, \decayTime, 0.1], ~fxGroup); });
 
 		~dlyL2Patch = Array.fill(~hardwareOutputs, { arg i;
 			Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.01, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.1], ~fxGroup); });
@@ -316,10 +300,10 @@ s.waitForBoot {
 			Synth(\hdVerb, [\in, ~mixBus[i], \out, ~masterBus[i]], ~mixGroup); });
 
 		~revBypassPatch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\patchCord, [\in, ~mixBus[i], \out, ~masterBus[i]], ~mixGroup); });
+			Synth(\mixIO, [\in, ~mixBus[i], \out, ~masterBus[i]], ~mixGroup); });
 
 		~mixPatch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\mixIO, [\in, ~masterBus[i], \out, i], ~masterGroup); });
+			Synth(\patchCord, [\in, ~masterBus[i], \out, i], ~masterGroup); });
 
 		s.sync;
 
@@ -371,6 +355,7 @@ s.waitForBoot {
 			arg n;
 			if (c.notNil == true, {
 				c.kit = n.value.asInteger;
+				("OK: Forcing Kit" + n.value).postln;
 			});
 		});
 

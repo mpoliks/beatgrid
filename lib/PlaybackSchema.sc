@@ -81,35 +81,35 @@ PlaybackSchema {
 				this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false),
 				this.output_pattern_gen(~atrWall_fxLBus, 2, 4, false),
 				this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 2, 2, false)
+				this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false)
 				]},
 
 			1, {[
 				this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false),
 				this.output_pattern_gen(~atrWall_fxLBus, 2, 4, false),
 				this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 2, 2, false)
+				this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false)
 				]},
 
 			2, {[
 				this.output_pattern_gen(~atrSubs_fxMBus, 2, 1, true),
 				this.output_pattern_gen(~atrWall_fxMBus, 2, 4, true),
 				this.output_pattern_gen(~retSubs_fxMBus, 2, 2, true),
-				this.output_pattern_gen(~retCeiling_fxMBus, 2, 2, true)
+				this.output_pattern_gen(~retAlcove_fxMBus, 2, 2, true)
 				]},
 
 			3, {[
 				this.output_pattern_gen(~atrSubs_fxSBus, 3, 1, true),
 				this.output_pattern_gen(~atrWall_fxMBus, 3, 4, true),
 				this.output_pattern_gen(~retSubs_fxSBus, 3, 2, true),
-				this.output_pattern_gen(~retCeiling_fxMBus, 3, 2, true)
+				this.output_pattern_gen(~retAlcove_fxMBus, 3, 2, true)
 				]},
 
 			4, {[
 				this.output_pattern_gen(~atrSubs_fxSBus, 4, 1, true),
 				this.output_pattern_gen(~atrWall_fxSBus, 4, 4, true),
 				this.output_pattern_gen(~retSubs_fxSBus, 4, 2, true),
-				this.output_pattern_gen(~retCeiling_fxSBus, 4, 2, true)
+				this.output_pattern_gen(~retAlcove_fxSBus, 4, 2, true)
 				]}
 
 			)
@@ -162,28 +162,28 @@ PlaybackSchema {
 				this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false),
 				this.output_pattern_gen(~atrWall_fxLBus, 2, 4, false),
 				this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 2, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false),
 				]},
 
 			1, {[
 				this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false),
 				this.output_pattern_gen(~atrWall_fxLBus, 2, 4, false),
 				this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 2, 2, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false),
 				]},
 
 			2, {[
 				this.output_pattern_gen(~atrSubs_fxMBus, 2, 1, true),
 				this.output_pattern_gen(~atrWall_fxMBus, 2, 4, true),
 				this.output_pattern_gen(~retSubs_fxMBus, 2, 2, true),
-				this.output_pattern_gen(~retCeiling_fxMBus, 2, 2, true),
+				this.output_pattern_gen(~retAlcove_fxMBus, 2, 2, true),
 				]},
 
 			3, {[
 				this.output_pattern_gen(~atrSubs_fxSBus, 3, 1, true),
 				this.output_pattern_gen(~atrWall_fxMBus, 3, 4, true),
 				this.output_pattern_gen(~retSubs_fxSBus, 3, 2, true),
-				this.output_pattern_gen(~retCeiling_fxMBus, 3, 2, true),
+				this.output_pattern_gen(~retAlcove_fxMBus, 3, 2, true),
 				]},
 
 			4, {[
@@ -446,13 +446,13 @@ PlaybackSchema {
 
 		^Pbind(
 			\instrument, \playbackLoop,
-			\dur, Pseq(dur, inf),
+			\dur, 55,
 			\buf, buf,
 			\atk, 20,
-			\rel, 20,
+			\rel, 39,
 			\amp, ~loopLevel,
 			\out, ~mixBus[0]
-			);
+			).trace;
 	}
 
 	hit {
@@ -625,7 +625,7 @@ PlaybackSchema {
 			\clap, {this.clap(pattern, intensity, dir)},
 			\snare, {this.snare(pattern, intensity, dir)},
 			\hat, {this.hat(pattern, intensity, dir)},
-			\loop, {this.loop(pattern, intensity, dir)},
+			//\loop, {this.loop(pattern, intensity, dir)},
 			\hit, {this.hit(pattern, intensity, dir)},
 			\misc, {this.misc(pattern, intensity, dir)}
 		);
