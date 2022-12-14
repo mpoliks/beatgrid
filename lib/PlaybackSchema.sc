@@ -61,7 +61,7 @@ PlaybackSchema {
 		modifier3 = rrand(1, 4),
 		dur = 60 / (pattern * ~tempo),
 		onbeat = rrand(0, 1),
-		atk = (4 / (intensity + 1)),
+		atk = 0.01,
 		rel = (4 / (intensity + 1)),
 		hcut = intensity.linlin(0, 4, 400, 20000),
 		lcut = intensity.linlin(0, 4, 40, 40),
@@ -116,7 +116,7 @@ PlaybackSchema {
 
 		);
 
-		outs.postln;
+		("INFO: BASS IS PLAYING THROUGH:" + outs.asString).postln;
 
 		^Pbind(
 			\instrument, \playback,
@@ -196,6 +196,8 @@ PlaybackSchema {
 			)
 		);
 
+		("INFO: KICK IS PLAYING THROUGH:" + outs.asString).postln;
+
 
 		^Pbind(
 			\instrument, \playback,
@@ -269,6 +271,8 @@ PlaybackSchema {
 
 		);
 
+		("INFO: CLAP IS PLAYING THROUGH:" + outs.asString).postln;
+
 		^Pbind(
 			\instrument, \playback,
 			\dur, Pseq(dur, inf),
@@ -308,37 +312,34 @@ PlaybackSchema {
 			switch(intensity,
 			0, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 3, 3, false),
 				this.output_pattern_gen(~retAlcove_fxLBus, 3, 2, false),
 				]},
 			1, {[
 				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 2, false),
-				this.output_pattern_gen(~atrWall_fxMBus, 4, 2, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 4, 2, false),
-				this.output_pattern_gen(~retAlcove_fxMBus, 4, 2, false),
+				this.output_pattern_gen(~retCeiling_fxLBus, 4, 3, false),
+				this.output_pattern_gen(~retAlcove_fxLBus, 4, 2, false),
 				]},
 			2, {[
 				this.output_pattern_gen(~atrCeiling_fxMBus, 5, 2, false),
-				this.output_pattern_gen(~atrWall_fxMBus, 5, 2, false),
-				this.output_pattern_gen(~retCeiling_fxMBus, 5, 2, true),
+				this.output_pattern_gen(~retCeiling_fxMBus, 5, 3, true),
 				this.output_pattern_gen(~retAlcove_fxMBus, 5, 2, false),
 				]},
 			3, {[
 				this.output_pattern_gen(~atrCeiling_fxSBus, 6, 2, true),
-				this.output_pattern_gen(~atrWall_fxMBus, 6, 2, true),
-				this.output_pattern_gen(~retCeiling_fxMBus, 6, 2, true),
+				this.output_pattern_gen(~retCeiling_fxMBus, 6, 3, true),
 				this.output_pattern_gen(~retAlcove_fxSBus, 6, 2, false),
 				]},
 			4, {[
 				this.output_pattern_gen(~atrCeiling_fxSBus, 7, 2, true),
-				this.output_pattern_gen(~atrWall_fxSBus, 7, 2, true),
-				this.output_pattern_gen(~retCeiling_fxSBus, 8, 2, true),
-				this.output_pattern_gen(~retAlcove_fxSBus, 8, 2, true),
+				this.output_pattern_gen(~retCeiling_fxSBus, 7, 3, true),
+				this.output_pattern_gen(~retAlcove_fxSBus, 7, 2, false),
 				]},
 			)
 
 		);
+
+		("INFO: SNARE IS PLAYING THROUGH:" + outs.asString).postln;
 
 
 		^Pbind(
@@ -377,6 +378,7 @@ PlaybackSchema {
 			var amp = rrand(~hatLevel / 1.1, ~hatLevel);
 			if (modifier <= 2, { amp = amp * env[i];  });
 			if (i % pattern.size == 0, { amp = amp * onbeat });
+			if (pattern = [0.5, 0.5], { amp = amp / 2 });
 			amp;
 		}),
 
@@ -395,38 +397,30 @@ PlaybackSchema {
 
 			switch(intensity,
 			0, {[
-				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false),
 				this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false),
 				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLBus, 3, 2, false),
 				]},
 			1, {[
-				this.output_pattern_gen(~atrCeiling_fxMBus, 4, 2, false),
 				this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false),
 				this.output_pattern_gen(~retCeiling_fxMBus, 4, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLBus, 4, 2, false),
 				]},
 			2, {[
-				this.output_pattern_gen(~atrCeiling_fxMBus, 5, 2, false),
 				this.output_pattern_gen(~atrWall_fxMBus, 5, 2, false),
 				this.output_pattern_gen(~retCeiling_fxMBus, 5, 2, true),
-				this.output_pattern_gen(~retAlcove_fxMBus, 5, 2, false),
 				]},
 			3, {[
-				this.output_pattern_gen(~atrCeiling_fxSBus, 6, 2, true),
 				this.output_pattern_gen(~atrWall_fxSBus, 6, 2, true),
 				this.output_pattern_gen(~retCeiling_fxSBus, 6, 2, true),
-				this.output_pattern_gen(~retAlcove_fxSBus, 6, 2, false),
 				]},
 			4, {[
-				this.output_pattern_gen(~atrCeiling_fxSBus, 7, 2, true),
 				this.output_pattern_gen(~atrWall_fxSBus, 7, 2, true),
 				this.output_pattern_gen(~retCeiling_fxSBus, 8, 2, true),
-				this.output_pattern_gen(~retAlcove_fxSBus, 8, 2, true),
 				]},
 			)
 
 		);
+
+		("INFO: HAT IS PLAYING THROUGH:" + outs.asString).postln;
 
 
 		^Pbind(
@@ -505,7 +499,7 @@ PlaybackSchema {
 
 		);
 
-		outs.postln;
+		("INFO: LOOP IS PLAYING THROUGH:" + outs.asString).postln;
 
 		^Pbind(
 			\instrument, \playbackP,
@@ -584,6 +578,8 @@ PlaybackSchema {
 
 		);
 
+		("INFO: HIT IS PLAYING THROUGH:" + outs.asString).postln;
+
 		^Pbind(
 			\instrument, \playbackP,
 			\dur, Pseq(dur, inf),
@@ -638,38 +634,30 @@ PlaybackSchema {
 
 			switch(intensity,
 			0, {[
-				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false),
 				this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false),
 				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLBus, 3, 2, false),
 				]},
 			1, {[
-				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 2, false),
 				this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false),
 				this.output_pattern_gen(~retCeiling_fxLBus, 4, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLBus, 4, 2, false),
 				]},
 			2, {[
-				this.output_pattern_gen(~atrCeiling_fxLBus, 5, 2, false),
 				this.output_pattern_gen(~atrWall_fxLBus, 5, 2, false),
 				this.output_pattern_gen(~retCeiling_fxLBus, 5, 2, true),
-				this.output_pattern_gen(~retAlcove_fxLBus, 5, 2, false),
 				]},
 			3, {[
-				this.output_pattern_gen(~atrCeiling_fxMBus, 6, 2, true),
 				this.output_pattern_gen(~atrWall_fxMBus, 6, 2, true),
 				this.output_pattern_gen(~retCeiling_fxMBus, 6, 2, true),
-				this.output_pattern_gen(~retAlcove_fxMBus, 6, 2, false),
 				]},
 			4, {[
-				this.output_pattern_gen(~atrCeiling_fxMBus, 7, 2, true),
 				this.output_pattern_gen(~atrWall_fxMBus, 7, 2, true),
 				this.output_pattern_gen(~retCeiling_fxMBus, 8, 2, true),
-				this.output_pattern_gen(~retAlcove_fxMBus, 8, 2, true),
 				]},
 			)
 
 		);
+
+		("INFO: MISC IS PLAYING THROUGH:" + outs.asString).postln;
 
 		^Pbind(
 			\instrument, \playbackP,

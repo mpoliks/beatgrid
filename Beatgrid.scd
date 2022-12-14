@@ -8,7 +8,7 @@
 //ServerOptions.devices;
 Server.default.options.numInputBusChannels = ~hardwareInputs;
 Server.default.options.numOutputBusChannels = ~hardwareOutputs;
-s.options.memSize = 265536;
+s.options.memSize = 365536;
 s.options.numBuffers = 8096;
 s.options.sampleRate = 48000;
 s.reboot;
@@ -28,13 +28,13 @@ s.reboot;
 
 	~scl = 0.5;
 	~bassLevel = 0.85 * ~scl;
-	~kickLevel = 0.35 * ~scl;
-	~snareLevel = 0.55 * ~scl;
+	~kickLevel = 0.60 * ~scl;
+	~snareLevel = 0.40 * ~scl;
 	~clapLevel = 0.47 * ~scl;
-	~hatLevel = 0.65 * ~scl;
-	~loopLevel = 0.75 * ~scl;
-	~hitLevel = 0.73 * ~scl;
-	~miscLevel = 0.65 * ~scl;
+	~hatLevel = 0.5 * ~scl;
+	~loopLevel = 0.65 * ~scl;
+	~hitLevel = 0.50 * ~scl;
+	~miscLevel = 0.50 * ~scl;
 
 	~loopLen = 20;
 
@@ -42,10 +42,10 @@ s.reboot;
 
 s.waitForBoot {
 
-	//s.sync;
 
+	s.sync;
 	~buffers = Dictionary.new;
-	//thisProcess.nowExecutingPath.postln;
+	thisProcess.nowExecutingPath.postln;
 	p = PathName.new(thisProcess.nowExecutingPath.dirname +/+ "Samples/");
 
 	s.sync;
@@ -95,6 +95,16 @@ s.waitForBoot {
 		Out.ar(out, sig * env * amp);
 	}).add;
 
+	SynthDef(\hdVerb, { // nice sounding SC reverb
+		arg in, out, predelay = 0.1, decay = 0.6, lpf1 = 14000, lpf2 = 15000, mix = 0.2;
+		var sig = In.ar(in, 2);
+		sig = Compander.ar(sig, sig, thresh: 0.5, slopeBelow: 1.0,
+			slopeAbove: 0.25, clampTime: 0.01, relaxTime: 0.09);
+		sig = HPF.ar(sig, 330);
+		sig = HDVerb.ar(sig, mix: mix, predelay: predelay, decay: decay, lpf1: lpf1, lpf2: lpf2);
+		Out.ar(out, sig);
+	}).add;
+
 	SynthDef(\delay, {
 		arg in, out, lfo1freq = 0.02, lfo2freq = 0.01, delayTime = 0.33333,
 			decayTime = 1.4, hcut = 12000, lcut = 200, amp = 0.2;
@@ -112,9 +122,9 @@ s.waitForBoot {
 	SynthDef(\mixIO, { // compressor and limiter on the mix Bus
 		arg out = 0, in = 0, amp = 1.0;
 		var sig = In.ar(in, 1);
-		sig = Compander.ar(sig,	sig, thresh: 0.6, slopeBelow: 1.0, slopeAbove: 0.45, clampTime: 0.01, relaxTime: 0.01);
+		sig = Compander.ar(sig,	sig, thresh: 0.55, slopeBelow: 1.1, slopeAbove: 0.45, clampTime: 0.01, relaxTime: 0.01);
 		sig = sig * amp;
-		sig = BPeakEQ.ar(sig, 100, 1.0, 4.0);
+		sig = BPeakEQ.ar(sig, 100, 1.0, 1.0);
 		sig = Limiter.ar(sig, level: 0.94, dur: 0.1);
 		Out.ar(out, sig);
 	}).add;
@@ -129,7 +139,7 @@ s.waitForBoot {
 	s.sync;
 
 	~playbackGroup = Group.tail(s);
-	~dryGroup = Group.tail(s); ~fxGroup = Group.tail(s); ~mixGroup = Group.tail(s);
+	~dryGroup = Group.tail(s); ~fxGroup = Group.tail(s); ~mixGroup = Group.tail(s); ~masterGroup = Group.tail(s);
 
 	/* FOR REFERENCE:
 
@@ -229,6 +239,7 @@ s.waitForBoot {
 		~retCeiling_fxLBus;
 
 	~mixBus = Array.fill(~hardwareOutputs, { Bus.audio(s, 1) });
+	~masterBus = Array.fill(~hardwareOutputs, { Bus.audio(s, 1) });
 
 	s.sync;
 
@@ -256,6 +267,7 @@ s.waitForBoot {
 		Synth(\patchCord, [\in, ~fxLSeq[i], \out, ~mixBus[i]], ~dryGroup);
 
 	});
+
 
 	~dlySPatch = Array.fill(~hardwareOutputs, {
 		arg i;
@@ -315,10 +327,19 @@ s.waitForBoot {
 			~fxGroup);
 	});
 
+	~revPatch = Array.fill(~hardwareOutputs, {
+		arg i;
+		Synth(\hdVerb, [\in, ~mixBus[i], \out, ~masterBus[i]], ~mixGroup);
+	});
+
+	~revBypassPatch = Array.fill(~hardwareOutputs, {
+		arg i;
+		Synth(\patchCord, [\in, ~mixBus[i], \out, ~masterBus[i]], ~mixGroup);
+	});
 
 	~mixPatch = Array.fill(~hardwareOutputs, {
 		arg i;
-		Synth(\mixIO, [\in, ~mixBus[i], \out, i], ~mixGroup);
+		Synth(\mixIO, [\in, ~masterBus[i], \out, i], ~masterGroup);
 	});
 
 
@@ -343,7 +364,7 @@ c.conduct(~seed) // STEP 2 TO RUN PATCH (use Shift + Enter)
 s.record(); // Shift + Enter to RECORD
 
 (
-c.kit = 0; // Command + Enter to force a kit override during the next transition
+c.kit = 18; // Command + Enter to force a kit override during the next transition
 ~kitOverride = true;
 );
 

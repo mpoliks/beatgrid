@@ -4,7 +4,7 @@ HDVerb {
 
 		|in,
 		decay = 3.5,
-		mix = 0.08,
+		mix = 1.0,
 		lpf1 = 2000,
 		lpf2 = 6000,
 		predelay = 0.025,
