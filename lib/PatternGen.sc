@@ -144,8 +144,8 @@ PatternGen {
 	}
 
 
-	//----------------------------------------------LONG
-	long_pattern {
+	//----------------------------------------------BASS
+	bass_pattern {
 		arg pattern, intensity;
 		var return_;
 		switch (intensity,
@@ -212,6 +212,80 @@ PatternGen {
 				return_ = temp;
 			},
 		);
+
+		^return_;
+	}
+
+	//----------------------------------------------LONG
+	long_pattern {
+		arg pattern, intensity;
+		var return_;
+		switch (intensity,
+
+			0, {
+				var choose = rrand(1,1),
+					choose_ = rrand(0, choose),
+				temp = pattern.reshape(choose);
+				if (temp.sum % 32.0 != 0.0, {
+					temp = temp.insert(choose_,
+						32.0 - (temp.sum % 32.0))});
+				return_ = temp * 8;
+			},
+
+			1, {
+				var choose = rrand(1,1),
+					choose_ = rrand(0, choose),
+				temp = pattern.reshape(choose);
+				if (temp.sum < 8.0, {
+					temp = temp ++ temp;
+				});
+				if (temp.sum % 16.0 != 0.0, {
+					temp = temp.insert(choose_,
+						16.0 - (temp.sum % 16.0))});
+				return_ = temp * 8;
+			},
+
+			2, {
+				var choose = rrand(1,1),
+					choose_ = rrand(0, choose),
+				temp = pattern.reshape(choose);
+				if (temp.sum < 8.0, {
+					temp = temp ++ temp;
+				});
+				if (temp.sum % 16.0 != 0.0, {
+					temp = temp.insert(choose_,
+						16.0 - (temp.sum % 16.0))});
+				return_ = temp * 8;
+			},
+
+			3, {
+				var choose = rrand(1,1),
+					choose_ = rrand(0, choose),
+				temp = pattern.reshape(choose);
+				if (temp.sum < 8.0, {
+					temp = temp ++ temp;
+				});
+				if (temp.sum % 16.0 != 0.0, {
+					temp = temp.insert(choose_,
+						16.0 - (temp.sum % 16.0))});
+				return_ = temp * 8;
+			},
+
+			4, {
+				var choose = rrand(1,1),
+					choose_ = rrand(0, choose),
+				temp = pattern.reshape(choose);
+				if (temp.sum < 8.0, {
+					temp = temp ++ temp;
+				});
+				if (temp.sum % 16.0 != 0.0, {
+					temp = temp.insert(choose_,
+						16.0 - (temp.sum % 16.0))});
+				return_ = temp * 8;
+			},
+		);
+
+		return_ = return_ * 8;
 
 		^return_;
 	}
@@ -475,7 +549,7 @@ PatternGen {
 		var return;
 		pattern = pattern.asArray;
 		switch (instrument,
-			\bass, {return = this.long_pattern(pattern, intensity)},
+			\bass, {return = this.bass_pattern(pattern, intensity)},
 			\kick, {return = this.kick_pattern(pattern, intensity)},
 			\clap, {return = this.hit_pattern(pattern, intensity)},
 			\snare, {return = this.hit_pattern(pattern, intensity)},

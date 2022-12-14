@@ -222,7 +222,7 @@ PlaybackSchema {
 		dur = 60 / (pattern * ~tempo),
 		onbeat = rrand(0, 1),
 		hcut = rrand(
-			intensity.linlin(0, 4, 800, 20000),
+			intensity.linlin(0, 4, 800, 16000),
 			intensity.linlin(0, 4, 2000, 20000)),
 		lcut = rrand(
 			intensity.linlin(0, 4, 90, 500),
@@ -297,7 +297,7 @@ PlaybackSchema {
 		dur = 60 / (pattern * ~tempo),
 		onbeat = rrand(0, 1),
 		hcut = rrand(
-			intensity.linlin(0, 4, 800, 20000),
+			intensity.linlin(0, 4, 800, 16000),
 			intensity.linlin(0, 4, 2000, 20000)),
 		lcut = intensity.linlin(0, 4, 40, 40),
 		amps = Array.fill((pattern.size * modifier), {
@@ -378,7 +378,7 @@ PlaybackSchema {
 			var amp = rrand(~hatLevel / 1.1, ~hatLevel);
 			if (modifier <= 2, { amp = amp * env[i];  });
 			if (i % pattern.size == 0, { amp = amp * onbeat });
-			if (pattern = [0.5, 0.5], { amp = amp / 2 });
+			if (pattern == [0.5, 0.5], { amp = amp / 2 });
 			amp;
 		}),
 
@@ -437,81 +437,21 @@ PlaybackSchema {
 	loop {
 		arg pattern, intensity, dir;
 		var buffer_variation = rrand(1, ((intensity + 1) * 4)),
-		buf = Array.fill(buffer_variation, {
-			arg i;
-			dir.scramble[0];
-		}),
-		modifier = rrand(1, 4),
-		modifier2 = rrand(1, 4),
-		modifier3 = rrand(1, 4),
+		buf = dir[0],
 		dur = 60 / (pattern * ~tempo),
-		onbeat = rrand(0, 1),
-		atk = rrand(~loopLen / 4, ~loopLen / 2),
-		rel = rrand(~loopLen / 4, ~loopLen / 2),
-		hcut = rrand(800, 20000),
-		lcut = rrand(40, 1000),
-		pitch = Array.fill(modifier2 * modifier, {
-			var temp = [0.25, 0.5, 1.0, 2.0, 4.0],
-			try = [0.1, 0.1, 0.7, 0.2, 0.1].windex;
-			temp[try];
-		}),
-		amps = Array.fill((pattern.size * modifier), {
-			arg i;
-			var amp = rrand(~loopLevel / 3, ~loopLevel);
-			if (i % pattern.size == 0, { amp = amp * onbeat });
-			amp;
-		}),
+		atk = rrand(~loopLen / 8, ~loopLen / 4),
+		rel = rrand(~loopLen / 8, ~loopLen / 2);
 
-		outs = this.interlace_n_arrays(
-
-			switch(intensity,
-			0, {[
-				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 4, false),
-				this.output_pattern_gen(~atrWall_fxLBus, 3, 4, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 3, 4, false),
-				this.output_pattern_gen(~retAlcove_fxLBus, 3, 4, false),
-				]},
-			1, {[
-				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 4, false),
-				this.output_pattern_gen(~atrWall_fxMBus, 4, 4, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 4, 4, false),
-				this.output_pattern_gen(~retAlcove_fxMBus, 4, 4, false),
-				]},
-			2, {[
-				this.output_pattern_gen(~atrCeiling_fxMBus, 5, 4, false),
-				this.output_pattern_gen(~atrWall_fxMBus, 5, 4, false),
-				this.output_pattern_gen(~retCeiling_fxMBus, 5, 4, true),
-				this.output_pattern_gen(~retAlcove_fxMBus, 5, 4, false),
-				]},
-			3, {[
-				this.output_pattern_gen(~atrCeiling_fxMBus, 6, 4, true),
-				this.output_pattern_gen(~atrWall_fxMBus, 6, 4, true),
-				this.output_pattern_gen(~retCeiling_fxMBus, 6, 4, true),
-				this.output_pattern_gen(~retAlcove_fxMBus, 6, 4, false),
-				]},
-			4, {[
-				this.output_pattern_gen(~atrCeiling_fxSBus, 7, 4, true),
-				this.output_pattern_gen(~atrWall_fxSBus, 7, 4, true),
-				this.output_pattern_gen(~retCeiling_fxSBus, 8, 4, true),
-				this.output_pattern_gen(~retAlcove_fxSBus, 8, 4, true),
-				]},
-			)
-
-		);
-
-		("INFO: LOOP IS PLAYING THROUGH:" + outs.asString).postln;
+		buf.postln;
 
 		^Pbind(
-			\instrument, \playbackP,
+			\instrument, \playbackLoop,
 			\dur, Pseq(dur, inf),
-			\buf, Pseq(buf, inf),
-			\atk, Pwhite(atk / 2, atk),
-			\rel, Pwhite(rel / 2, rel),
-			\repitch, Pseq(pitch, inf),
-			\hcut, Pwhite(hcut / 2, hcut),
-			\lcut, Pwhite(lcut / 2, lcut),
-			\amp, Pseq(amps, inf),
-			\out, Pseq(outs, inf)
+			\buf, buf,
+			\atk, 20,
+			\rel, 20,
+			\amp, ~loopLevel,
+			\out, ~mixBus[0]
 			);
 	}
 

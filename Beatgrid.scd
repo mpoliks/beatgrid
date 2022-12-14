@@ -32,11 +32,11 @@ s.reboot;
 	~snareLevel = 0.40 * ~scl;
 	~clapLevel = 0.47 * ~scl;
 	~hatLevel = 0.5 * ~scl;
-	~loopLevel = 0.65 * ~scl;
+	~loopLevel = 0.25 * ~scl;
 	~hitLevel = 0.50 * ~scl;
 	~miscLevel = 0.50 * ~scl;
 
-	~loopLen = 20;
+	~loopLen = 60;
 
 //---- END TEMP
 
@@ -45,8 +45,13 @@ s.waitForBoot {
 
 	s.sync;
 	~buffers = Dictionary.new;
-	thisProcess.nowExecutingPath.postln;
-	p = PathName.new(thisProcess.nowExecutingPath.dirname +/+ "Samples/");
+	if (thisProcess.nowExecutingPath.notNil != true, {
+		p = PathName.new(thisProcess.nowExecutingPath.dirname +/+ "Samples/");
+	},
+	{
+		p = PathName.new("C:/Users/User/Documents/GitHub/beatgrid/Samples");
+		// TO FIX STUPID WINDOWS BUG
+	});
 
 	s.sync;
 
@@ -59,16 +64,32 @@ s.waitForBoot {
 			arg f_;
 			var samples = Array.new;
 
+			f_.folderName.postln;
+
 			("OK: Processsing" + f_.entries.size.asString + "files from" + f_.asString).postln;
+
+			if (f_.folderName == "loop", {
+				f_.entries.do({ arg path;
+					samples = samples.add(Buffer.cueSoundFile(s, path.fullPath, 0, 33));
+				bufs.at(f.folderName).putAll( Dictionary[f_.folderName -> samples]);
+				})
+			});
+		});
+
+		f.folders.do({
+			arg f_;
+			var samples = Array.new;
+			if(f_.folderName != "loop", {
 				f_.entries.do({ arg path;
 					samples = samples.add(Buffer.read(s, path.fullPath));});
 				bufs.at(f.folderName)
 					.putAll( Dictionary[f_.folderName -> samples]);
+			});
 		});
-
 
 		~buffers.putAll(bufs);
 	});
+
 
 	"OK: Loading....".postln;
 
@@ -95,9 +116,16 @@ s.waitForBoot {
 		Out.ar(out, sig * env * amp);
 	}).add;
 
+	SynthDef(\playbackLoop, {
+		arg bufnum, out, amp = 1.0, atk, rel;
+		var sig = DiskIn.ar(33, bufnum),
+		env = EnvGen.kr( Env.new([0,1,0], [atk, rel], [1, -1]), doneAction:2);
+		Out.ar(out, sig * amp * env);
+	}).add;
+
 	SynthDef(\hdVerb, { // nice sounding SC reverb
 		arg in, out, predelay = 0.1, decay = 0.6, lpf1 = 14000, lpf2 = 15000, mix = 0.2;
-		var sig = In.ar(in, 2);
+		var sig = In.ar(in, 1);
 		sig = Compander.ar(sig, sig, thresh: 0.5, slopeBelow: 1.0,
 			slopeAbove: 0.25, clampTime: 0.01, relaxTime: 0.09);
 		sig = HPF.ar(sig, 330);
@@ -184,6 +212,8 @@ s.waitForBoot {
 	~retAlcove_fxLBus = Array.fill(7, { Bus.audio(s, 1) });
 	~retCeiling_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
 	~retSubs_fxLBus = Array.fill(2, {Bus.audio(s, 1) });
+
+	~loopBus = Bus.audio(s,33);
 
 	~drySeq =
 		~atrWall_dryBus ++
@@ -342,17 +372,50 @@ s.waitForBoot {
 		Synth(\mixIO, [\in, ~masterBus[i], \out, i], ~masterGroup);
 	});
 
-
 	s.sync;
 
 	~reTime = ReTime.new();
 
-	s.meter(0, ~hardwareOutputs);
+
+
+	Window.closeAll;
+	s.meter (~hardwareInputs, ~hardwareOutputs);
+
+	~w = Window("GUI Controls", Rect(0,-100,550,550)) .front.alwaysOnTop_(true);
+	~w.view.decorator_(FlowLayout(~w.bounds, 10@10, 10@10));
+
+
+	~masterFader = EZSlider.new(
+		~w, Rect(20, 160, 430, 40),
+		"master fader",
+		ControlSpec.new(0.00, 1.0, \lin, 0.01, 0, ""), {
+			arg slider;
+			~hardwareOutputs.do {
+				arg i;
+				~mixPatch[i].set(\amp, slider.value)};
+		}, 0, false, 80, 45).value_(1.0)
+	.setColors(Color.grey,Color.white);
+
+	~startButton = Button(~w, Rect(20, 20, 340, 30))
+	.states_([
+		["Start", Color.black, Color.red],
+	])
+	.action_({
+		|state|
+		~targetOverride = true;
+		switch(state.value,
+				0, {
+					c = Conductor.new(); // STEP 1 TO RUN PATCH (use Shift + Enter)
+					c.conduct(~seed);
+				},
+		);
+	});
 
 	"OK: Loaded - Program Ready To Run".postln;
 
 });
 
+~revBypassPatch[0]
 
 // MANUAL ACTIONS:
 
