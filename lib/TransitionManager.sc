@@ -30,17 +30,35 @@ TransitionManager {
 
 				("WORKING: Will Halt" + inst + "in" + intvl.asString + "Measures").postln;
 
-				Q.uant(((60/~tempo) * (4 * intvl)), {
-					if(prev_event.streaming.at(inst).notNil, {
-						prev_event.streaming.at(inst).patterns[1].stop;
-						prev_event.streaming.at(inst).patterns[1].free;
+				if (inst != \loop, {
+
+					Q.uant(((60/~tempo) * (4 * intvl)), {
+						if(prev_event.streaming.at(inst).notNil, {
+							prev_event.streaming.at(inst).patterns[1].stop;
+							prev_event.streaming.at(inst).patterns[1].free;
+						});
+						prev_event.streaming.at(inst).stop;
+						prev_event.streaming.at(inst).free;
+						prev_event.streaming.removeAt(inst);
+						prev_event.offramping.remove(inst);
+						("OK: Stopped" + inst.asString).postln;
+						if (event.notNil, { this.onramp(inst, event); } , { "WARN: Offramp Without Reset".postln; });
 					});
-					prev_event.streaming.at(inst).stop;
-					prev_event.streaming.at(inst).free;
-					prev_event.streaming.removeAt(inst);
-					prev_event.offramping.remove(inst);
-					("OK: Stopped" + inst.asString).postln;
-					if (event.notNil, { this.onramp(inst, event); } , { "WARN: Offramp Without Reset".postln; });
+
+				},
+				{
+
+					if(prev_event.streaming.at(inst).notNil, {
+							prev_event.streaming.at(inst).patterns[1].stop;
+							prev_event.streaming.at(inst).patterns[1].free;
+						});
+						prev_event.streaming.at(inst).stop;
+						prev_event.streaming.at(inst).free;
+						prev_event.streaming.removeAt(inst);
+						prev_event.offramping.remove(inst);
+						("OK: Stopped" + inst.asString).postln;
+						if (event.notNil, { this.onramp(inst, event); } , { "WARN: Offramp Without Reset".postln; });
+
 				});
 
 				prev_event.offramping.add(inst);
@@ -92,3 +110,5 @@ TransitionManager {
 	}
 
 }
+
+

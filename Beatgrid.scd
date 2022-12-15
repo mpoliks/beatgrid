@@ -26,16 +26,16 @@ s.reboot;
 	1, 0, 1, 0,
 ];
 
-~initLevel = 0.41;
+~initLevel = 1.00;
 ~scl = 0.51;
-~bassLevel = 0.8 * ~scl;
-~kickLevel = 0.50 * ~scl;
-~snareLevel = 0.40 * ~scl;
-~clapLevel = 0.47 * ~scl;
-~hatLevel = 0.45 * ~scl;
-~loopLevel = 1.0 * 8.0;
-~hitLevel = 0.50 * ~scl;
-~miscLevel = 0.40 * ~scl;
+~bassLevel = 0.60 * ~scl;
+~kickLevel = 0.40 * ~scl;
+~snareLevel = 0.42 * ~scl;
+~clapLevel = 0.53 * ~scl;
+~hatLevel = 0.57 * ~scl;
+~loopLevel = 0.65;
+~hitLevel = 0.60 * ~scl;
+~miscLevel = 0.47 * ~scl;
 
 ~instruments = [\bass, \kick, \snare, \clap, \hat, \loop, \hit, \misc];
 
@@ -110,9 +110,11 @@ s.waitForBoot {
 		}).add;
 
 		SynthDef(\playbackLoop, {
-			arg buf, out, amp = 1.0, atk, rel;
-			var sig = PlayBuf.ar(34, buf, BufRateScale.ir(buf) * 1.0, doneAction: 2),
-			env = EnvGen.kr( Env.new([0,1,0], [atk, rel], [1, -1]), doneAction:2);
+			arg buf, out, amp = 1.0, atk, rel, env_atk, env_rel, lcut = 40;
+			var sig = PlayBuf.ar(32, buf, BufRateScale.ir(buf) * 1.0, doneAction: 2),
+			env = EnvGen.kr( Env.new([0,1,1,0], [10, 30, 19]), doneAction:2),
+			hfenv = EnvGen.kr( Env.new([200, 40, lcut, lcut * 2], [6, 20, 20, 14]) );
+			//sig = HPF.ar(sig, hfenv);
 			Out.ar(out, sig * amp * env);
 		}).add;
 
@@ -302,16 +304,16 @@ s.waitForBoot {
 		Window.closeAll;
 		s.meter (~hardwareInputs, ~hardwareOutputs);
 
-		~w = Window("GUI Controls", Rect(1000,200,480,520)).front.alwaysOnTop_(true);
+		~w = Window("GUI Controls", Rect(800,200,480,520)).front.alwaysOnTop_(true);
 		~w.view.decorator_(FlowLayout(~w.bounds, 20@20, 20@20));
 
 		~masterFader = EZSlider.new(~w, Rect(20, 160, 430, 40), "master fader",
-			ControlSpec.new(0.00, 1.0, \lin, 0.01, 0, ""), {
+			ControlSpec.new(0.00, 1.5, \lin, 0.01, 0, ""), {
 				arg slider;
 				~hardwareOutputs.do {
 					arg i;
 					~mixPatch[i].set(\amp, slider.value)};
-		}, 0, false, 80, 45).value_(0.21).setColors(Color.grey,Color.white);
+		}, 0, false, 80, 45).value_(~initLevel).setColors(Color.grey,Color.white);
 
 		~startButton = Button(~w, Rect(20, 20, 420, 40))
 		.states_([["Start", Color.gray, Color.yellow], ["Halt", Color.gray, Color.red]])
@@ -347,13 +349,21 @@ s.waitForBoot {
 					("OK: Forcing Intensity" + n.value.asInteger.asString).postln; });
 		});
 
+		~simulateHour = EZNumber(~w, Rect(150, 10, 140, 30), "Change Start Hour",
+			ControlSpec.new(0, 24, \lin, 1), { arg n;
+				if (c.notNil == true, {
+					c.time_override = n.value.asInteger;
+					~timeOverride = true;
+					("OK: Forcing Hour" + n.value.asInteger.asString).postln; });
+		});
 
 		~forceTransition = Button(~w, Rect(120, 20, 420, 40))
 		.states_([["Force State Change", Color.gray, Color.yellow]])
 		.action_({ arg state;
 			switch(state.value,
 				0, {
-					if (c.notNil == true, { c.event_time = Date.getDate; }); });
+					~transitionOverride = true;
+			});
 		});
 
 		~recordButton = Button(~w, Rect(120, 20, 420, 40))

@@ -1,7 +1,7 @@
 Conductor {
 
 	var <current_time, <>event_time, <current_event, <next_event, <transition, <>kit, <>intensity, <>swing = 0.2,
-	intensity_fixed, swing_fixed, kit_fixed, <>flag = true;
+	intensity_fixed, swing_fixed, kit_fixed, <>time_override, hour_lock, <>flag = true;
 
 	*new { ^super.new.init() }
 
@@ -32,7 +32,6 @@ Conductor {
 			~intensityOverride = false;
 		}, {
 			intensity = intensity_level;
-			"HEY".postln;
 		});
 
 
@@ -99,6 +98,16 @@ Conductor {
 
 			current_time = Date.getDate;
 
+			if (~timeOverride == true, {
+				hour_lock = current_time.hour;
+				event_time.hour = (time_override + ((current_time.hour - hour_lock) % 24)) % 24;
+				~timeOverride = false;
+			});
+
+			if (time_override.notNil == true, {
+				current_time.hour = (time_override + ((current_time.hour - hour_lock) % 24)) % 24;
+			});
+
 			if (current_time.second % 10 == 0, {
 
 				"LOG: CURRENT STATUS ------------------".postln;
@@ -117,8 +126,11 @@ Conductor {
 			});
 
 			if(
-			(current_time.hour >= event_time.hour) &&
-			(current_time.minute >= event_time.minute), {
+			((current_time.hour >= event_time.hour) &&
+			(current_time.minute >= event_time.minute)) ||
+			(~transitionOverride == true), {
+
+				~transitionOverride = false;
 
 				if (transition.prev_event.notNil, {
 						if (((transition.prev_event.streaming == Dictionary[]) &&

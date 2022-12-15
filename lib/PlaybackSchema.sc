@@ -69,7 +69,7 @@ PlaybackSchema {
 		lcut = intensity.linlin(0, 4, 40, 40),
 		amps = Array.fill((pattern.size * modifier), {
 			arg i;
-			var amp = rrand(~bassLevel / 3, ~bassLevel);
+			var amp = rrand(~bassLevel / 2, ~bassLevel);
 			if (i % pattern.size == 0, { amp = amp * onbeat });
 			amp;
 		}),
@@ -81,35 +81,35 @@ PlaybackSchema {
 
 			0, {[
 				this.output_pattern_gen(~atrSubs_dryBus, 2, 1, false, 2),
-				this.output_pattern_gen(~atrWall_dryBus, 2, 4, false, 2),
+				this.output_pattern_gen(~atrCeiling_dryBus, 2, 2, false, 2),
 				this.output_pattern_gen(~retSubs_dryBus, 2, 2, false, 2),
 				this.output_pattern_gen(~retAlcove_dryBus, 2, 2, false, 2)
 				]},
 
 			1, {[
 				this.output_pattern_gen(~atrSubs_dryBus, 2, 1, false, 2),
-				this.output_pattern_gen(~atrWall_dryBus, 2, 4, false, 2),
+				this.output_pattern_gen(~atrCeiling_dryBus, 2, 2, false, 2),
 				this.output_pattern_gen(~retSubs_dryBus, 2, 2, false, 2),
 				this.output_pattern_gen(~retAlcove_dryBus, 2, 2, false, 2)
 				]},
 
 			2, {[
 				this.output_pattern_gen(~atrSubs_dryBus, 2, 1, true),
-				this.output_pattern_gen(~atrWall_dryBus, 2, 4, true),
+				this.output_pattern_gen(~atrCeiling_dryBus, 2, 2, true),
 				this.output_pattern_gen(~retSubs_dryBus, 2, 2, true),
 				this.output_pattern_gen(~retAlcove_dryBus, 2, 2, true)
 				]},
 
 			3, {[
 				this.output_pattern_gen(~atrSubs_dryBus, 3, 1, true),
-				this.output_pattern_gen(~atrWall_dryBus, 3, 4, true),
+				this.output_pattern_gen(~atrCeiling_dryBus, 3, 2, true),
 				this.output_pattern_gen(~retSubs_dryBus, 3, 2, true),
 				this.output_pattern_gen(~retAlcove_dryBus, 3, 2, true)
 				]},
 
 			4, {[
 				this.output_pattern_gen(~atrSubs_dryBus, 4, 1, true),
-				this.output_pattern_gen(~atrWall_dryBus, 4, 4, true),
+				this.output_pattern_gen(~atrCeiling_dryBus, 4, 2, true),
 				this.output_pattern_gen(~retSubs_dryBus, 4, 2, true),
 				this.output_pattern_gen(~retAlcove_dryBus, 4, 2, true)
 				]}
@@ -161,35 +161,35 @@ PlaybackSchema {
 
 			0, {[
 				this.output_pattern_gen(~atrSubs_dryBus, 2, 1, false, 2),
-				this.output_pattern_gen(~atrCeiling_dryBus, 2, 4, false, 2),
+				this.output_pattern_gen(~atrCeiling_dryBus, 2, 1, false, 2),
 				this.output_pattern_gen(~retSubs_dryBus, 2, 2, false, 2),
 				this.output_pattern_gen(~retAlcove_dryBus, 2, 2, false, 2),
 				]},
 
 			1, {[
 				this.output_pattern_gen(~atrSubs_dryBus, 2, 1, false, 2),
-				this.output_pattern_gen(~atrCeiling_dryBus, 2, 4, false, 2),
+				this.output_pattern_gen(~atrCeiling_dryBus, 2, 1, false, 2),
 				this.output_pattern_gen(~retSubs_dryBus, 2, 2, false, 2),
 				this.output_pattern_gen(~retAlcove_dryBus, 2, 2, false, 2),
 				]},
 
 			2, {[
 				this.output_pattern_gen(~atrSubs_dryBus, 2, 1, true),
-				this.output_pattern_gen(~atrCeiling_dryBus, 2, 4, true),
+				this.output_pattern_gen(~atrCeiling_dryBus, 2, 1, true),
 				this.output_pattern_gen(~retSubs_dryBus, 2, 2, true),
 				this.output_pattern_gen(~retAlcove_dryBus, 2, 2, true),
 				]},
 
 			3, {[
 				this.output_pattern_gen(~atrSubs_dryBus, 3, 1, true),
-				this.output_pattern_gen(~atrCeiling_dryBus, 3, 4, true),
+				this.output_pattern_gen(~atrCeiling_dryBus, 3, 1, true),
 				this.output_pattern_gen(~retSubs_dryBus, 3, 2, true),
 				this.output_pattern_gen(~retAlcove_dryBus, 3, 2, true),
 				]},
 
 			4, {[
 				this.output_pattern_gen(~atrSubs_dryBus, 4, 1, true),
-				this.output_pattern_gen(~atrCeiling_dryBus, 4, 4, true),
+				this.output_pattern_gen(~atrCeiling_dryBus, 4, 1, true),
 				this.output_pattern_gen(~retSubs_dryBus, 4, 2, true),
 				this.output_pattern_gen(~retAlcove_dryBus, 4, 2, true),
 				]}
@@ -292,7 +292,7 @@ PlaybackSchema {
 		modifier3 = rrand(1, 4),
 		dur = 60 / (pattern * ~tempo),
 		onbeat = rrand(0, 1),
-		hcut = rrand(800, 8000),
+		hcut = rrand(800, 10000),
 		lcut = rrand(80, 800),
 		amps = Array.fill((pattern.size * modifier), {
 			arg i;
@@ -305,27 +305,27 @@ PlaybackSchema {
 
 			switch(intensity,
 			0, {[
-				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false, 2),
+				this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false, 2),
 				this.output_pattern_gen(~retCeiling_fxLBus, 3, 3, false, 2),
 				this.output_pattern_gen(~retAlcove_fxLBus, 3, 2, false, 2),
 				]},
 			1, {[
-				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 2, false, 3),
+				this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false, 3),
 				this.output_pattern_gen(~retCeiling_fxLBus, 4, 3, false, 3),
 				this.output_pattern_gen(~retAlcove_fxLBus, 4, 2, false, 3),
 				]},
 			2, {[
-				this.output_pattern_gen(~atrCeiling_fxMBus, 5, 2, false),
+				this.output_pattern_gen(~atrWall_fxMBus, 5, 2, false),
 				this.output_pattern_gen(~retCeiling_fxMBus, 5, 3, true),
 				this.output_pattern_gen(~retAlcove_fxMBus, 5, 2, false),
 				]},
 			3, {[
-				this.output_pattern_gen(~atrCeiling_fxSBus, 6, 2, true, 2),
+				this.output_pattern_gen(~atrWall_fxSBus, 6, 2, true, 2),
 				this.output_pattern_gen(~retCeiling_fxMBus, 6, 3, true, 2),
 				this.output_pattern_gen(~retAlcove_fxSBus, 6, 2, false, 2),
 				]},
 			4, {[
-				this.output_pattern_gen(~atrCeiling_fxSBus, 7, 2, true, 3),
+				this.output_pattern_gen(~atrWall_fxSBus, 7, 2, true, 3),
 				this.output_pattern_gen(~retCeiling_fxSBus, 7, 3, true, 3),
 				this.output_pattern_gen(~retAlcove_fxSBus, 7, 2, false, 3),
 				]},
@@ -426,17 +426,24 @@ PlaybackSchema {
 		var buffer_variation = rrand(1, ((intensity + 1) * 4)),
 		buf = dir[0],
 		dur = 60 / (pattern * ~tempo),
-		atk = rrand(~loopLen / 8, ~loopLen / 4),
-		rel = rrand(~loopLen / 8, ~loopLen / 2);
+		atk = rrand(3, 10),
+		rel = rrand(5, 10),
+		env_atk = rrand(~loopLen / 8, ~loopLen / 2),
+		env_rel = rrand(~loopLen / 8, ~loopLen / 2);
 
 		buf.postln;
 
 		^Pbind(
 			\instrument, \playbackLoop,
-			\dur, 55,
+			\dur, 48,
 			\buf, buf,
-			\atk, 20,
-			\rel, 39,
+			\atk, atk,
+			\rel, rel,
+			\env_atk, env_atk,
+			\env_rel, env_rel,
+			\lcut, Pwhite(40, 1000, inf),
+			//\hcut, Pwhite(800, 16000, inf),
+			//\hcut_rel, Pwhite(800, 16000, inf),
 			\amp, ~loopLevel,
 			\out, ~mixBus[0]
 			).trace;
