@@ -26,16 +26,18 @@ s.reboot;
 	1, 0, 1, 0,
 ];
 
-~initLevel = 0.21;
+~initLevel = 0.41;
 ~scl = 0.51;
-~bassLevel = 0.93 * ~scl;
-~kickLevel = 0.80 * ~scl;
+~bassLevel = 0.8 * ~scl;
+~kickLevel = 0.50 * ~scl;
 ~snareLevel = 0.40 * ~scl;
 ~clapLevel = 0.47 * ~scl;
 ~hatLevel = 0.45 * ~scl;
-~loopLevel = 0.60 * ~scl;
+~loopLevel = 1.0 * 8.0;
 ~hitLevel = 0.50 * ~scl;
 ~miscLevel = 0.40 * ~scl;
+
+~instruments = [\bass, \kick, \snare, \clap, \hat, \loop, \hit, \misc];
 
 ~loopLen = 60;
 
@@ -58,7 +60,7 @@ s.waitForBoot {
 		// TO FIX STUPID WINDOWS BUG>
 	});
 
-	s.sync;
+
 
 	p.folders.do({ //samples
 		arg f;
@@ -69,7 +71,9 @@ s.waitForBoot {
 			arg f_;
 			var samples = Array.new;
 			("OK: Processsing" + f_.entries.size.asString + "files from" + f_.asString).postln;
-			f_.entries.do({ arg path; samples = samples.add(Buffer.read(s, path.fullPath));});
+			f_.entries.do({ arg path;
+				if (path.extension == "wav", {
+					samples = samples.add(Buffer.read(s, path.fullPath));}); });
 			bufs.at(f.folderName).putAll( Dictionary[f_.folderName -> samples]);
 		});
 
@@ -83,8 +87,6 @@ s.waitForBoot {
 	if ( p.folders == [], {
 		"ERR: No Samples Found -- Patch WILL NOT RUN".postln; },
 	{
-
-
 
 		SynthDef(\playback, { // playback synth
 			arg rate = 1, atk = 0.001, rel = 1.4, lcut = 20, hcut = 20000, pan = 0,
@@ -109,19 +111,9 @@ s.waitForBoot {
 
 		SynthDef(\playbackLoop, {
 			arg buf, out, amp = 1.0, atk, rel;
-			var sig = PlayBuf.ar(33, buf, BufRateScale.ir(buf) * 1.0, doneAction: 2),
+			var sig = PlayBuf.ar(34, buf, BufRateScale.ir(buf) * 1.0, doneAction: 2),
 			env = EnvGen.kr( Env.new([0,1,0], [atk, rel], [1, -1]), doneAction:2);
 			Out.ar(out, sig * amp * env);
-		}).add;
-
-		SynthDef(\hdVerb, { // nice sounding SC reverb
-			arg in, out, predelay = 0.1, decay = 0.6, lpf1 = 14000, lpf2 = 15000, mix = 0.2;
-			var sig = In.ar(in, 1);
-			sig = Compander.ar(sig, sig, thresh: 0.5, slopeBelow: 1.0,
-				slopeAbove: 0.25, clampTime: 0.01, relaxTime: 0.09);
-			sig = HPF.ar(sig, 330);
-			sig = HDVerb.ar(sig, mix: mix, predelay: predelay, decay: decay, lpf1: lpf1, lpf2: lpf2);
-			Out.ar(out, sig);
 		}).add;
 
 		SynthDef(\delay, {
@@ -141,7 +133,7 @@ s.waitForBoot {
 		SynthDef(\mixIO, { // compressor and limiter on the mix Bus
 			arg out = 0, in = 0, amp = 1.0;
 			var sig = In.ar(in, 1);
-			sig = Compander.ar(sig,	sig, thresh: 0.55, slopeBelow: 1.7, slopeAbove: 0.45, clampTime: 0.01, relaxTime: 0.01);
+			sig = Compander.ar(sig,	sig, thresh: 0.85, slopeBelow: 1.2, slopeAbove: 0.45, clampTime: 0.01, relaxTime: 0.01);
 			sig = sig * amp;
 			sig = BPeakEQ.ar(sig, 100, 1.0, 1.0);
 			sig = Limiter.ar(sig, level: 0.94, dur: 0.1);
@@ -277,28 +269,25 @@ s.waitForBoot {
 			Synth(\patchCord, [\in, ~fxLSeq[i], \out, ~mixBus[i]], ~dryGroup); });
 
 		~dlySPatch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\delay, [\in, ~fxSSeq[i], \out, ~mixBus[i], \delayTime, 0.66666, \decayTime, 0.1], ~fxGroup); });
+			Synth(\delay, [\in, ~fxSSeq[i], \out, ~mixBus[i], \delayTime, 0.66666, \decayTime, 0.13], ~fxGroup); });
 
 		~dlyS2Patch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\delay, [\in, ~fxSSeq[i], \out, ~mixBus[i], \delayTime, 0.75, \decayTime, 0.1], ~fxGroup); });
+			Synth(\delay, [\in, ~fxSSeq[i], \out, ~mixBus[i], \delayTime, 0.75, \decayTime, 0.13], ~fxGroup); });
 
 		~dlyMPatch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\delay, [\in, [i], ~fxMSeq[i], \out, ~mixBus[i], \lfo1freq, 0.20, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.1], ~fxGroup); });
+			Synth(\delay, [\in, [i], ~fxMSeq[i], \out, ~mixBus[i], \lfo1freq, 0.20, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.13], ~fxGroup); });
 
 		~dlyM2Patch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\delay, [\in, ~fxMSeq[i], \out, ~mixBus[i], \lfo1freq, 0.10, \lfo2freq, 0.02, \delayTime, 0.25, \decayTime, 0.07], ~fxGroup); });
+			Synth(\delay, [\in, ~fxMSeq[i], \out, ~mixBus[i], \lfo1freq, 0.10, \lfo2freq, 0.02, \delayTime, 0.25, \decayTime, 0.078], ~fxGroup); });
 
 		~dlyLPatch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.10, \lfo2freq, 0.03, \delayTime, 0.5, \decayTime, 0.1], ~fxGroup); });
+			Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.10, \lfo2freq, 0.03, \delayTime, 0.5, \decayTime, 0.13], ~fxGroup); });
 
 		~dlyL2Patch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.01, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.1], ~fxGroup); });
+			Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.01, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.13], ~fxGroup); });
 
 		~dlyL3Patch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.04, \lfo2freq, 0.05, \delayTime, 1.25, \decayTime, 0.1], ~fxGroup); });
-
-		~revPatch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\hdVerb, [\in, ~mixBus[i], \out, ~masterBus[i]], ~mixGroup); });
+			Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.04, \lfo2freq, 0.05, \delayTime, 1.25, \decayTime, 0.13], ~fxGroup); });
 
 		~revBypassPatch = Array.fill(~hardwareOutputs, { arg i;
 			Synth(\mixIO, [\in, ~mixBus[i], \out, ~masterBus[i]], ~mixGroup); });
@@ -313,7 +302,7 @@ s.waitForBoot {
 		Window.closeAll;
 		s.meter (~hardwareInputs, ~hardwareOutputs);
 
-		~w = Window("GUI Controls", Rect(1000,500,480,310)) .front.alwaysOnTop_(true);
+		~w = Window("GUI Controls", Rect(1000,200,480,520)).front.alwaysOnTop_(true);
 		~w.view.decorator_(FlowLayout(~w.bounds, 20@20, 20@20));
 
 		~masterFader = EZSlider.new(~w, Rect(20, 160, 430, 40), "master fader",
@@ -372,7 +361,7 @@ s.waitForBoot {
 		.action_({ arg state;
 			switch(state.value,
 				0, {
-					s.record(~hardwareOutputs);
+					s.record();
 					"OK: Recording in Progress".postln;
 				},
 				1, {
@@ -381,6 +370,19 @@ s.waitForBoot {
 				}
 			);
 		}).value_(0);
+
+		~instruments.do({
+			arg instrument;
+			Button(~w, Rect(120, 20, 60, 60))
+			.states_([["Kill" + instrument.asString, Color.gray, Color.yellow]])
+			.action_({ arg state;
+			switch(state.value,
+				0, {
+					if (c.notNil == true, {
+					c.transition.event.streaming.at(instrument).patterns[1].stop;
+					c.transition.event.streaming.at(instrument).patterns[1].free;  }); });
+				});
+		});
 
 		~hardwareOutputs.do { arg i; ~mixPatch[i].set(\amp, ~initLevel ) };
 
@@ -394,6 +396,8 @@ s.waitForBoot {
 
 });
 
+
+s.record(bus:0, numChannels:33, duration:100)
 
 c.kit
 c.intensity

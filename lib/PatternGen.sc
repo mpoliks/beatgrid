@@ -71,7 +71,7 @@ PatternGen {
 	//----------------------------------------------KICK
 	kick_pattern {
 		arg pattern, intensity;
-		var return_;
+		var return_, scale = 1;
 		switch (intensity,
 
 			0, {
@@ -82,6 +82,7 @@ PatternGen {
 					temp = temp.insert(choose_,
 						32.0 - (temp.sum % 32.0))});
 				return_ = temp * 4;
+				scale = 2;
 			},
 
 			1, {
@@ -95,6 +96,7 @@ PatternGen {
 					temp = temp.insert(choose_,
 						16.0 - (temp.sum % 16.0))});
 				return_ = temp * 4;
+				scale = 2;
 			},
 
 			2, {
@@ -137,8 +139,8 @@ PatternGen {
 			},
 		);
 
-		return_ = [[8.0, 8.0], [4.0, 4.0], [4.0, 2.0, 2.0], [2.0, 2.0], return_, return_, return_];
-		return_ = return_[rrand(0, 4)];
+		return_ = [[8.0, 8.0] * scale, [4.0, 4.0] * scale, [4.0, 2.0, 2.0] * scale, [2.0, 2.0] * scale, return_, return_, return_];
+		return_ = return_[rrand(0, 6)];
 
 		^return_;
 	}
@@ -147,7 +149,7 @@ PatternGen {
 	//----------------------------------------------BASS
 	bass_pattern {
 		arg pattern, intensity;
-		var return_;
+		var return_, scale = 1;
 		switch (intensity,
 
 			0, {
@@ -158,6 +160,7 @@ PatternGen {
 					temp = temp.insert(choose_,
 						32.0 - (temp.sum % 32.0))});
 				return_ = temp * 4;
+				scale = 2;
 			},
 
 			1, {
@@ -171,6 +174,7 @@ PatternGen {
 					temp = temp.insert(choose_,
 						16.0 - (temp.sum % 16.0))});
 				return_ = temp * 4;
+				scale = 2;
 			},
 
 			2, {
@@ -212,6 +216,9 @@ PatternGen {
 				return_ = temp;
 			},
 		);
+
+		return_ = [[4.0, 8.0, 4.0] * scale, [6.0, 2.0] * scale, [1.0, 7.0] * scale, return_, return_, return_];
+		return_ = return_[rrand(0, 5)];
 
 		^return_;
 	}
@@ -293,7 +300,7 @@ PatternGen {
 	//----------------------------------------------HIT
 	hit_pattern {
 		arg pattern, intensity;
-		var return_, alt, fill;
+		var return_, alt, fill, scale = 2;
 		switch (intensity,
 
 			0, {
@@ -374,8 +381,8 @@ PatternGen {
 			return_ = return_++return_++return_++alt;
 		});
 
-		return_ = [([2.0] ++ (4.0!63) ++ [2.0]), return_, return_, return_];
-		return_ = return_[rrand(0, 3)];
+		return_ = [([4.0] ++ (8.0!63) ++ [4.0]), [10.0, 4.0, 1.0, 1.0] * scale, [ 6.0, 0.5, 0.5, 0.5, 0.5 ] * scale, [0.5, 0.5, 9.0, 1.0, 5.0], return_, return_, return_, return_];
+		return_ = return_[rrand(0, 7)];
 
 		^return_;
 	}
@@ -457,7 +464,7 @@ PatternGen {
 	//----------------------------------------------HAT
 	hat_pattern {
 		arg pattern, intensity;
-		var return_;
+		var return_, scale = 1;
 		switch (intensity,
 
 			0, {
@@ -474,6 +481,7 @@ PatternGen {
 					temp = temp.insert(choose_,
 						16.0 - (temp.sum % 32.0))});
 				return_ = temp * 2;
+				scale = 2;
 			},
 
 			1, {
@@ -541,7 +549,7 @@ PatternGen {
 			},
 		);
 
-		return_ = [[0.5, 0.5], [1.0, 1.0], ([1.0] ++ (2.0!63) ++ [1.0]), return_, return_];
+		return_ = [[2.0, 2.0] * scale, [1.0, 1.0] * scale, ([2.0] ++ (4.0!63) ++ [2.0]), return_, return_];
 		return_ = return_[rrand(0, 4)];
 
 		^return_;

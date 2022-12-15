@@ -29,9 +29,10 @@ Conductor {
 		if (~intensityOverride == true, {
 			intensity_level = intensity;
 			"OK: OVERRIDING INTENSITY".postln;
-			~intensiyOverride = false;
+			~intensityOverride = false;
 		}, {
 			intensity = intensity_level;
+			"HEY".postln;
 		});
 
 

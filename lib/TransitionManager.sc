@@ -26,7 +26,7 @@ TransitionManager {
 			seq.do({
 
 				arg inst;
-				var intvl = (2.pow(rrand(1,5))) + (4 * rrand(0,2));
+				var intvl = (2.pow(rrand(1,4))) + (4 * rrand(0,1));
 
 				("WORKING: Will Halt" + inst + "in" + intvl.asString + "Measures").postln;
 
@@ -74,7 +74,7 @@ TransitionManager {
 				inst -> Pchain(
 					~reTime,
 					event.schemas.at(inst,
-						(swingBase: 0.25,
+						(swingBase: 0.5, //changed from 0.25
 						swingAmount: event.swing_,
 						swingThreshold: 0.05)
 				).play(quant:qval);
@@ -85,7 +85,8 @@ TransitionManager {
 
 		Q.uant(qval, {
 			event.onramping.remove(inst);
-				("OK: Playing" + inst.asString).postln;
+			("OK: Playing" + inst.asString + "With Pattern: ").postln;
+			(1 / (event.patterns.at(inst) * 0.25)).postln;
 			});
 
 	}

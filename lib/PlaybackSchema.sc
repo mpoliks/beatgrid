@@ -80,38 +80,38 @@ PlaybackSchema {
 			switch(intensity,
 
 			0, {[
-				this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false, 2),
-				this.output_pattern_gen(~atrWall_fxLBus, 2, 4, false, 2),
-				this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false, 2),
-				this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false, 2)
+				this.output_pattern_gen(~atrSubs_dryBus, 2, 1, false, 2),
+				this.output_pattern_gen(~atrWall_dryBus, 2, 4, false, 2),
+				this.output_pattern_gen(~retSubs_dryBus, 2, 2, false, 2),
+				this.output_pattern_gen(~retAlcove_dryBus, 2, 2, false, 2)
 				]},
 
 			1, {[
-				this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false, 2),
-				this.output_pattern_gen(~atrWall_fxLBus, 2, 4, false, 2),
-				this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false, 2),
-				this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false, 2)
+				this.output_pattern_gen(~atrSubs_dryBus, 2, 1, false, 2),
+				this.output_pattern_gen(~atrWall_dryBus, 2, 4, false, 2),
+				this.output_pattern_gen(~retSubs_dryBus, 2, 2, false, 2),
+				this.output_pattern_gen(~retAlcove_dryBus, 2, 2, false, 2)
 				]},
 
 			2, {[
-				this.output_pattern_gen(~atrSubs_fxMBus, 2, 1, true),
-				this.output_pattern_gen(~atrWall_fxMBus, 2, 4, true),
-				this.output_pattern_gen(~retSubs_fxMBus, 2, 2, true),
-				this.output_pattern_gen(~retAlcove_fxMBus, 2, 2, true)
+				this.output_pattern_gen(~atrSubs_dryBus, 2, 1, true),
+				this.output_pattern_gen(~atrWall_dryBus, 2, 4, true),
+				this.output_pattern_gen(~retSubs_dryBus, 2, 2, true),
+				this.output_pattern_gen(~retAlcove_dryBus, 2, 2, true)
 				]},
 
 			3, {[
-				this.output_pattern_gen(~atrSubs_fxSBus, 3, 1, true),
-				this.output_pattern_gen(~atrWall_fxMBus, 3, 4, true),
-				this.output_pattern_gen(~retSubs_fxSBus, 3, 2, true),
-				this.output_pattern_gen(~retAlcove_fxMBus, 3, 2, true)
+				this.output_pattern_gen(~atrSubs_dryBus, 3, 1, true),
+				this.output_pattern_gen(~atrWall_dryBus, 3, 4, true),
+				this.output_pattern_gen(~retSubs_dryBus, 3, 2, true),
+				this.output_pattern_gen(~retAlcove_dryBus, 3, 2, true)
 				]},
 
 			4, {[
-				this.output_pattern_gen(~atrSubs_fxSBus, 4, 1, true),
-				this.output_pattern_gen(~atrWall_fxSBus, 4, 4, true),
-				this.output_pattern_gen(~retSubs_fxSBus, 4, 2, true),
-				this.output_pattern_gen(~retAlcove_fxSBus, 4, 2, true)
+				this.output_pattern_gen(~atrSubs_dryBus, 4, 1, true),
+				this.output_pattern_gen(~atrWall_dryBus, 4, 4, true),
+				this.output_pattern_gen(~retSubs_dryBus, 4, 2, true),
+				this.output_pattern_gen(~retAlcove_dryBus, 4, 2, true)
 				]}
 
 			)
@@ -146,7 +146,7 @@ PlaybackSchema {
 		hcut = rrand(
 			intensity.linlin(0, 4, 800, 20000),
 			intensity.linlin(0, 4, 2000, 20000)),
-		kick_altlevel = rrand(~kickLevel / 3, ~kickLevel),
+		kick_altlevel = rrand(~kickLevel / 3, ~kickLevel / 1.5),
 		amps = Array.fill((pattern.size), {
 			var temp = [kick_altlevel, ~kickLevel],
 			try = rrand(0, 1),
@@ -160,38 +160,38 @@ PlaybackSchema {
 			switch(intensity,
 
 			0, {[
-				this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false, 2),
-				this.output_pattern_gen(~atrWall_fxLBus, 2, 4, false, 2),
-				this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false, 2),
-				this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false, 2),
+				this.output_pattern_gen(~atrSubs_dryBus, 2, 1, false, 2),
+				this.output_pattern_gen(~atrCeiling_dryBus, 2, 4, false, 2),
+				this.output_pattern_gen(~retSubs_dryBus, 2, 2, false, 2),
+				this.output_pattern_gen(~retAlcove_dryBus, 2, 2, false, 2),
 				]},
 
 			1, {[
-				this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false, 2),
-				this.output_pattern_gen(~atrWall_fxLBus, 2, 4, false, 2),
-				this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false, 2),
-				this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false, 2),
+				this.output_pattern_gen(~atrSubs_dryBus, 2, 1, false, 2),
+				this.output_pattern_gen(~atrCeiling_dryBus, 2, 4, false, 2),
+				this.output_pattern_gen(~retSubs_dryBus, 2, 2, false, 2),
+				this.output_pattern_gen(~retAlcove_dryBus, 2, 2, false, 2),
 				]},
 
 			2, {[
-				this.output_pattern_gen(~atrSubs_fxMBus, 2, 1, true),
-				this.output_pattern_gen(~atrWall_fxMBus, 2, 4, true),
-				this.output_pattern_gen(~retSubs_fxMBus, 2, 2, true),
-				this.output_pattern_gen(~retAlcove_fxMBus, 2, 2, true),
+				this.output_pattern_gen(~atrSubs_dryBus, 2, 1, true),
+				this.output_pattern_gen(~atrCeiling_dryBus, 2, 4, true),
+				this.output_pattern_gen(~retSubs_dryBus, 2, 2, true),
+				this.output_pattern_gen(~retAlcove_dryBus, 2, 2, true),
 				]},
 
 			3, {[
-				this.output_pattern_gen(~atrSubs_fxSBus, 3, 1, true),
-				this.output_pattern_gen(~atrWall_fxMBus, 3, 4, true),
-				this.output_pattern_gen(~retSubs_fxSBus, 3, 2, true),
-				this.output_pattern_gen(~retAlcove_fxMBus, 3, 2, true),
+				this.output_pattern_gen(~atrSubs_dryBus, 3, 1, true),
+				this.output_pattern_gen(~atrCeiling_dryBus, 3, 4, true),
+				this.output_pattern_gen(~retSubs_dryBus, 3, 2, true),
+				this.output_pattern_gen(~retAlcove_dryBus, 3, 2, true),
 				]},
 
 			4, {[
-				this.output_pattern_gen(~atrSubs_fxSBus, 4, 1, true),
-				this.output_pattern_gen(~atrWall_fxSBus, 4, 4, true),
-				this.output_pattern_gen(~retSubs_fxSBus, 4, 2, true),
-				this.output_pattern_gen(~retAlcove_fxSBus, 4, 2, true),
+				this.output_pattern_gen(~atrSubs_dryBus, 4, 1, true),
+				this.output_pattern_gen(~atrCeiling_dryBus, 4, 4, true),
+				this.output_pattern_gen(~retSubs_dryBus, 4, 2, true),
+				this.output_pattern_gen(~retAlcove_dryBus, 4, 2, true),
 				]}
 
 			)
@@ -292,10 +292,8 @@ PlaybackSchema {
 		modifier3 = rrand(1, 4),
 		dur = 60 / (pattern * ~tempo),
 		onbeat = rrand(0, 1),
-		hcut = rrand(
-			intensity.linlin(0, 4, 800, 16000),
-			intensity.linlin(0, 4, 2000, 20000)),
-		lcut = intensity.linlin(0, 4, 40, 40),
+		hcut = rrand(800, 8000),
+		lcut = rrand(80, 800),
 		amps = Array.fill((pattern.size * modifier), {
 			arg i;
 			var amp = rrand(~snareLevel / 4, ~snareLevel);
@@ -371,7 +369,6 @@ PlaybackSchema {
 			var amp = rrand(~hatLevel / 1.1, ~hatLevel);
 			if (modifier <= 2, { amp = amp * env[i];  });
 			if (i % pattern.size == 0, { amp = amp * onbeat });
-			if (pattern == [0.5, 0.5], { amp = amp / 2.4 });
 			amp;
 		}),
 
@@ -611,7 +608,7 @@ PlaybackSchema {
 			\clap, {this.clap(pattern, intensity, dir)},
 			\snare, {this.snare(pattern, intensity, dir)},
 			\hat, {this.hat(pattern, intensity, dir)},
-			//\loop, {this.loop(pattern, intensity, dir)},
+			\loop, {this.loop(pattern, intensity, dir)},
 			\hit, {this.hit(pattern, intensity, dir)},
 			\misc, {this.misc(pattern, intensity, dir)}
 		);
