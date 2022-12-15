@@ -30,7 +30,7 @@ PlaybackSchema {
 	}
 
 	output_pattern_gen {
-		arg speaker_array, pattern_length = 2, speakers_per_impulse = 2, add_some_random = true;
+		arg speaker_array, pattern_length = 2, speakers_per_impulse = 2, add_some_random = true, velocity = 1;
 		var array_size = speaker_array.size - 1, result;
 
 		result = Array.fill(pattern_length, {
@@ -45,6 +45,8 @@ PlaybackSchema {
 			});
 
 		});
+
+		result = result.dupEach(velocity);
 
 		^result;
 	}
@@ -78,17 +80,17 @@ PlaybackSchema {
 			switch(intensity,
 
 			0, {[
-				this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false),
-				this.output_pattern_gen(~atrWall_fxLBus, 2, 4, false),
-				this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false)
+				this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false, 2),
+				this.output_pattern_gen(~atrWall_fxLBus, 2, 4, false, 2),
+				this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false, 2),
+				this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false, 2)
 				]},
 
 			1, {[
-				this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false),
-				this.output_pattern_gen(~atrWall_fxLBus, 2, 4, false),
-				this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false)
+				this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false, 2),
+				this.output_pattern_gen(~atrWall_fxLBus, 2, 4, false, 2),
+				this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false, 2),
+				this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false, 2)
 				]},
 
 			2, {[
@@ -116,7 +118,6 @@ PlaybackSchema {
 
 		);
 
-		("INFO: BASS IS PLAYING THROUGH:" + outs.asString).postln;
 
 		^Pbind(
 			\instrument, \playback,
@@ -159,17 +160,17 @@ PlaybackSchema {
 			switch(intensity,
 
 			0, {[
-				this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false),
-				this.output_pattern_gen(~atrWall_fxLBus, 2, 4, false),
-				this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false),
+				this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false, 2),
+				this.output_pattern_gen(~atrWall_fxLBus, 2, 4, false, 2),
+				this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false, 2),
+				this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false, 2),
 				]},
 
 			1, {[
-				this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false),
-				this.output_pattern_gen(~atrWall_fxLBus, 2, 4, false),
-				this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false),
+				this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false, 2),
+				this.output_pattern_gen(~atrWall_fxLBus, 2, 4, false, 2),
+				this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false, 2),
+				this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false, 2),
 				]},
 
 			2, {[
@@ -190,14 +191,11 @@ PlaybackSchema {
 				this.output_pattern_gen(~atrSubs_fxSBus, 4, 1, true),
 				this.output_pattern_gen(~atrWall_fxSBus, 4, 4, true),
 				this.output_pattern_gen(~retSubs_fxSBus, 4, 2, true),
-				this.output_pattern_gen(~retCeiling_fxSBus, 4, 2, true),
+				this.output_pattern_gen(~retAlcove_fxSBus, 4, 2, true),
 				]}
 
 			)
 		);
-
-		("INFO: KICK IS PLAYING THROUGH:" + outs.asString).postln;
-
 
 		^Pbind(
 			\instrument, \playback,
@@ -238,16 +236,16 @@ PlaybackSchema {
 
 			switch(intensity,
 			0, {[
-				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLBus, 3, 2, false),
+				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false, 2),
+				this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false, 2),
+				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false, 2),
+				this.output_pattern_gen(~retAlcove_fxLBus, 3, 2, false, 2),
 				]},
 			1, {[
-				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 2, false),
-				this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 4, 2, false),
-				this.output_pattern_gen(~retAlcove_fxLBus, 4, 2, false),
+				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 2, false, 3),
+				this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false, 3),
+				this.output_pattern_gen(~retCeiling_fxLBus, 4, 2, false, 3),
+				this.output_pattern_gen(~retAlcove_fxLBus, 4, 2, false, 3),
 				]},
 			2, {[
 				this.output_pattern_gen(~atrCeiling_fxMBus, 5, 2, false),
@@ -264,14 +262,12 @@ PlaybackSchema {
 			4, {[
 				this.output_pattern_gen(~atrCeiling_fxSBus, 7, 2, true),
 				this.output_pattern_gen(~atrWall_fxSBus, 7, 2, true),
-				this.output_pattern_gen(~retCeiling_fxSBus, 8, 2, true),
-				this.output_pattern_gen(~retAlcove_fxSBus, 8, 2, true),
+				this.output_pattern_gen(~retCeiling_fxSBus, 7, 2, true),
+				this.output_pattern_gen(~retAlcove_fxSBus, 7, 2, true),
 				]},
 			)
 
 		);
-
-		("INFO: CLAP IS PLAYING THROUGH:" + outs.asString).postln;
 
 		^Pbind(
 			\instrument, \playback,
@@ -311,14 +307,14 @@ PlaybackSchema {
 
 			switch(intensity,
 			0, {[
-				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 3, 3, false),
-				this.output_pattern_gen(~retAlcove_fxLBus, 3, 2, false),
+				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false, 2),
+				this.output_pattern_gen(~retCeiling_fxLBus, 3, 3, false, 2),
+				this.output_pattern_gen(~retAlcove_fxLBus, 3, 2, false, 2),
 				]},
 			1, {[
-				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 2, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 4, 3, false),
-				this.output_pattern_gen(~retAlcove_fxLBus, 4, 2, false),
+				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 2, false, 3),
+				this.output_pattern_gen(~retCeiling_fxLBus, 4, 3, false, 3),
+				this.output_pattern_gen(~retAlcove_fxLBus, 4, 2, false, 3),
 				]},
 			2, {[
 				this.output_pattern_gen(~atrCeiling_fxMBus, 5, 2, false),
@@ -326,21 +322,18 @@ PlaybackSchema {
 				this.output_pattern_gen(~retAlcove_fxMBus, 5, 2, false),
 				]},
 			3, {[
-				this.output_pattern_gen(~atrCeiling_fxSBus, 6, 2, true),
-				this.output_pattern_gen(~retCeiling_fxMBus, 6, 3, true),
-				this.output_pattern_gen(~retAlcove_fxSBus, 6, 2, false),
+				this.output_pattern_gen(~atrCeiling_fxSBus, 6, 2, true, 2),
+				this.output_pattern_gen(~retCeiling_fxMBus, 6, 3, true, 2),
+				this.output_pattern_gen(~retAlcove_fxSBus, 6, 2, false, 2),
 				]},
 			4, {[
-				this.output_pattern_gen(~atrCeiling_fxSBus, 7, 2, true),
-				this.output_pattern_gen(~retCeiling_fxSBus, 7, 3, true),
-				this.output_pattern_gen(~retAlcove_fxSBus, 7, 2, false),
+				this.output_pattern_gen(~atrCeiling_fxSBus, 7, 2, true, 3),
+				this.output_pattern_gen(~retCeiling_fxSBus, 7, 3, true, 3),
+				this.output_pattern_gen(~retAlcove_fxSBus, 7, 2, false, 3),
 				]},
 			)
 
 		);
-
-		("INFO: SNARE IS PLAYING THROUGH:" + outs.asString).postln;
-
 
 		^Pbind(
 			\instrument, \playback,
@@ -378,7 +371,7 @@ PlaybackSchema {
 			var amp = rrand(~hatLevel / 1.1, ~hatLevel);
 			if (modifier <= 2, { amp = amp * env[i];  });
 			if (i % pattern.size == 0, { amp = amp * onbeat });
-			if (pattern == [0.5, 0.5], { amp = amp / 2 });
+			if (pattern == [0.5, 0.5], { amp = amp / 2.4 });
 			amp;
 		}),
 
@@ -397,12 +390,12 @@ PlaybackSchema {
 
 			switch(intensity,
 			0, {[
-				this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false, 3),
+				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false, 3),
 				]},
 			1, {[
-				this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false),
-				this.output_pattern_gen(~retCeiling_fxMBus, 4, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false, 2),
+				this.output_pattern_gen(~retCeiling_fxMBus, 4, 2, false, 2),
 				]},
 			2, {[
 				this.output_pattern_gen(~atrWall_fxMBus, 5, 2, false),
@@ -413,15 +406,12 @@ PlaybackSchema {
 				this.output_pattern_gen(~retCeiling_fxSBus, 6, 2, true),
 				]},
 			4, {[
-				this.output_pattern_gen(~atrWall_fxSBus, 7, 2, true),
-				this.output_pattern_gen(~retCeiling_fxSBus, 8, 2, true),
+				this.output_pattern_gen(~atrWall_fxSBus, 7, 2, true, 2),
+				this.output_pattern_gen(~retCeiling_fxSBus, 7, 2, true, 2),
 				]},
 			)
 
 		);
-
-		("INFO: HAT IS PLAYING THROUGH:" + outs.asString).postln;
-
 
 		^Pbind(
 			\instrument, \playback,
@@ -485,22 +475,22 @@ PlaybackSchema {
 
 			switch(intensity,
 			0, {[
-				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 3, false),
-				this.output_pattern_gen(~atrWall_fxLBus, 3, 3, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 3, 3, false),
-				this.output_pattern_gen(~retAlcove_fxLBus, 3, 3, false),
+				this.output_pattern_gen(~atrCeiling_fxLBus, 3, 3, false, 4),
+				this.output_pattern_gen(~atrWall_fxLBus, 3, 3, false, 4),
+				this.output_pattern_gen(~retCeiling_fxLBus, 3, 3, false, 4),
+				this.output_pattern_gen(~retAlcove_fxLBus, 3, 3, false, 4),
 				]},
 			1, {[
-				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 3, false),
-				this.output_pattern_gen(~atrWall_fxLBus, 4, 3, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 4, 3, false),
-				this.output_pattern_gen(~retAlcove_fxLBus, 4, 3, false),
+				this.output_pattern_gen(~atrCeiling_fxLBus, 4, 3, false, 3),
+				this.output_pattern_gen(~atrWall_fxLBus, 4, 3, false, 3),
+				this.output_pattern_gen(~retCeiling_fxLBus, 4, 3, false, 3),
+				this.output_pattern_gen(~retAlcove_fxLBus, 4, 3, false, 3),
 				]},
 			2, {[
-				this.output_pattern_gen(~atrCeiling_fxMBus, 5, 3, false),
-				this.output_pattern_gen(~atrWall_fxLBus, 5, 3, false),
-				this.output_pattern_gen(~retCeiling_fxMBus, 5, 3, true),
-				this.output_pattern_gen(~retAlcove_fxLBus, 5, 3, false),
+				this.output_pattern_gen(~atrCeiling_fxMBus, 5, 3, false, 2),
+				this.output_pattern_gen(~atrWall_fxLBus, 5, 3, false, 2),
+				this.output_pattern_gen(~retCeiling_fxMBus, 5, 3, true, 2),
+				this.output_pattern_gen(~retAlcove_fxLBus, 5, 3, false, 2),
 				]},
 			3, {[
 				this.output_pattern_gen(~atrCeiling_fxSBus, 6, 3, true),
@@ -511,14 +501,12 @@ PlaybackSchema {
 			4, {[
 				this.output_pattern_gen(~atrCeiling_fxSBus, 7, 3, true),
 				this.output_pattern_gen(~atrWall_fxMBus, 7, 3, true),
-				this.output_pattern_gen(~retCeiling_fxSBus, 8, 3, true),
-				this.output_pattern_gen(~retAlcove_fxMBus, 8, 3, true),
+				this.output_pattern_gen(~retCeiling_fxSBus, 7, 3, true),
+				this.output_pattern_gen(~retAlcove_fxMBus, 7, 3, true),
 				]},
 			)
 
 		);
-
-		("INFO: HIT IS PLAYING THROUGH:" + outs.asString).postln;
 
 		^Pbind(
 			\instrument, \playbackP,
@@ -574,30 +562,28 @@ PlaybackSchema {
 
 			switch(intensity,
 			0, {[
-				this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false, 3),
+				this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false, 3),
 				]},
 			1, {[
-				this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false),
-				this.output_pattern_gen(~retCeiling_fxLBus, 4, 2, false),
+				this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false, 2),
+				this.output_pattern_gen(~retCeiling_fxLBus, 4, 2, false, 2),
 				]},
 			2, {[
 				this.output_pattern_gen(~atrWall_fxLBus, 5, 2, false),
 				this.output_pattern_gen(~retCeiling_fxLBus, 5, 2, true),
 				]},
 			3, {[
-				this.output_pattern_gen(~atrWall_fxMBus, 6, 2, true),
-				this.output_pattern_gen(~retCeiling_fxMBus, 6, 2, true),
+				this.output_pattern_gen(~atrWall_fxMBus, 6, 2, true, 2),
+				this.output_pattern_gen(~retCeiling_fxMBus, 6, 2, true, 2),
 				]},
 			4, {[
-				this.output_pattern_gen(~atrWall_fxMBus, 7, 2, true),
-				this.output_pattern_gen(~retCeiling_fxMBus, 8, 2, true),
+				this.output_pattern_gen(~atrWall_fxMBus, 7, 2, true, 3),
+				this.output_pattern_gen(~retCeiling_fxMBus, 7, 2, true, 3),
 				]},
 			)
 
 		);
-
-		("INFO: MISC IS PLAYING THROUGH:" + outs.asString).postln;
 
 		^Pbind(
 			\instrument, \playbackP,

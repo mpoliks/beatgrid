@@ -26,9 +26,10 @@ s.reboot;
 	1, 0, 1, 0,
 ];
 
-~scl = 0.5;
-~bassLevel = 0.83 * ~scl;
-~kickLevel = 0.70 * ~scl;
+~initLevel = 0.21;
+~scl = 0.51;
+~bassLevel = 0.93 * ~scl;
+~kickLevel = 0.80 * ~scl;
 ~snareLevel = 0.40 * ~scl;
 ~clapLevel = 0.47 * ~scl;
 ~hatLevel = 0.45 * ~scl;
@@ -312,8 +313,8 @@ s.waitForBoot {
 		Window.closeAll;
 		s.meter (~hardwareInputs, ~hardwareOutputs);
 
-		~w = Window("GUI Controls", Rect(1500,500,550,200)) .front.alwaysOnTop_(true);
-		~w.view.decorator_(FlowLayout(~w.bounds, 10@10, 10@10));
+		~w = Window("GUI Controls", Rect(1000,500,480,310)) .front.alwaysOnTop_(true);
+		~w.view.decorator_(FlowLayout(~w.bounds, 20@20, 20@20));
 
 		~masterFader = EZSlider.new(~w, Rect(20, 160, 430, 40), "master fader",
 			ControlSpec.new(0.00, 1.0, \lin, 0.01, 0, ""), {
@@ -321,15 +322,14 @@ s.waitForBoot {
 				~hardwareOutputs.do {
 					arg i;
 					~mixPatch[i].set(\amp, slider.value)};
-		}, 0, false, 80, 45).value_(1.0).setColors(Color.grey,Color.white);
+		}, 0, false, 80, 45).value_(0.21).setColors(Color.grey,Color.white);
 
-		~startButton = Button(~w, Rect(20, 20, 340, 30))
+		~startButton = Button(~w, Rect(20, 20, 420, 40))
 		.states_([["Start", Color.gray, Color.yellow], ["Halt", Color.gray, Color.red]])
 		.action_({ arg state;
 			switch(state.value,
 				1, {
 					"OK: Running Patch".postln;
-					c = Conductor.new(); // STEP 1 TO RUN PATCH (use Shift + Enter)
 					c.conduct(~seed);
 				},
 				0, {
@@ -342,24 +342,32 @@ s.waitForBoot {
 			);
 		});
 
-		~forceTransition = Button(~w, Rect(20, 20, 340, 30))
-		.states_([["Force", Color.gray, Color.yellow]])
+		~nextKitTrigger = EZNumber(~w, Rect(150, 10, 140, 30),"Change Kit",
+			ControlSpec.new(0,~buffers.size - 1,\lin,1), { arg n;
+				if (c.notNil == true, {
+					c.kit = n.value.asInteger;
+					~kitOverride = true;
+					("OK: Forcing Kit" + n.value.asInteger.asString).postln; });
+		});
+
+		~intensityTrigger = EZNumber(~w, Rect(150, 10, 140, 30), "Change Intensity",
+			ControlSpec.new(0, 4, \lin, 1), { arg n;
+				if (c.notNil == true, {
+					c.intensity = n.value.asInteger;
+					~intensityOverride = true;
+					("OK: Forcing Intensity" + n.value.asInteger.asString).postln; });
+		});
+
+
+		~forceTransition = Button(~w, Rect(120, 20, 420, 40))
+		.states_([["Force State Change", Color.gray, Color.yellow]])
 		.action_({ arg state;
 			switch(state.value,
 				0, {
 					if (c.notNil == true, { c.event_time = Date.getDate; }); });
 		});
 
-		~nextKitTrigger = NumberBox(~w, Rect(150, 10, 100, 20))
-		.value_(0).action_({
-			arg n;
-			if (c.notNil == true, {
-				c.kit = n.value.asInteger;
-				("OK: Forcing Kit" + n.value).postln;
-			});
-		});
-
-		~recordButton = Button(~w, Rect(20, 20, 340, 30))
+		~recordButton = Button(~w, Rect(120, 20, 420, 40))
 		.states_([["Start Recording", Color.gray, Color.yellow], ["Stop Recording", Color.gray, Color.red]])
 		.action_({ arg state;
 			switch(state.value,
@@ -374,8 +382,20 @@ s.waitForBoot {
 			);
 		}).value_(0);
 
+		~hardwareOutputs.do { arg i; ~mixPatch[i].set(\amp, ~initLevel ) };
+
+		s.sync;
+
+		c = Conductor.new();
+
 		"OK: Loaded - Program Ready To Run".postln;
 
 	});
 
 });
+
+
+c.kit
+c.intensity
+
+//22 with big dreamy bassy

@@ -137,7 +137,7 @@ PatternGen {
 			},
 		);
 
-		return_ = [[4.0, 4.0], [2.0, 2.0], return_, return_, return_];
+		return_ = [[8.0, 8.0], [4.0, 4.0], [4.0, 2.0, 2.0], [2.0, 2.0], return_, return_, return_];
 		return_ = return_[rrand(0, 4)];
 
 		^return_;
@@ -373,6 +373,9 @@ PatternGen {
 			alt = return_.scramble;
 			return_ = return_++return_++return_++alt;
 		});
+
+		return_ = [([2.0] ++ (4.0!63) ++ [2.0]), return_, return_, return_];
+		return_ = return_[rrand(0, 3)];
 
 		^return_;
 	}
