@@ -428,6 +428,7 @@ PlaybackSchema {
 		dur = 60 / (pattern * ~tempo),
 		atk = rrand(3, 10),
 		rel = rrand(5, 10),
+		loop_ratio = ((48!7) ++ (96!4)).scramble,
 		env_atk = rrand(~loopLen / 8, ~loopLen / 2),
 		env_rel = rrand(~loopLen / 8, ~loopLen / 2);
 
@@ -435,15 +436,12 @@ PlaybackSchema {
 
 		^Pbind(
 			\instrument, \playbackLoop,
-			\dur, 48,
+			\dur, Pseq(loop_ratio, inf),
 			\buf, buf,
 			\atk, atk,
 			\rel, rel,
 			\env_atk, env_atk,
 			\env_rel, env_rel,
-			\lcut, Pwhite(40, 1000, inf),
-			//\hcut, Pwhite(800, 16000, inf),
-			//\hcut_rel, Pwhite(800, 16000, inf),
 			\amp, ~loopLevel,
 			\out, ~mixBus[0]
 			).trace;

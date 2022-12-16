@@ -15,12 +15,12 @@ Conductor {
 		arg seed;
 		var intensity_level,
 		minute = event_time.minute % 13, swing = 0.2, set_kit,
-		next = rrand(1,4);
+		next = rrand(1,4), next_kit = rrand(0, 2);
 
-		if (((event_time.hour < 11) || (event_time.hour >= 17)), { intensity_level = 0; });
+		if (((event_time.hour < 11) || (event_time.hour >= 19)), { intensity_level = 0; });
 		if (((event_time.hour >= 11) && (event_time.hour < 14)), { intensity_level = 1; });
 		if (((event_time.hour >= 14) && (event_time.hour < 16)), { intensity_level = 2; });
-		if ((event_time.hour == 16), { intensity_level = 1; });
+		if (((event_time.hour >= 16) && (event_time.hour < 19)), { intensity_level = 1; });
 
 		if (((minute >= 0) && (minute < 4)), { intensity_level = intensity_level + 0; });
 		if (((minute >= 4) && (minute < 8)), { intensity_level = intensity_level + 1; });
@@ -41,7 +41,7 @@ Conductor {
 				set_kit = kit;
 				~kitOverride = false;
 		}, {
-				if (next >= 3, {
+				if (next_kit != 0, {
 					set_kit = rrand(0, (~buffers.size - 1));
 					"OK: CHANGING KITS".postln;
 					kit = set_kit;

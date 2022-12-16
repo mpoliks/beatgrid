@@ -28,13 +28,13 @@ s.reboot;
 
 ~initLevel = 1.00;
 ~scl = 0.51;
-~bassLevel = 0.60 * ~scl;
+~bassLevel = 0.50 * ~scl;
 ~kickLevel = 0.40 * ~scl;
 ~snareLevel = 0.42 * ~scl;
 ~clapLevel = 0.53 * ~scl;
 ~hatLevel = 0.57 * ~scl;
-~loopLevel = 0.65;
-~hitLevel = 0.60 * ~scl;
+~loopLevel = 0.2;
+~hitLevel = 0.54 * ~scl;
 ~miscLevel = 0.47 * ~scl;
 
 ~instruments = [\bass, \kick, \snare, \clap, \hat, \loop, \hit, \misc];
@@ -111,10 +111,8 @@ s.waitForBoot {
 
 		SynthDef(\playbackLoop, {
 			arg buf, out, amp = 1.0, atk, rel, env_atk, env_rel, lcut = 40;
-			var sig = PlayBuf.ar(32, buf, BufRateScale.ir(buf) * 1.0, doneAction: 2),
-			env = EnvGen.kr( Env.new([0,1,1,0], [10, 30, 19]), doneAction:2),
-			hfenv = EnvGen.kr( Env.new([200, 40, lcut, lcut * 2], [6, 20, 20, 14]) );
-			//sig = HPF.ar(sig, hfenv);
+			var sig = PlayBuf.ar(32, buf, BufRateScale.ir(buf) * 1.0, loop: 0, doneAction: 2),
+			env = EnvGen.kr( Env.new([0,1,1,0], [10, 20, 24]), doneAction:2);
 			Out.ar(out, sig * amp * env);
 		}).add;
 

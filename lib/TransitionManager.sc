@@ -45,6 +45,8 @@ TransitionManager {
 						if (event.notNil, { this.onramp(inst, event); } , { "WARN: Offramp Without Reset".postln; });
 					});
 
+					prev_event.offramping.add(inst);
+
 				},
 				{
 
@@ -60,8 +62,6 @@ TransitionManager {
 						if (event.notNil, { this.onramp(inst, event); } , { "WARN: Offramp Without Reset".postln; });
 
 				});
-
-				prev_event.offramping.add(inst);
 
 			});
 		},
@@ -84,6 +84,8 @@ TransitionManager {
 
 		var intvl = 2.pow(rrand(1,4)),
 		qval = (60/~tempo) * (4 * intvl);
+
+		if (inst == \loop, { intvl = 64; });
 
 		("WORKING: Will Play" + inst + "in" + intvl.asString + "Measures").postln;
 

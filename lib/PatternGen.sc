@@ -549,8 +549,8 @@ PatternGen {
 			},
 		);
 
-		return_ = [[2.0, 2.0] * scale, [1.0, 1.0] * scale, ([2.0] ++ (4.0!63) ++ [2.0]), return_, return_];
-		return_ = return_[rrand(0, 4)];
+		return_ = [[2.0, 2.0] * scale, [1.0, 1.0] * scale, ([2.0] ++ (4.0!63) ++ [2.0]), [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 0.5, 0.5, 1.0] * scale, return_, return_];
+		return_ = return_[rrand(0, 5)];
 
 		^return_;
 	}
