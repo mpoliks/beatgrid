@@ -31,10 +31,10 @@ s.reboot;
 ~bassLevel = 0.50 * ~scl;
 ~kickLevel = 0.40 * ~scl;
 ~snareLevel = 0.42 * ~scl;
-~clapLevel = 0.53 * ~scl;
+~clapLevel = 0.50 * ~scl;
 ~hatLevel = 0.57 * ~scl;
-~loopLevel = 0.2;
-~hitLevel = 0.54 * ~scl;
+~loopLevel = 0.33;
+~hitLevel = 0.51 * ~scl;
 ~miscLevel = 0.47 * ~scl;
 
 ~instruments = [\bass, \kick, \snare, \clap, \hat, \loop, \hit, \misc];
@@ -105,7 +105,7 @@ s.waitForBoot {
 			env = EnvGen.kr( Env.new([0,1,0], [atk, rel], [1, -1]), doneAction:2);
 			sig = HPF.ar(sig, lcut);
 			sig = LPF.ar(sig, hcut);
-			sig = PitchShift.ar(sig, 0.2, repitch, pdisp, tdisp);
+			sig = PitchShift.ar(sig, 0.2, repitch, pdisp = 0.1, tdisp = 0.1);
 			Out.ar(out, sig * env * amp);
 		}).add;
 
@@ -269,25 +269,25 @@ s.waitForBoot {
 			Synth(\patchCord, [\in, ~fxLSeq[i], \out, ~mixBus[i]], ~dryGroup); });
 
 		~dlySPatch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\delay, [\in, ~fxSSeq[i], \out, ~mixBus[i], \delayTime, 0.66666, \decayTime, 0.13], ~fxGroup); });
+			Synth(\delay, [\in, ~fxSSeq[i], \out, ~mixBus[i], \delayTime, 0.66666, \decayTime, 0.1], ~fxGroup); });
 
 		~dlyS2Patch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\delay, [\in, ~fxSSeq[i], \out, ~mixBus[i], \delayTime, 0.75, \decayTime, 0.13], ~fxGroup); });
+			Synth(\delay, [\in, ~fxSSeq[i], \out, ~mixBus[i], \delayTime, 0.75, \decayTime, 0.1], ~fxGroup); });
 
 		~dlyMPatch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\delay, [\in, [i], ~fxMSeq[i], \out, ~mixBus[i], \lfo1freq, 0.20, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.13], ~fxGroup); });
+			Synth(\delay, [\in, [i], ~fxMSeq[i], \out, ~mixBus[i], \lfo1freq, 0.20, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.1], ~fxGroup); });
 
 		~dlyM2Patch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\delay, [\in, ~fxMSeq[i], \out, ~mixBus[i], \lfo1freq, 0.10, \lfo2freq, 0.02, \delayTime, 0.25, \decayTime, 0.078], ~fxGroup); });
+			Synth(\delay, [\in, ~fxMSeq[i], \out, ~mixBus[i], \lfo1freq, 0.10, \lfo2freq, 0.02, \delayTime, 0.25, \decayTime, 0.1], ~fxGroup); });
 
 		~dlyLPatch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.10, \lfo2freq, 0.03, \delayTime, 0.5, \decayTime, 0.13], ~fxGroup); });
+			Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.10, \lfo2freq, 0.03, \delayTime, 0.5, \decayTime, 0.11], ~fxGroup); });
 
 		~dlyL2Patch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.01, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.13], ~fxGroup); });
+			Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.01, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.11], ~fxGroup); });
 
 		~dlyL3Patch = Array.fill(~hardwareOutputs, { arg i;
-			Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.04, \lfo2freq, 0.05, \delayTime, 1.25, \decayTime, 0.13], ~fxGroup); });
+			Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.04, \lfo2freq, 0.05, \delayTime, 1.25, \decayTime, 0.11], ~fxGroup); });
 
 		~revBypassPatch = Array.fill(~hardwareOutputs, { arg i;
 			Synth(\mixIO, [\in, ~mixBus[i], \out, ~masterBus[i]], ~mixGroup); });

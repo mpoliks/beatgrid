@@ -139,7 +139,10 @@ PatternGen {
 			},
 		);
 
-		return_ = [[8.0, 8.0] * scale, [4.0, 4.0] * scale, [4.0, 2.0, 2.0] * scale, [2.0, 2.0] * scale, return_, return_, return_];
+		return_ = [[8.0, 8.0] * scale,
+			[4.0, 4.0] * scale, [4.0, 2.0, 2.0] * scale,
+			[2.0, 2.0] * scale,
+			return_, return_, return_];
 		return_ = return_[rrand(0, 6)];
 
 		^return_;
@@ -300,7 +303,7 @@ PatternGen {
 	//----------------------------------------------HIT
 	hit_pattern {
 		arg pattern, intensity;
-		var return_, alt, fill, scale = 2;
+		var return_, alt, fill, punct, scale = 2;
 		switch (intensity,
 
 			0, {
@@ -343,6 +346,7 @@ PatternGen {
 				return_ = temp * 2;
 				choose_ = rrand(0, 2);
 				if (choose_ == 0, {return_ = return_ / 4} );
+				scale = 1;
 			},
 
 			3, {
@@ -358,6 +362,7 @@ PatternGen {
 				return_ = temp ++ temp;
 				choose_ = rrand(0, 2);
 				if (choose_ == 0, {return_ = return_ / 2 });
+				scale = 1;
 			},
 
 			4, {
@@ -371,6 +376,7 @@ PatternGen {
 					temp = temp.insert(choose_,
 						16.0 - (temp.sum % 16.0))});
 				return_ = (temp / 2)++(temp / 2);
+				scale = 1;
 			},
 		);
 
@@ -381,8 +387,18 @@ PatternGen {
 			return_ = return_++return_++return_++alt;
 		});
 
-		return_ = [([4.0] ++ (8.0!63) ++ [4.0]), [10.0, 4.0, 1.0, 1.0] * scale, [ 6.0, 0.5, 0.5, 0.5, 0.5 ] * scale, [0.5, 0.5, 9.0, 1.0, 5.0], return_, return_, return_, return_];
-		return_ = return_[rrand(0, 7)];
+		fill = rrand(1, 8);
+		alt = rrand(0, 3);
+		punct = [[fill] ++ ((0.5)!alt) ++ [(16 - (fill + (0.5 * alt)))]][0];
+
+		return_ = [([4.0] ++ (8.0!63) ++ [4.0]),
+			[10.0, 4.0, 1.0, 1.0] * scale,
+			[ 6.0, 0.5, 0.5, 0.5, 0.5 ] * scale,
+			[0.5, 0.5, 9.0, 1.0, 5.0],
+			[3.0, 0.5, 12.5],
+			punct, punct * scale,
+			return_, return_, return_, return_];
+		return_ = return_[rrand(0, 10)];
 
 		^return_;
 	}
@@ -549,7 +565,11 @@ PatternGen {
 			},
 		);
 
-		return_ = [[2.0, 2.0] * scale, [1.0, 1.0] * scale, ([2.0] ++ (4.0!63) ++ [2.0]), [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 0.5, 0.5, 1.0] * scale, return_, return_];
+		return_ = [[2.0, 2.0] * scale,
+			[1.0, 1.0] * scale,
+			([2.0] ++ (4.0!63) ++ [2.0]),
+			[2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 0.5, 0.5, 1.0] * scale,
+			return_, return_];
 		return_ = return_[rrand(0, 5)];
 
 		^return_;

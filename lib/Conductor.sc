@@ -17,14 +17,16 @@ Conductor {
 		minute = event_time.minute % 13, swing = 0.2, set_kit,
 		next = rrand(1,4), next_kit = rrand(0, 2);
 
-		if (((event_time.hour < 11) || (event_time.hour >= 19)), { intensity_level = 0; });
-		if (((event_time.hour >= 11) && (event_time.hour < 14)), { intensity_level = 1; });
-		if (((event_time.hour >= 14) && (event_time.hour < 16)), { intensity_level = 2; });
-		if (((event_time.hour >= 16) && (event_time.hour < 19)), { intensity_level = 1; });
+		if (((event_time.hour < 11) || (event_time.hour >= 20)), { intensity_level = 0; });
+		if (((event_time.hour >= 11) && (event_time.hour < 12)), { intensity_level = 1; });
+		if (((event_time.hour >= 12) && (event_time.hour < 14)), { intensity_level = 2; });
+		if (((event_time.hour >= 14) && (event_time.hour < 17)), { intensity_level = 1; });
+		if (((event_time.hour >= 17) && (event_time.hour < 18)), { intensity_level = 2; });
+		if (((event_time.hour >= 18) && (event_time.hour < 20)), { intensity_level = 1; });
 
 		if (((minute >= 0) && (minute < 4)), { intensity_level = intensity_level + 0; });
-		if (((minute >= 4) && (minute < 8)), { intensity_level = intensity_level + 1; });
-		if (((minute >= 8) && (minute <= 13)), { intensity_level = intensity_level + 2; });
+		if (((minute >= 4) && (minute < 10)), { intensity_level = intensity_level + 1; });
+		if (((minute >= 10) && (minute <= 13)), { intensity_level = intensity_level + 2; });
 
 		if (~intensityOverride == true, {
 			intensity_level = intensity;
@@ -60,7 +62,11 @@ Conductor {
 		("OK: New Event at Intensity" + intensity_level.asString).postln;
 		("OK: New Event using Kit" + set_kit.asString).postln;
 
-		swing = rrand(0.1, 0.35);
+		swing = rrand(0.01, 0.55);
+		if (next == 4, {swing = 0.01});
+		if (next == 2, {swing = 0.01});
+
+		if (intensity_level == 4, { next = rrand (1,3) });
 
 		if (flag, {
 			next_event = EventManager.new(seed, intensity_level, set_kit, swing);

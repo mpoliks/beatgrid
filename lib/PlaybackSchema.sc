@@ -356,9 +356,7 @@ PlaybackSchema {
 		modifier3 = rrand(1, 4),
 		dur = 60 / (pattern * ~tempo),
 		onbeat = rrand(0, 1),
-		lcut = rrand(
-			intensity.linlin(0, 4, 90, 500),
-			intensity.linlin(0, 4, 600, 200)),
+		lcut = rrand(2000, 5000),
 
 		envScl = pattern.size * 32 * modifier2 * modifier3,
 		env = (Array.series(envScl, 0.0, 1.0 / envScl)) ++
@@ -424,7 +422,10 @@ PlaybackSchema {
 	loop {
 		arg pattern, intensity, dir;
 		var buffer_variation = rrand(1, ((intensity + 1) * 4)),
-		buf = dir[0],
+		buf = Array.fill(buffer_variation, {
+			arg i;
+			dir.scramble[0];
+		}),
 		dur = 60 / (pattern * ~tempo),
 		atk = rrand(3, 10),
 		rel = rrand(5, 10),
@@ -437,7 +438,7 @@ PlaybackSchema {
 		^Pbind(
 			\instrument, \playbackLoop,
 			\dur, Pseq(loop_ratio, inf),
-			\buf, buf,
+			\buf, Pseq(buf, inf),
 			\atk, atk,
 			\rel, rel,
 			\env_atk, env_atk,
@@ -463,7 +464,7 @@ PlaybackSchema {
 		lcut = rrand(40, 1000),
 		pitch = Array.fill(modifier2 * modifier, {
 			var temp = [0.25, 0.5, 1.0, 2.0, 4.0],
-			try = [0.1, 0.1, 0.7, 0.2, 0.1].windex;
+			try = [0.1, 0.5, 0.7, 0.4, 0.1].windex;
 			temp[try];
 		}),
 		amps = Array.fill((pattern.size * modifier), {
