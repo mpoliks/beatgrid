@@ -25,8 +25,8 @@ Conductor {
 		if (((event_time.hour >= 18) && (event_time.hour < 20)), { intensity_level = 1; });
 
 		if (((minute >= 0) && (minute < 4)), { intensity_level = intensity_level + 0; });
-		if (((minute >= 4) && (minute < 10)), { intensity_level = intensity_level + 1; });
-		if (((minute >= 10) && (minute <= 13)), { intensity_level = intensity_level + 2; });
+		if (((minute >= 4) && (minute < 11)), { intensity_level = intensity_level + 1; });
+		if (((minute >= 11) && (minute <= 13)), { intensity_level = intensity_level + 2; });
 
 		if (~intensityOverride == true, {
 			intensity_level = intensity;

@@ -400,6 +400,11 @@ s.waitForBoot {
 
 		"OK: Loaded - Program Ready To Run".postln;
 
+		s.sync;
+
+		"OK: Running Patch".postln;
+		c.conduct(~seed);
+
 	});
 
 });

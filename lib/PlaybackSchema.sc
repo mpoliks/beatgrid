@@ -511,6 +511,7 @@ PlaybackSchema {
 
 		);
 
+
 		^Pbind(
 			\instrument, \playbackP,
 			\dur, Pseq(dur, inf),
