@@ -44,8 +44,8 @@ EventManager {
 
 		});
 
-		"OK: Pattern Gen Complete".postln;
-		"OK: Schema Gen Complete".postln;
+		~appendLog.value("OK: Pattern Gen Complete");
+		~appendLog.value("OK: Schema Gen Complete");
 
 	}
 

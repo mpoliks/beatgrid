@@ -49,18 +49,25 @@ s.waitForBoot {
 	s.sync;
 	~buffers = Dictionary.new;
 
-	//z = Buffer.cueSoundFile(s, "C:/Users/User/Documents/GitHub/beatgrid/Samples/18/hat/MoonKit17.wav", 0, 33);
-
 	if (thisProcess.nowExecutingPath.notNil == true, {
 		p = PathName.new(thisProcess.nowExecutingPath.dirname +/+ "Samples/");
+		~logPath = "~/"++Date.getDate.dayStamp.asString++".txt".standardizePath;
+		~appendLog = {
+			arg log;
+			if (log == nil, {log = "WARN: NIL" });
+			File.use(~logPath.standardizePath, "a", { arg f;
+				f.write(Date.getDate.asString ++ ": ");
+				f.write(log);
+				log.postln;
+				f.write("\n"); });
+		};
+
 	},
 	{
-		"WARN: Windows Pathname Issue".postln;
+		~appendLog.value("WARN: Windows Pathname Issue");
 		p = PathName.new("C:/Users/User/Documents/GitHub/beatgrid/Samples");
 		// TO FIX STUPID WINDOWS BUG>
 	});
-
-
 
 	p.folders.do({ //samples
 		arg f;
@@ -70,7 +77,7 @@ s.waitForBoot {
 		f.folders.do({
 			arg f_;
 			var samples = Array.new;
-			("OK: Processsing" + f_.entries.size.asString + "files from" + f_.asString).postln;
+			~appendLog.value(("OK: Processsing" + f_.entries.size.asString + "files from" + f_.asString));
 			f_.entries.do({ arg path;
 				if (path.extension == "wav", {
 					samples = samples.add(Buffer.read(s, path.fullPath));}); });
@@ -81,11 +88,11 @@ s.waitForBoot {
 
 	});
 
-	"OK: Loading....".postln;
+	~appendLog.value("OK: Loading....");
 	s.sync;
 
 	if ( p.folders == [], {
-		"ERR: No Samples Found -- Patch WILL NOT RUN".postln; },
+		~appendLog.value("ERR: No Samples Found -- Patch WILL NOT RUN"); },
 	{
 
 		SynthDef(\playback, { // playback synth
@@ -325,7 +332,7 @@ s.waitForBoot {
 					"WARN: Stopping Patch".postln;
 					if (c.notNil == true, {
 						c.flag=false;
-						s.stop;
+						s.killAll;
 					});
 				}
 			);
@@ -368,11 +375,11 @@ s.waitForBoot {
 		.states_([["Start Recording", Color.gray, Color.yellow], ["Stop Recording", Color.gray, Color.red]])
 		.action_({ arg state;
 			switch(state.value,
-				0, {
+				1, {
 					s.record();
 					"OK: Recording in Progress".postln;
 				},
-				1, {
+				0, {
 					s.stopRecording;
 					"WARN: Stopped Recording".postln;
 				}
@@ -398,12 +405,12 @@ s.waitForBoot {
 
 		c = Conductor.new();
 
-		"OK: Loaded - Program Ready To Run".postln;
+		~appendLog.value("OK: Loaded - Program Ready To Run");
 
 		s.sync;
 
-		"OK: Running Patch".postln;
-		c.conduct(~seed);
+		~appendLog.value("OK: Running Patch");
+		c.conduct(~seed, s);
 
 	});
 

@@ -21,14 +21,14 @@ TransitionManager {
 
 		if (prev_event.notNil, {
 
-			"WORKING: Initiating New Transition".postln;
+			~appendLog.value("WORKING: Initiating New Transition");
 
 			seq.do({
 
 				arg inst;
 				var intvl = (2.pow(rrand(1,4))) + (4 * rrand(0,1));
 
-				("WORKING: Will Halt" + inst + "in" + intvl.asString + "Measures").postln;
+				~appendLog.value("WORKING: Will Halt" + inst + "in" + intvl.asString + "Measures");
 
 				if (inst != \loop, {
 
@@ -41,8 +41,8 @@ TransitionManager {
 						prev_event.streaming.at(inst).free;
 						prev_event.streaming.removeAt(inst);
 						prev_event.offramping.remove(inst);
-						("OK: Stopped" + inst.asString).postln;
-						if (event.notNil, { this.onramp(inst, event); } , { "WARN: Offramp Without Reset".postln; });
+						~appendLog.value("OK: Stopped" + inst.asString);
+						if (event.notNil, { this.onramp(inst, event); } , { ~appendLog.value("WARN: Offramp Without Reset"); });
 					});
 
 					prev_event.offramping.add(inst);
@@ -58,15 +58,15 @@ TransitionManager {
 						prev_event.streaming.at(inst).free;
 						prev_event.streaming.removeAt(inst);
 						prev_event.offramping.remove(inst);
-						("OK: Stopped" + inst.asString).postln;
-						if (event.notNil, { this.onramp(inst, event); } , { "WARN: Offramp Without Reset".postln; });
+						~appendLog.value("OK: Stopped" + inst.asString);
+					if (event.notNil, { this.onramp(inst, event); } , { ~appendLog.value("WARN: Offramp Without Reset"); });
 
 				});
 
 			});
 		},
 		{
-			"WORKING: Starting New Piece".postln;
+			~appendLog.value("WORKING: Starting New Piece");
 			seq.do({
 
 				arg inst;
@@ -87,7 +87,7 @@ TransitionManager {
 
 		if (inst == \loop, { intvl = 64; });
 
-		("WORKING: Will Play" + inst + "in" + intvl.asString + "Measures").postln;
+		~appendLog.value("WORKING: Will Play" + inst + "in" + intvl.asString + "Measures");
 
 		event.streaming.putAll(
 			Dictionary[
@@ -105,8 +105,7 @@ TransitionManager {
 
 		Q.uant(qval, {
 			event.onramping.remove(inst);
-			("OK: Playing" + inst.asString + "With Pattern: ").postln;
-			(1 / (event.patterns.at(inst) * 0.25)).postln;
+			~appendLog.value("OK: Playing" + inst.asString + "With Pattern: " ++ (1 / (event.patterns.at(inst) * 0.25)).asString);
 			});
 
 	}

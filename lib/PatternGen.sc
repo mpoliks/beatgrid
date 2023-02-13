@@ -598,7 +598,7 @@ PatternGen {
 		var processed_seed = this.interpret(input),
 		model = this.model_weights(processed_seed),
 		pattern = this.interpolate(model, processed_seed);
-		("WORKING: Printing Patterns for" + instrument.asString).postln;
+		~appendLog.value("WORKING: Printing Patterns for" + instrument.asString);
 		^this.post_process(pattern, instrument, intensity);
 	}
 

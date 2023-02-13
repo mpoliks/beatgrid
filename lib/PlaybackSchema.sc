@@ -12,7 +12,7 @@ PlaybackSchema {
 		input_arrays.size.do {
 			arg i;
 			if (input_arrays[i].size != null_size,{
-				"ERR: Spatial Pattern Size Inconsistency".postln;
+				~appendLog.value("ERR: Spatial Pattern Size Inconsistency");
 				err_flag = true; }); };
 
 		if (err_flag == false, {
@@ -118,6 +118,8 @@ PlaybackSchema {
 
 		);
 
+		~appendLog.value("OK: Bass Buffers: " ++ buf.asString);
+
 
 		^Pbind(
 			\instrument, \playback,
@@ -153,7 +155,6 @@ PlaybackSchema {
 			result = temp[try];
 			result;
 		}),
-
 
 		outs = this.interlace_n_arrays(
 
@@ -196,6 +197,8 @@ PlaybackSchema {
 
 			)
 		);
+
+		~appendLog.value("OK: Kick Buffers: " ++ buf.asString);
 
 		^Pbind(
 			\instrument, \playback,
@@ -269,6 +272,8 @@ PlaybackSchema {
 
 		);
 
+		~appendLog.value("OK: Clap Buffers: " ++ buf.asString);
+
 		^Pbind(
 			\instrument, \playback,
 			\dur, Pseq(dur, inf),
@@ -332,6 +337,8 @@ PlaybackSchema {
 			)
 
 		);
+
+		~appendLog.value("OK: Snare Buffers: " ++ buf.asString);
 
 		^Pbind(
 			\instrument, \playback,
@@ -408,6 +415,8 @@ PlaybackSchema {
 
 		);
 
+		~appendLog.value("OK: Hat Buffers: " ++ buf.asString);
+
 		^Pbind(
 			\instrument, \playback,
 			\dur, Pseq(dur, inf),
@@ -433,7 +442,7 @@ PlaybackSchema {
 		env_atk = rrand(~loopLen / 8, ~loopLen / 2),
 		env_rel = rrand(~loopLen / 8, ~loopLen / 2);
 
-		buf.postln;
+		~appendLog.value("OK: Loop Buffers: " ++ buf.asString);
 
 		^Pbind(
 			\instrument, \playbackLoop,
@@ -445,7 +454,7 @@ PlaybackSchema {
 			\env_rel, env_rel,
 			\amp, ~loopLevel,
 			\out, ~mixBus[0]
-			).trace;
+			);
 	}
 
 	hit {
@@ -511,6 +520,7 @@ PlaybackSchema {
 
 		);
 
+		~appendLog.value("OK: Hit Buffers: " ++ buf.asString);
 
 		^Pbind(
 			\instrument, \playbackP,
@@ -589,6 +599,8 @@ PlaybackSchema {
 
 		);
 
+		~appendLog.value("OK: Misc Buffers: " ++ buf.asString);
+
 		^Pbind(
 			\instrument, \playbackP,
 			\dur, Pseq(dur, inf),
@@ -605,7 +617,7 @@ PlaybackSchema {
 		arg pattern, instrument, intensity, kit;
 		var dir, pbind;
 
-		("WORKING: Generating Schemas for" + instrument.asString).postln;
+		~appendLog.value(("WORKING: Generating Schemas for" + instrument.asString));
 
 		dir = ~buffers.at(kit.asString).at(instrument.asString);
 
