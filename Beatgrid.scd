@@ -4,8 +4,8 @@
 ~tempo = 60;
 ~kitOverride = false;
 
-// can be \stereo, \stem, \false = default
-~mixdown = \false;
+// can be \stereo, \stem, \blackhole, \false = default
+~mixdown = \blackhole;
 
 
 //ServerOptions.devices;
@@ -304,6 +304,23 @@ s.waitForBoot {
 
 			~mixPatch = Array.fill(~hardwareOutputs, { arg i;
 				Synth(\patchCord, [\in, ~masterBus[i], \out, i], ~masterGroup); });
+
+		});
+
+		if (~mixdown == \blackhole, {
+
+			~playbackGroup = Group.tail(s);
+			~masterGroup = Group.tail(s);
+
+			~loArray = Array.fill(4, { Bus.audio(s, 1) });
+			~midArray = Array.fill(4, { Bus.audio(s, 1) });
+			~hiArray = Array.fill(5, { Bus.audio(s, 1) });
+			~subLFE = Array.fill(1, {Bus.audio(s, 1) });
+
+			~drySeq = ~loArray ++ ~midArray ++ ~hiArray ++ ~subLFE;
+
+			~mixPatch = Array.fill(~hardwareOutputs, { arg i;
+				Synth(\patchCord, [\in, ~drySeq[i], \out, i], ~masterGroup); });
 
 		});
 

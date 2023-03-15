@@ -78,6 +78,11 @@ PlaybackSchema {
 
 			\stereo, {[[0, 1]]},
 			\stem, {[0]},
+			\blackhole, {this.interlace_n_arrays([
+				this.output_pattern_gen(~loArray, 2, 2, false),
+				this.output_pattern_gen(~subLFE, 2, 1, false)]
+			)},
+
 			\false, {this.interlace_n_arrays(
 
 				switch(intensity,
@@ -120,6 +125,8 @@ PlaybackSchema {
 				)
 
 		)});
+
+		outs.postln;
 
 
 		~appendLog.value("OK: Bass Buffers: " ++ buf.asString);
@@ -164,6 +171,10 @@ PlaybackSchema {
 
 			\stereo, {[[0, 1]]},
 			\stem, {[1]},
+			\blackhole, {this.interlace_n_arrays([
+				this.output_pattern_gen(~loArray, 2, 2, false),
+				this.output_pattern_gen(~subLFE, 2, 1, false)]
+			)},
 			\false, {this.interlace_n_arrays(
 
 				switch(intensity,
@@ -247,6 +258,10 @@ PlaybackSchema {
 
 			\stereo, {Array.fill(16, {rrand(0,1)})},
 			\stem, {[2]},
+			\blackhole, {this.interlace_n_arrays([
+				this.output_pattern_gen(~hiArray, 2, 2, false),
+				this.output_pattern_gen(~midArray, 2, 2, false)]
+			)},
 			\false, {this.interlace_n_arrays(
 
 				switch(intensity,
@@ -322,6 +337,10 @@ PlaybackSchema {
 
 			\stereo, {Array.fill(8, {rrand(0,1)})},
 			\stem, {[3]},
+			\blackhole, {this.interlace_n_arrays([
+				this.output_pattern_gen(~loArray, 2, 2, false),
+				this.output_pattern_gen(~midArray, 2, 2, false)]
+			)},
 			\false, {this.interlace_n_arrays(
 
 				switch(intensity,
@@ -409,6 +428,9 @@ PlaybackSchema {
 
 			\stereo, {Array.fill(4, {[0, 1, [0, 1]].choose([0.2, 0.2, 0.6])})},
 			\stem, {[4]},
+			\blackhole, {this.interlace_n_arrays([
+				this.output_pattern_gen(~hiArray, 4, 2, false)]
+			)},
 			\false, {this.interlace_n_arrays(
 
 				switch(intensity,
@@ -465,6 +487,7 @@ PlaybackSchema {
 		out = switch (~mixdown,
 			\stereo, {0},
 			\stem, {7},
+			\blackhole, {0},
 			\false, {~mixBus[0]});
 
 		~appendLog.value("OK: Loop Buffers: " ++ buf.asString);
@@ -512,6 +535,10 @@ PlaybackSchema {
 
 			\stereo, {Array.fill(4, {[0, 1, [0, 1]].choose([0.2, 0.2, 0.6])})},
 			\stem, {[5]},
+			\blackhole, {this.interlace_n_arrays([
+				this.output_pattern_gen(~loArray, 4, 2, false),
+				this.output_pattern_gen(~hiArray, 4, 2, false)]
+			)},
 			\false, {this.interlace_n_arrays(
 
 				switch(intensity,
@@ -605,6 +632,10 @@ PlaybackSchema {
 
 			\stereo, {Array.fill(4, {[0, 1, [0, 1]].choose([0.2, 0.2, 0.6])})},
 			\stem, {[6]},
+			\blackhole, {this.interlace_n_arrays([
+				this.output_pattern_gen(~hiArray, 4, 1, false),
+				this.output_pattern_gen(~midArray, 4, 1, false)]
+			)},
 			\false, {this.interlace_n_arrays(
 
 				switch(intensity,
