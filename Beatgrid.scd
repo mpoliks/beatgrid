@@ -1,11 +1,12 @@
 (
 ~hardwareInputs = 1;
-~hardwareOutputs = 33;
-~tempo = 60;
+~hardwareOutputs = 2;
+~tempo = 30;
 ~kitOverride = false;
 
 // can be \stereo, \stem, \blackhole, \false = default
-~mixdown = \blackhole;
+~mixdown = \false;
+// master fader will only work if mixdown is false
 
 
 //ServerOptions.devices;
@@ -42,10 +43,9 @@ s.reboot;
 
 ~loopLen = 60;
 
-//---- END TEMP
+
 
 s.waitForBoot {
-
 
 	s.sync;
 	~buffers = Dictionary.new;
@@ -67,7 +67,7 @@ s.waitForBoot {
 	{
 		~appendLog.value("WARN: Windows Pathname Issue");
 		p = PathName.new("C:/Users/User/Documents/GitHub/beatgrid/Samples");
-		// TO FIX STUPID WINDOWS BUG>
+		// TO FIX STUPID WINDOWS BUG
 	});
 
 	p.folders.do({ //samples
@@ -97,7 +97,7 @@ s.waitForBoot {
 	{
 
 		SynthDef(\playback, { // playback synth
-			arg rate = 1, atk = 0.001, rel = 1.4, lcut = 20, hcut = 20000, pan = 0,
+			arg rate = 1, atk = 0.09, rel = 2.4, lcut = 20, hcut = 20000, pan = 0,
 			buf, amp = 1.0, out;
 			var sig = PlayBuf.ar(1, buf, BufRateScale.ir(buf) * rate, doneAction: 2),
 			env = EnvGen.kr( Env.new([0,1,0], [atk, rel], [1, -1]), doneAction:2);
@@ -107,7 +107,7 @@ s.waitForBoot {
 		}).add;
 
 		SynthDef(\playbackP, { // playback synth (with pitch management)
-			arg rate = 1, atk = 0.001, rel = 1.4, lcut = 20, hcut = 20000,
+			arg rate = 1, atk = 0.09, rel = 3.4, lcut = 20, hcut = 20000,
 			repitch = 1.0, pdisp = 0.0, tdisp = 0.0, pan = 0, buf, amp = 1.0, out;
 			var sig = PlayBuf.ar(1, buf, BufRateScale.ir(buf) * rate, doneAction: 2),
 			env = EnvGen.kr( Env.new([0,1,0], [atk, rel], [1, -1]), doneAction:2);
@@ -126,13 +126,15 @@ s.waitForBoot {
 
 		SynthDef(\delay, {
 			arg in, out, lfo1freq = 0.02, lfo2freq = 0.01, delayTime = 0.33333,
-			decayTime = 1.4, hcut = 12000, lcut = 200, amp = 0.2;
+			decayTime = 1.4, hcut = 12000, lcut = 200, amp = 0.6, decay = 10;
 			var sig = In.ar(in, 1),
 			lfo1 = SinOsc.kr(lfo1freq, 0.3, 1.0, 7000),
 			lfo2 = SinOsc.kr(lfo2freq, 1.0, 1.0, 7000);
 			sig = AllpassC.ar(sig, 1.0, (60/~tempo) * delayTime, decayTime);
-			sig = LPF.ar(sig, hcut - lfo1);
-			sig = HPF.ar(sig, lcut + lfo2);
+			//sig = LPF.ar(sig, hcut - lfo1);
+			//sig = HPF.ar(sig, lcut + lfo2);
+			//sig = FreezeVerb.ar(sig, decay: decay);
+			sig = JPverb.ar(sig);
 			//sig = AnalogVintageDistortion.ar(sig, 0.1);
 			sig = sig * amp;
 			Out.ar(out, sig);
@@ -140,10 +142,14 @@ s.waitForBoot {
 
 		SynthDef(\mixIO, { // compressor and limiter on the mix Bus
 			arg out = 0, in = 0, amp = 1.0;
-			var sig = In.ar(in, 1);
+			var sig = In.ar(in, 1), lfo;
 			sig = Compander.ar(sig,	sig, thresh: 0.85, slopeBelow: 1.2, slopeAbove: 0.45, clampTime: 0.01, relaxTime: 0.01);
+			lfo = SinOsc.kr(1 / (3* 60)).range(1, 10);
+			lfo = lfo + LFNoise1.kr(0.01) * 0.5;
+			lfo.poll(0.1, "LFO Value");
 			sig = sig * amp;
 			sig = BPeakEQ.ar(sig, 100, 1.0, 1.0);
+			sig = HDVerb.ar(sig, mix: 0.2, decay: lfo);
 			sig = Limiter.ar(sig, level: 0.94, dur: 0.1);
 			Out.ar(out, sig);
 		}).add;
@@ -445,4 +451,3 @@ s.record(bus:0, numChannels:33, duration:100)
 c.kit
 c.intensity
 
-//22 with big dreamy bassy

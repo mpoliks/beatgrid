@@ -63,7 +63,7 @@ PlaybackSchema {
 		modifier3 = rrand(1, 4),
 		dur = 60 / (pattern * ~tempo),
 		onbeat = rrand(0, 1),
-		atk = 0.01,
+		atk = 0.1,
 		rel = (4 / (intensity + 1)),
 		hcut = intensity.linlin(0, 4, 400, 20000),
 		lcut = intensity.linlin(0, 4, 40, 40),
@@ -88,24 +88,24 @@ PlaybackSchema {
 				switch(intensity,
 
 					0, {[
-						this.output_pattern_gen(~atrSubs_dryBus, 2, 1, false, 2),
-						this.output_pattern_gen(~atrCeiling_dryBus, 2, 2, false, 2),
-						this.output_pattern_gen(~retSubs_dryBus, 2, 2, false, 2),
-						this.output_pattern_gen(~retAlcove_dryBus, 2, 2, false, 2)
+						this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false, 2),
+						this.output_pattern_gen(~atrCeiling_fxLBus, 2, 2, false, 2),
+						this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false, 2),
+						this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false, 2)
 					]},
 
 					1, {[
-						this.output_pattern_gen(~atrSubs_dryBus, 2, 1, false, 2),
-						this.output_pattern_gen(~atrCeiling_dryBus, 2, 2, false, 2),
-						this.output_pattern_gen(~retSubs_dryBus, 2, 2, false, 2),
-						this.output_pattern_gen(~retAlcove_dryBus, 2, 2, false, 2)
+						this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false, 2),
+						this.output_pattern_gen(~atrCeiling_fxLBus, 2, 2, false, 2),
+						this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false, 2),
+						this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false, 2)
 					]},
 
 					2, {[
-						this.output_pattern_gen(~atrSubs_dryBus, 2, 1, true),
-						this.output_pattern_gen(~atrCeiling_dryBus, 2, 2, true),
-						this.output_pattern_gen(~retSubs_dryBus, 2, 2, true),
-						this.output_pattern_gen(~retAlcove_dryBus, 2, 2, true)
+						this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, true),
+						this.output_pattern_gen(~atrCeiling_fxLBus, 2, 2, true),
+						this.output_pattern_gen(~retSubs_fxLBus, 2, 2, true),
+						this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, true)
 					]},
 
 					3, {[
@@ -136,7 +136,7 @@ PlaybackSchema {
 			\instrument, \playback,
 			\dur, Pseq(dur, inf),
 			\buf, Pseq(buf, inf),
-			\atk, Pwhite(atk / 2, atk),
+			\atk, Pwhite(atk / 2, atk * 2),
 			\rel, Pwhite(rel / 2, rel),
 			\hcut, Pwhite(hcut / 2, hcut),
 			\lcut, Pwhite(lcut / 2, lcut),
@@ -157,7 +157,7 @@ PlaybackSchema {
 		modifier2 = rrand(1, 4),
 		modifier3 = rrand(1, 4),
 		hcut = rrand(
-			intensity.linlin(0, 4, 800, 20000),
+			intensity.linlin(0, 4, 300, 1000),
 			intensity.linlin(0, 4, 2000, 20000)),
 		kick_altlevel = rrand(~kickLevel / 3, ~kickLevel / 1.5),
 		amps = Array.fill((pattern.size), {
@@ -180,17 +180,17 @@ PlaybackSchema {
 				switch(intensity,
 
 					0, {[
-						this.output_pattern_gen(~atrSubs_dryBus, 2, 1, false, 2),
-						this.output_pattern_gen(~atrCeiling_dryBus, 2, 1, false, 2),
-						this.output_pattern_gen(~retSubs_dryBus, 2, 2, false, 2),
-						this.output_pattern_gen(~retAlcove_dryBus, 2, 2, false, 2),
+						this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false, 2),
+						this.output_pattern_gen(~atrCeiling_fxLBus, 2, 1, false, 2),
+						this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false, 2),
+						this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false, 2),
 					]},
 
 					1, {[
-						this.output_pattern_gen(~atrSubs_dryBus, 2, 1, false, 2),
-						this.output_pattern_gen(~atrCeiling_dryBus, 2, 1, false, 2),
-						this.output_pattern_gen(~retSubs_dryBus, 2, 2, false, 2),
-						this.output_pattern_gen(~retAlcove_dryBus, 2, 2, false, 2),
+						this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false, 2),
+						this.output_pattern_gen(~atrCeiling_fxLBus, 2, 1, false, 2),
+						this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false, 2),
+						this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false, 2),
 					]},
 
 					2, {[
@@ -224,6 +224,7 @@ PlaybackSchema {
 			\dur, Pseq(dur, inf),
 			\buf, Pseq(buf, inf),
 			\hcut, Pwhite(hcut / 1.3, hcut),
+			\atk, 0.2,
 			\amp, Pseq(amps, inf),
 			\out, Pseq(outs, inf)
 		);
@@ -324,8 +325,8 @@ PlaybackSchema {
 		modifier3 = rrand(1, 4),
 		dur = 60 / (pattern * ~tempo),
 		onbeat = rrand(0, 1),
-		hcut = rrand(800, 10000),
-		lcut = rrand(80, 800),
+		hcut = rrand(600, 1000),
+		lcut = rrand(80, 200),
 		amps = Array.fill((pattern.size * modifier), {
 			arg i;
 			var amp = rrand(~snareLevel / 4, ~snareLevel);
@@ -399,7 +400,7 @@ PlaybackSchema {
 		modifier3 = rrand(1, 4),
 		dur = 60 / (pattern * ~tempo),
 		onbeat = rrand(0, 1),
-		lcut = rrand(2000, 5000),
+		lcut = rrand(800, 1000),
 
 		envScl = pattern.size * 32 * modifier2 * modifier3,
 		env = (Array.series(envScl, 0.0, 1.0 / envScl)) ++
@@ -513,15 +514,15 @@ PlaybackSchema {
 			dir.scramble[0];
 		}),
 		modifier = rrand(1, 4),
-		modifier2 = rrand(1, 4),
+		modifier2 = rrand(1, 6),
 		modifier3 = rrand(1, 4),
 		dur = 60 / (pattern * ~tempo),
 		onbeat = rrand(0, 1),
-		hcut = rrand(800, 20000),
+		hcut = rrand(800, 10000),
 		lcut = rrand(40, 1000),
 		pitch = Array.fill(modifier2 * modifier, {
-			var temp = [0.25, 0.5, 1.0, 2.0, 4.0],
-			try = [0.1, 0.5, 0.7, 0.4, 0.1].windex;
+			var temp = [0.5, 1.0, 1.125, 1.25, 1.333, 1.5, 1.667, 1.875],
+			try = [0.2, 0.3, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2].windex;
 			temp[try];
 		}),
 		amps = Array.fill((pattern.size * modifier), {
@@ -585,6 +586,8 @@ PlaybackSchema {
 			\repitch, Pseq(pitch, inf),
 			\hcut, Pwhite(hcut / 2, hcut),
 			\lcut, Pwhite(lcut / 2, lcut),
+			\atk, Pwhite(0.01, 1.0),
+			\rel, Pwhite(1, 10),
 			\amp, Pseq(amps, inf),
 			\out, Pseq(outs, inf)
 		);
@@ -605,8 +608,8 @@ PlaybackSchema {
 		hcut = rrand(800, 14000),
 		lcut = rrand(40, 4000),
 		pitch = Array.fill(modifier2 * modifier, {
-			var temp = [0.25, 0.5, 1.0, 2.0, 4.0],
-			try = [0.2, 0.4, 0.2, 0.4, 0.2].windex;
+			var temp = [0.5, 1.0, 1.125, 1.25, 1.333, 1.5, 1.667, 1.875],
+			try = [0.2, 0.6, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2].windex;
 			temp[try];
 		}),
 
