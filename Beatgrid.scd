@@ -125,20 +125,32 @@ s.waitForBoot {
 		}).add;
 
 		SynthDef(\delay, {
-			arg in, out, lfo1freq = 0.02, lfo2freq = 0.01, delayTime = 0.33333,
-			decayTime = 1.4, hcut = 12000, lcut = 200, amp = 0.6, decay = 10;
+			arg in, out, delayTime = 0.33333,
+			decayTime = 1.4, hcut = 400, lcut = 10000, amp = 0.6, decay = 10;
+
 			var sig = In.ar(in, 1),
-			lfo1 = SinOsc.kr(lfo1freq, 0.3, 1.0, 7000),
-			lfo2 = SinOsc.kr(lfo2freq, 1.0, 1.0, 7000);
+			// LFOs for filter modulation
+			hpfLFOFreq = XLine.kr(0.001, 0.1, 120),
+			lpfLFOFreq = XLine.kr(0.002, 0.05, 60),
+			hpfLFO = SinOsc.kr(hpfLFOFreq, 0).range(100, hcut),
+			lpfLFO = SinOsc.kr(lpfLFOFreq, 0).range(1000, lcut);
+
+			// Delay with modulation
 			sig = AllpassC.ar(sig, 1.0, (60/~tempo) * delayTime, decayTime);
-			//sig = LPF.ar(sig, hcut - lfo1);
-			//sig = HPF.ar(sig, lcut + lfo2);
-			//sig = FreezeVerb.ar(sig, decay: decay);
+
+			// Apply filters with modulated cutoff frequencies
+			sig = LPF.ar(sig, lpfLFO);
+			sig = HPF.ar(sig, hpfLFO);
+
+			// Add a reverb for more depth
 			sig = JPverb.ar(sig);
-			//sig = AnalogVintageDistortion.ar(sig, 0.1);
+
+			// Output with defined amplitude
 			sig = sig * amp;
 			Out.ar(out, sig);
+
 		}).add;
+
 
 		SynthDef(\mixIO, { // compressor and limiter on the mix Bus
 			arg out = 0, in = 0, amp = 1.0;
@@ -291,19 +303,19 @@ s.waitForBoot {
 				Synth(\delay, [\in, ~fxSSeq[i], \out, ~mixBus[i], \delayTime, 0.75, \decayTime, 0.1], ~fxGroup); });
 
 			~dlyMPatch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\delay, [\in, [i], ~fxMSeq[i], \out, ~mixBus[i], \lfo1freq, 0.20, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.1], ~fxGroup); });
+				Synth(\delay, [\in, [i], ~fxMSeq[i], \out, ~mixBus[i], \delayTime, 0.75, \decayTime, 0.1], ~fxGroup); });
 
 			~dlyM2Patch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\delay, [\in, ~fxMSeq[i], \out, ~mixBus[i], \lfo1freq, 0.10, \lfo2freq, 0.02, \delayTime, 0.25, \decayTime, 0.1], ~fxGroup); });
+				Synth(\delay, [\in, ~fxMSeq[i], \out, ~mixBus[i], \delayTime, 0.25, \decayTime, 0.1], ~fxGroup); });
 
 			~dlyLPatch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.10, \lfo2freq, 0.03, \delayTime, 0.5, \decayTime, 0.11], ~fxGroup); });
+				Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \delayTime, 0.5, \decayTime, 0.11], ~fxGroup); });
 
 			~dlyL2Patch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.01, \lfo2freq, 0.03, \delayTime, 0.75, \decayTime, 0.11], ~fxGroup); });
+				Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i],\delayTime, 0.75, \decayTime, 0.11], ~fxGroup); });
 
 			~dlyL3Patch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \lfo1freq, 0.04, \lfo2freq, 0.05, \delayTime, 1.25, \decayTime, 0.11], ~fxGroup); });
+				Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \delayTime, 1.25, \decayTime, 0.11], ~fxGroup); });
 
 			~revBypassPatch = Array.fill(~hardwareOutputs, { arg i;
 				Synth(\mixIO, [\in, ~mixBus[i], \out, ~masterBus[i]], ~mixGroup); });
