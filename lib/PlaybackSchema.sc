@@ -65,7 +65,7 @@ PlaybackSchema {
 		onbeat = rrand(0, 1),
 		atk = 0.1,
 		rel = (4 / (intensity + 1)),
-		hcut = intensity.linlin(0, 4, 400, 20000),
+		hcut = intensity.linlin(0, 4, 1250, 20000),
 		lcut = intensity.linlin(0, 4, 40, 40),
 		amps = Array.fill((pattern.size * modifier), {
 			arg i;
@@ -136,10 +136,10 @@ PlaybackSchema {
 			\instrument, \playback,
 			\dur, Pseq(dur, inf),
 			\buf, Pseq(buf, inf),
-			\atk, Pwhite(atk / 2, atk * 2),
+			//\atk, Pwhite(atk / 2, atk * 2),
 			\rel, Pwhite(rel / 2, rel),
-			\hcut, Pwhite(hcut / 2, hcut),
-			\lcut, Pwhite(lcut / 2, lcut),
+			//\hcut, Pwhite(hcut / 2, hcut),
+			//\lcut, Pwhite(lcut / 2, lcut),
 			\amp, Pseq(amps, inf),
 			\out, Pseq(outs, inf);
 		);
@@ -157,7 +157,7 @@ PlaybackSchema {
 		modifier2 = rrand(1, 4),
 		modifier3 = rrand(1, 4),
 		hcut = rrand(
-			intensity.linlin(0, 4, 300, 1000),
+			intensity.linlin(0, 4, 2000, 10000),
 			intensity.linlin(0, 4, 2000, 20000)),
 		kick_altlevel = rrand(~kickLevel / 3, ~kickLevel / 1.5),
 		amps = Array.fill((pattern.size), {
@@ -223,8 +223,8 @@ PlaybackSchema {
 			\instrument, \playback,
 			\dur, Pseq(dur, inf),
 			\buf, Pseq(buf, inf),
-			\hcut, Pwhite(hcut / 1.3, hcut),
-			\atk, 0.2,
+			//\hcut, Pwhite(hcut / 1.3, hcut),
+			//\atk, 0.2,
 			\amp, Pseq(amps, inf),
 			\out, Pseq(outs, inf)
 		);
@@ -521,8 +521,8 @@ PlaybackSchema {
 		hcut = rrand(800, 10000),
 		lcut = rrand(40, 1000),
 		pitch = Array.fill(modifier2 * modifier, {
-			var temp = [0.5, 1.0, 1.125, 1.25, 1.333, 1.5, 1.667, 1.875],
-			try = [0.2, 0.3, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2].windex;
+			var temp = [1.0, 1.125, 1.25],
+			try = [0.2, 0.2, 0.2].windex;
 			temp[try];
 		}),
 		amps = Array.fill((pattern.size * modifier), {

@@ -126,17 +126,18 @@ s.waitForBoot {
 
 		SynthDef(\delay, {
 			arg in, out, delayTime = 0.33333,
-			decayTime = 1.4, hcut = 400, lcut = 10000, amp = 0.6, decay = 10;
+			decayTime = 3, hcut = 100, lcut = 10000, amp = 0.2, decay = 10;
 
 			var sig = In.ar(in, 1),
 			// LFOs for filter modulation
 			hpfLFOFreq = XLine.kr(0.001, 0.1, 120),
 			lpfLFOFreq = XLine.kr(0.002, 0.05, 60),
-			hpfLFO = SinOsc.kr(hpfLFOFreq, 0).range(100, hcut),
+			hpfLFO = SinOsc.kr(hpfLFOFreq, 0).range(40, hcut),
 			lpfLFO = SinOsc.kr(lpfLFOFreq, 0).range(1000, lcut);
 
 			// Delay with modulation
-			sig = AllpassC.ar(sig, 1.0, (60/~tempo) * delayTime, decayTime);
+			//sig = AllpassC.ar(sig, 1.0, (60/~tempo) * delayTime, decayTime);
+			sig = Greyhole.ar(sig, 1.0, (60/~tempo) * delayTime);
 
 			// Apply filters with modulated cutoff frequencies
 			sig = LPF.ar(sig, lpfLFO);
@@ -151,6 +152,32 @@ s.waitForBoot {
 
 		}).add;
 
+		SynthDef(\delay2, {
+			arg in, out, delayTime = 0.33333,
+			decayTime = 5, hcut = 10400, lcut = 10000, amp = 0.11, decay = 10;
+
+			var sig = In.ar(in, 1),
+			// LFOs for filter modulation
+			hpfLFOFreq = XLine.kr(0.001, 0.1, 120),
+			//lpfLFOFreq = XLine.kr(0.002, 0.05, 60),
+			hpfLFO = SinOsc.kr(hpfLFOFreq, 0).range(1000, hcut);
+			//lpfLFO = SinOsc.kr(lpfLFOFreq, 0).range(1000, lcut);
+
+			// Delay with modulation
+			sig = AllpassC.ar(sig, 1.0, (60/~tempo) * delayTime, decayTime);
+
+			// Apply filters with modulated cutoff frequencies
+			//sig = LPF.ar(sig, lpfLFO);
+			sig = HPF.ar(sig, hpfLFO);
+
+			// Add a reverb for more depth
+			sig = JPverb.ar(sig);
+
+			// Output with defined amplitude
+			sig = sig * amp;
+			Out.ar(out, sig);
+
+		}).add;
 
 		SynthDef(\mixIO, { // compressor and limiter on the mix Bus
 			arg out = 0, in = 0, amp = 1.0;
@@ -158,7 +185,7 @@ s.waitForBoot {
 			sig = Compander.ar(sig,	sig, thresh: 0.85, slopeBelow: 1.2, slopeAbove: 0.45, clampTime: 0.01, relaxTime: 0.01);
 			lfo = SinOsc.kr(1 / (3* 60)).range(1, 10);
 			lfo = lfo + LFNoise1.kr(0.01) * 0.5;
-			lfo.poll(0.1, "LFO Value");
+			//lfo.poll(0.1, "LFO Value");
 			sig = sig * amp;
 			sig = BPeakEQ.ar(sig, 100, 1.0, 1.0);
 			sig = HDVerb.ar(sig, mix: 0.2, decay: lfo);
@@ -252,7 +279,6 @@ s.waitForBoot {
 			~retAlcove_fxSBus[6] ++
 			~retCeiling_fxSBus;
 
-
 			~fxMSeq =
 			~atrWall_fxMBus ++
 			~atrCeiling_fxMBus[0] ++ ~atrCeiling_fxMBus[1] ++
@@ -300,22 +326,22 @@ s.waitForBoot {
 				Synth(\delay, [\in, ~fxSSeq[i], \out, ~mixBus[i], \delayTime, 0.66666, \decayTime, 0.1], ~fxGroup); });
 
 			~dlyS2Patch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\delay, [\in, ~fxSSeq[i], \out, ~mixBus[i], \delayTime, 0.75, \decayTime, 0.1], ~fxGroup); });
+				Synth(\delay2, [\in, ~fxSSeq[i], \out, ~mixBus[i], \delayTime, 0.75, \decayTime, 0.1], ~fxGroup); });
 
 			~dlyMPatch = Array.fill(~hardwareOutputs, { arg i;
 				Synth(\delay, [\in, [i], ~fxMSeq[i], \out, ~mixBus[i], \delayTime, 0.75, \decayTime, 0.1], ~fxGroup); });
 
 			~dlyM2Patch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\delay, [\in, ~fxMSeq[i], \out, ~mixBus[i], \delayTime, 0.25, \decayTime, 0.1], ~fxGroup); });
+				Synth(\delay2, [\in, ~fxMSeq[i], \out, ~mixBus[i], \delayTime, 0.25, \decayTime, 0.1], ~fxGroup); });
 
 			~dlyLPatch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \delayTime, 0.5, \decayTime, 0.11], ~fxGroup); });
+				Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \delayTime, 1.0, \decayTime, 0.11], ~fxGroup); });
 
 			~dlyL2Patch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i],\delayTime, 0.75, \decayTime, 0.11], ~fxGroup); });
+				Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i],\delayTime, 1.5, \decayTime, 0.11], ~fxGroup); });
 
 			~dlyL3Patch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \delayTime, 1.25, \decayTime, 0.11], ~fxGroup); });
+				Synth(\delay2, [\in, ~fxLSeq[i], \out, ~mixBus[i], \delayTime, 2.0, \decayTime, 0.11], ~fxGroup); });
 
 			~revBypassPatch = Array.fill(~hardwareOutputs, { arg i;
 				Synth(\mixIO, [\in, ~mixBus[i], \out, ~masterBus[i]], ~mixGroup); });
