@@ -1,12 +1,51 @@
 (
 ~hardwareInputs = 1;
 ~hardwareOutputs = 2;
+~ambiOrder = 3; // Third-order Ambisonics
+~numAmbiChans = ( ~ambiOrder + 1 )**2; // = 16
 ~tempo = 30;
 ~kitOverride = false;
 
-// can be \stereo, \stem, \blackhole, \false = default
-~mixdown = \false;
+// can be \stereo, \stem, \false = default
+~mixdown = \stereo;
 // master fader will only work if mixdown is false
+
+
+
+// Audio Signal Flow Diagram
+
+// For Each Instrument (e.g. \kick):
+// Pattern (Pbind) output ---> dryBus + optional fxBus
+//
+// dryBus               fxBus
+//   |                   |
+//   v                   v
+//  [mixInstrument Synth]  -- mixes dry+fx --> monoBus
+//             |
+//             v
+//        [hoaEncodeGeneric Synth] -- encodes mono into HOA --> ambiBus
+//
+// After all instruments are encoded:
+// ambiBus_1, ambiBus_2, ... ambiBus_n -- here's where instrument-based spat occurs
+//       |        |               |
+//       v        v               v
+//      [ambiSum Synths chain them together] --> finalAmbiBus
+//
+// finalAmbiBus
+//       |
+//       v
+//      [mixIO Synth] (Compander, EQ, Verb, Limiter) --> processedAmbiBus (mix processing)
+//
+// processedAmbiBus
+//       |
+//       v
+//      [masterGain Synth] (master amplitude control) --> finalGainBus
+//
+// finalGainBus
+//     |
+//     +--> If monitoring in stereo: [downmixToStereo Synth] --> Out.ar(0,1) hardware outputs
+//     |
+//     +--> If 16-channel system: [directAmbiOut Synth] --> Out.ar(0..15) hardware outputs
 
 
 //ServerOptions.devices;
@@ -15,7 +54,9 @@ Server.default.options.numOutputBusChannels = ~hardwareOutputs;
 s.options.memSize = 365536;
 s.options.numBuffers = 8096;
 s.options.sampleRate = 48000;
+s.options.numWireBufs = 1024;
 s.reboot;
+
 
 ~seed = [
 	1, 0, 1, 1,
@@ -41,9 +82,74 @@ s.reboot;
 
 ~instruments = [\bass, \kick, \snare, \clap, \hat, \loop, \hit, \misc];
 
+~instrumentBuses = (
+    \bass: (
+        dryBus: Bus.audio(s, 1),
+        fxBus:  Bus.audio(s, 1),
+        monoBus: Bus.audio(s, 1),
+		ambiBus: Bus.audio(s, ~numAmbiChans),
+        az: 0,
+        el: 0
+    ),
+    \kick: (
+        dryBus: Bus.audio(s, 1),
+        fxBus:  Bus.audio(s, 1),
+        monoBus: Bus.audio(s, 1),
+        ambiBus: Bus.audio(s, ~numAmbiChans),
+        az: 45,
+        el: 0
+    ),
+    \clap: (
+        dryBus: Bus.audio(s, 1),
+        fxBus:  Bus.audio(s, 1),
+        monoBus: Bus.audio(s, 1),
+        ambiBus: Bus.audio(s, ~numAmbiChans),
+        az: 90,
+        el: 0
+    ),
+    \snare: (
+        dryBus: Bus.audio(s, 1),
+        fxBus:  Bus.audio(s, 1),
+        monoBus: Bus.audio(s, 1),
+        ambiBus: Bus.audio(s, ~numAmbiChans),
+        az: 135,
+        el: 0
+    ),
+    \hat: (
+        dryBus: Bus.audio(s, 1),
+        fxBus:  Bus.audio(s, 1),
+        monoBus: Bus.audio(s, 1),
+        ambiBus: Bus.audio(s, ~numAmbiChans),
+        az: 180,
+        el: 0
+    ),
+    \loop: (
+        dryBus: Bus.audio(s, 1),
+        fxBus:  Bus.audio(s, 1),
+        monoBus: Bus.audio(s, 1),
+        ambiBus: Bus.audio(s, ~numAmbiChans),
+        az: 225,
+        el: 0
+    ),
+    \hit: (
+        dryBus: Bus.audio(s, 1),
+        fxBus:  Bus.audio(s, 1),
+        monoBus: Bus.audio(s, 1),
+        ambiBus: Bus.audio(s, ~numAmbiChans),
+        az: 270,
+        el: 0
+    ),
+    \misc: (
+        dryBus: Bus.audio(s, 1),
+        fxBus:  Bus.audio(s, 1),
+        monoBus: Bus.audio(s, 1),
+        ambiBus: Bus.audio(s, ~numAmbiChans),
+        az: 315,
+        el: 0
+    )
+);
+
 ~loopLen = 60;
-
-
 
 s.waitForBoot {
 
@@ -117,12 +223,6 @@ s.waitForBoot {
 			Out.ar(out, sig * env * amp);
 		}).add;
 
-		SynthDef(\playbackLoop, {
-			arg buf, out, amp = 1.0, atk, rel, env_atk, env_rel, lcut = 40;
-			var sig = PlayBuf.ar(32, buf, BufRateScale.ir(buf) * 1.0, loop: 0, doneAction: 2),
-			env = EnvGen.kr( Env.new([0,1,1,0], [10, 20, 24]), doneAction:2);
-			Out.ar(out, sig * amp * env);
-		}).add;
 
 		SynthDef(\delay, {
 			arg in, out, delayTime = 0.33333,
@@ -179,193 +279,117 @@ s.waitForBoot {
 
 		}).add;
 
-		SynthDef(\mixIO, { // compressor and limiter on the mix Bus
-			arg out = 0, in = 0, amp = 1.0;
-			var sig = In.ar(in, 1), lfo;
-			sig = Compander.ar(sig,	sig, thresh: 0.85, slopeBelow: 1.2, slopeAbove: 0.45, clampTime: 0.01, relaxTime: 0.01);
-			lfo = SinOsc.kr(1 / (3* 60)).range(1, 10);
-			lfo = lfo + LFNoise1.kr(0.01) * 0.5;
-			//lfo.poll(0.1, "LFO Value");
-			sig = sig * amp;
+		SynthDef(\mixIO, { // compressor, limiter on the Ambisonic mix
+			arg out, in, amp = 1.0;
+			var sig = In.ar(in, 16), // Now reading all HOA channels
+			lfo = SinOsc.kr(1 / (3* 60)).range(1, 10) + (LFNoise1.kr(0.01) * 0.5);
+			// Apply the same processing to each channel of the ambisonic field:
+			// Compander, EQ, Verb, Limiter all handle arrays gracefully.
+			sig = Compander.ar(sig, sig, thresh: 0.85, slopeBelow: 1.2, slopeAbove: 0.45, clampTime: 0.01, relaxTime: 0.01);
 			sig = BPeakEQ.ar(sig, 100, 1.0, 1.0);
 			sig = HDVerb.ar(sig, mix: 0.2, decay: lfo);
+			sig = sig * amp;
 			sig = Limiter.ar(sig, level: 0.94, dur: 0.1);
 			Out.ar(out, sig);
 		}).add;
 
-		SynthDef(\patchCord, {
-			arg in, out, amp = 1.0;
-			var sig = In.ar(in, 1);
+		// One SynthDef to mix Dry+FX
+		SynthDef(\mixInstrument, {
+			arg inDry, inFx, out;
+			var dry = In.ar(inDry, 1),
+			fx = In.ar(inFx, 1);
+			Out.ar(out, dry + fx);
+		}).add;
+
+		// One SynthDef to encode Ambisonics (3rd order)
+		SynthDef(\hoaEncodeGeneric, {
+			arg in, out, az=0, el=0, amp=1.0, order=3;
+			var sig = In.ar(in, 1),
+			encoded = HoaEncodeDirection.ar(sig, az.degrad, el.degrad, radius:3, order:3);
+			Out.ar(out, encoded);
+		}).add;
+
+
+		// SynthDef to sum two ambisonic signals
+		SynthDef(\ambiSum, { |out, inA, inB|
+			var sigA = In.ar(inA, 16);
+			var sigB = In.ar(inB, 16);
+			Out.ar(out, sigA + sigB);
+		}).add;
+
+		SynthDef(\masterGain, { |in, out, amp=1.0|
+			var sig = In.ar(in, 16);
+			// Multiply by amp, which will be controlled by the GUI slider.
 			sig = sig * amp;
 			Out.ar(out, sig);
 		}).add;
 
 		s.sync;
 
-		if (~mixdown == \false, {
+		// Setup instruments
+		~instrumentBuses.keys.do { |instr|
+			var data = ~instrumentBuses[instr];
 
-			~playbackGroup = Group.tail(s);
-			~dryGroup = Group.tail(s); ~fxGroup = Group.tail(s); ~mixGroup = Group.tail(s); ~masterGroup = Group.tail(s);
+			// Mix dry + fx into mono
+			Synth(\mixInstrument, [
+				\inDry, data[\dryBus],
+				\inFx,  data[\fxBus],
+				\out,   data[\monoBus]
+			]);
 
-			/* FOR REFERENCE:
+			// Encode to HOA
+			Synth(\hoaEncodeGeneric, [
+				\in, data[\monoBus],
+				\out, data[\ambiBus],
+				\az, data[\az],
+				\el, data[\el]
+			]);
+		};
 
-			0 - 7: Atrium Wall Left to Right
-			8 - 9: Atrium Ceiling Left
-			10 - 11: Atrium Subs Left
-			12 - 13: Atrium Ceiling Right
-			14 - 15: Atrium Subs Right
-			16 - 17: Retail Alcove
-			18: Retail Sub L
-			19 - 22: Retail Alcove R
-			23: Retail Sub R
-			24: Retail Alcove R (cont)
-			25 - 32: Ceilings
+		~ambiBuses = ~instrumentBuses.values.collect { |v| v[\ambiBus] };
+		~currentSumBus = ~ambiBuses[0];
 
-			*/
+		~ambiBuses[1..].do { |b|
+			var newSumBus = Bus.audio(s, ~numAmbiChans);
+			Synth(\ambiSum, [\out, newSumBus, \inA, ~currentSumBus, \inB, b]);
+			~currentSumBus = newSumBus;
+		};
 
-			~atrWall_dryBus = Array.fill(8, { Bus.audio(s, 1) });
-			~atrCeiling_dryBus = Array.fill(4, { Bus.audio(s, 1) });
-			~atrSubs_dryBus = Array.fill(4, { Bus.audio(s, 1) });
-			~retAlcove_dryBus = Array.fill(7, { Bus.audio(s, 1) });
-			~retCeiling_dryBus = Array.fill(8, { Bus.audio(s, 1) });
-			~retSubs_dryBus = Array.fill(2, {Bus.audio(s, 1) });
+		// Now currentSumBus is the final summed Ambisonic signal
+		~finalAmbiBus = ~currentSumBus;
 
-			~atrWall_fxSBus = Array.fill(8, { Bus.audio(s, 1) });
-			~atrCeiling_fxSBus = Array.fill(4, { Bus.audio(s, 1) });
-			~atrSubs_fxSBus = Array.fill(4, { Bus.audio(s, 1) });
-			~retAlcove_fxSBus = Array.fill(7, { Bus.audio(s, 1) });
-			~retCeiling_fxSBus = Array.fill(8, { Bus.audio(s, 1) });
-			~retSubs_fxSBus = Array.fill(2, {Bus.audio(s, 1) });
+		~processedAmbiBus = Bus.audio(s, ~numAmbiChans);
+		Synth(\mixIO, [\in, ~finalAmbiBus, \out, ~processedAmbiBus]);
 
-			~atrWall_fxMBus = Array.fill(8, { Bus.audio(s, 1) });
-			~atrCeiling_fxMBus = Array.fill(4, { Bus.audio(s, 1) });
-			~atrSubs_fxMBus = Array.fill(4, { Bus.audio(s, 1) });
-			~retAlcove_fxMBus = Array.fill(7, { Bus.audio(s, 1) });
-			~retCeiling_fxMBus = Array.fill(8, { Bus.audio(s, 1) });
-			~retSubs_fxMBus = Array.fill(2, {Bus.audio(s, 1) });
+		~finalGainBus = Bus.audio(s, ~numAmbiChans);
+		~masterGainSynth = Synth(\masterGain, [\in, ~processedAmbiBus, \out, ~finalGainBus, \amp, ~initLevel]);
 
-			~atrWall_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
-			~atrCeiling_fxLBus = Array.fill(4, { Bus.audio(s, 1) });
-			~atrSubs_fxLBus = Array.fill(4, { Bus.audio(s, 1) });
-			~retAlcove_fxLBus = Array.fill(7, { Bus.audio(s, 1) });
-			~retCeiling_fxLBus = Array.fill(8, { Bus.audio(s, 1) });
-			~retSubs_fxLBus = Array.fill(2, {Bus.audio(s, 1) });
 
-			~loopBus = Bus.audio(s,33);
-
-			~drySeq =
-			~atrWall_dryBus ++
-			~atrCeiling_dryBus[0] ++ ~atrCeiling_dryBus[1] ++
-			~atrSubs_dryBus[0] ++ ~atrSubs_dryBus[1] ++
-			~atrCeiling_dryBus[2] ++ ~atrCeiling_dryBus[3] ++
-			~atrSubs_dryBus[2] ++ ~atrSubs_dryBus[3] ++
-			~retAlcove_dryBus[0] ++ ~retAlcove_dryBus[1] ++
-			~retSubs_dryBus[0] ++
-			~retAlcove_dryBus[2] ++ ~retAlcove_dryBus[3] ++ ~retAlcove_dryBus[4] ++ ~retAlcove_dryBus[5] ++
-			~retSubs_dryBus[1] ++
-			~retAlcove_dryBus[6] ++
-			~retCeiling_dryBus;
-
-			~fxSSeq =
-			~atrWall_fxSBus ++
-			~atrCeiling_fxSBus[0] ++ ~atrCeiling_fxSBus[1] ++
-			~atrSubs_fxSBus[0] ++ ~atrSubs_fxSBus[1] ++
-			~atrCeiling_fxSBus[2] ++ ~atrCeiling_fxSBus[3] ++
-			~atrSubs_fxSBus[2] ++ ~atrSubs_fxSBus[3] ++
-			~retAlcove_fxSBus[0] ++ ~retAlcove_fxSBus[1] ++
-			~retSubs_fxSBus[0] ++
-			~retAlcove_fxSBus[2] ++ ~retAlcove_fxSBus[3] ++ ~retAlcove_fxSBus[4] ++ ~retAlcove_fxSBus[5] ++
-			~retSubs_fxSBus[1] ++
-			~retAlcove_fxSBus[6] ++
-			~retCeiling_fxSBus;
-
-			~fxMSeq =
-			~atrWall_fxMBus ++
-			~atrCeiling_fxMBus[0] ++ ~atrCeiling_fxMBus[1] ++
-			~atrSubs_fxMBus[0] ++ ~atrSubs_fxMBus[1] ++
-			~atrCeiling_fxMBus[2] ++ ~atrCeiling_fxMBus[3] ++
-			~atrSubs_fxMBus[2] ++ ~atrSubs_fxMBus[3] ++
-			~retAlcove_fxMBus[0] ++ ~retAlcove_fxMBus[1] ++
-			~retSubs_fxMBus[0] ++
-			~retAlcove_fxMBus[2] ++ ~retAlcove_fxMBus[3] ++ ~retAlcove_fxMBus[4] ++ ~retAlcove_fxMBus[5] ++
-			~retSubs_fxMBus[1] ++
-			~retAlcove_fxMBus[6] ++
-			~retCeiling_fxMBus;
-
-			~fxLSeq =
-			~atrWall_fxLBus ++
-			~atrCeiling_fxLBus[0] ++ ~atrCeiling_fxLBus[1] ++
-			~atrSubs_fxLBus[0] ++ ~atrSubs_fxLBus[1] ++
-			~atrCeiling_fxLBus[2] ++ ~atrCeiling_fxLBus[3] ++
-			~atrSubs_fxLBus[2] ++ ~atrSubs_fxLBus[3] ++
-			~retAlcove_fxLBus[0] ++ ~retAlcove_fxLBus[1] ++
-			~retSubs_fxLBus[0] ++
-			~retAlcove_fxLBus[2] ++ ~retAlcove_fxLBus[3] ++ ~retAlcove_fxLBus[4] ++ ~retAlcove_fxLBus[5] ++
-			~retSubs_fxLBus[1] ++
-			~retAlcove_fxLBus[6] ++
-			~retCeiling_fxLBus;
-
-			~mixBus = Array.fill(~hardwareOutputs, { Bus.audio(s, 1) });
-			~masterBus = Array.fill(~hardwareOutputs, { Bus.audio(s, 1) });
-
-			s.sync;
-
-			~dryPatch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\patchCord, [\in, ~drySeq[i], \out, ~mixBus[i]], ~dryGroup); });
-
-			~drySPatch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\patchCord, [\in, ~fxSSeq[i], \out, ~mixBus[i]], ~dryGroup); });
-
-			~dryMPatch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\patchCord, [\in, ~fxMSeq[i], \out, ~mixBus[i]], ~dryGroup); });
-
-			~dryLPatch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\patchCord, [\in, ~fxLSeq[i], \out, ~mixBus[i]], ~dryGroup); });
-
-			~dlySPatch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\delay, [\in, ~fxSSeq[i], \out, ~mixBus[i], \delayTime, 0.66666, \decayTime, 0.1], ~fxGroup); });
-
-			~dlyS2Patch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\delay2, [\in, ~fxSSeq[i], \out, ~mixBus[i], \delayTime, 0.75, \decayTime, 0.1], ~fxGroup); });
-
-			~dlyMPatch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\delay, [\in, [i], ~fxMSeq[i], \out, ~mixBus[i], \delayTime, 0.75, \decayTime, 0.1], ~fxGroup); });
-
-			~dlyM2Patch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\delay2, [\in, ~fxMSeq[i], \out, ~mixBus[i], \delayTime, 0.25, \decayTime, 0.1], ~fxGroup); });
-
-			~dlyLPatch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i], \delayTime, 1.0, \decayTime, 0.11], ~fxGroup); });
-
-			~dlyL2Patch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\delay, [\in, ~fxLSeq[i], \out, ~mixBus[i],\delayTime, 1.5, \decayTime, 0.11], ~fxGroup); });
-
-			~dlyL3Patch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\delay2, [\in, ~fxLSeq[i], \out, ~mixBus[i], \delayTime, 2.0, \decayTime, 0.11], ~fxGroup); });
-
-			~revBypassPatch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\mixIO, [\in, ~mixBus[i], \out, ~masterBus[i]], ~mixGroup); });
-
-			~mixPatch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\patchCord, [\in, ~masterBus[i], \out, i], ~masterGroup); });
-
-		});
-
-		if (~mixdown == \blackhole, {
-
-			~playbackGroup = Group.tail(s);
-			~masterGroup = Group.tail(s);
-
-			~loArray = Array.fill(4, { Bus.audio(s, 1) });
-			~midArray = Array.fill(4, { Bus.audio(s, 1) });
-			~hiArray = Array.fill(5, { Bus.audio(s, 1) });
-			~subLFE = Array.fill(1, {Bus.audio(s, 1) });
-
-			~drySeq = ~loArray ++ ~midArray ++ ~hiArray ++ ~subLFE;
-
-			~mixPatch = Array.fill(~hardwareOutputs, { arg i;
-				Synth(\patchCord, [\in, ~drySeq[i], \out, i], ~masterGroup); });
-
+		// If we are just monitoring on headphones (2 channels), decode or downmix
+		// If we have 16 outputs (the install), route directly:
+		if (~hardwareOutputs == 2) {
+			// Simple downmix to stereo using a FOA->Stereo approximation or using just W channel:
+			// For a quick hack: take W channel only (first channel of ambisonics)
+			// A proper decode requires a decode matrix or ATK decode.
+			SynthDef(\downmixToStereo, { |in|
+				var insig = In.ar(in, 16);
+				// Here we just take W and maybe some other channels to fake stereo:
+				var w = Select.ar(0, insig); // W channel is 0
+				var x = Select.ar(3, insig); // X channel
+				// simple fake stereo: w+(0.5*x) left, w-(0.5*x) right
+				var left = w + (0.5 * x);
+				var right = w - (0.5 * x);
+				Out.ar(0, [left, right]);
+			}).add;
+			Synth(\downmixToStereo, [\in,  ~finalGainBus]);
+		} {
+			// If we have 16 hardware outputs, directly send them out:
+			SynthDef(\directAmbiOut, { |in|
+				var sig = In.ar(in, 16);
+				Out.ar(0, sig);
+			}).add;
+			Synth(\directAmbiOut, [\in,  ~finalGainBus]);
+		}
 		});
 
 		s.sync;
@@ -379,12 +403,10 @@ s.waitForBoot {
 		~w.view.decorator_(FlowLayout(~w.bounds, 20@20, 20@20));
 
 		~masterFader = EZSlider.new(~w, Rect(20, 160, 430, 40), "master fader",
-			ControlSpec.new(0.00, 1.5, \lin, 0.01, 0, ""), {
-				arg slider;
-				~hardwareOutputs.do {
-					arg i;
-					~mixPatch[i].set(\amp, slider.value)};
-		}, 0, false, 80, 45).value_(~initLevel).setColors(Color.grey,Color.white);
+			ControlSpec.new(0.00, 1.5, \lin, 0.01, 1.0, ""), // default 1.0
+    		{ arg slider; ~masterGainSynth.set(\amp, slider.value); },
+    		0, false, 80, 45
+		).value_(~initLevel).setColors(Color.grey, Color.white);
 
 		~startButton = Button(~w, Rect(20, 20, 420, 40))
 		.states_([["Start", Color.gray, Color.yellow], ["Halt", Color.gray, Color.red]])
@@ -464,9 +486,6 @@ s.waitForBoot {
 							c.transition.event.streaming.at(instrument).patterns[1].free;  }); });
 			});
 		});
-
-		if (~mixdown == \false, {
-			~hardwareOutputs.do { arg i; ~mixPatch[i].set(\amp, ~initLevel ) };});
 
 		s.sync;
 

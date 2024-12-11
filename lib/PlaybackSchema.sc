@@ -78,56 +78,7 @@ PlaybackSchema {
 
 			\stereo, {[[0, 1]]},
 			\stem, {[0]},
-			\blackhole, {this.interlace_n_arrays([
-				this.output_pattern_gen(~loArray, 2, 2, false),
-				this.output_pattern_gen(~subLFE, 2, 1, false)]
-			)},
-
-			\false, {this.interlace_n_arrays(
-
-				switch(intensity,
-
-					0, {[
-						this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false, 2),
-						this.output_pattern_gen(~atrCeiling_fxLBus, 2, 2, false, 2),
-						this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false, 2),
-						this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false, 2)
-					]},
-
-					1, {[
-						this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false, 2),
-						this.output_pattern_gen(~atrCeiling_fxLBus, 2, 2, false, 2),
-						this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false, 2),
-						this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false, 2)
-					]},
-
-					2, {[
-						this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, true),
-						this.output_pattern_gen(~atrCeiling_fxLBus, 2, 2, true),
-						this.output_pattern_gen(~retSubs_fxLBus, 2, 2, true),
-						this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, true)
-					]},
-
-					3, {[
-						this.output_pattern_gen(~atrSubs_dryBus, 3, 1, true),
-						this.output_pattern_gen(~atrCeiling_dryBus, 3, 2, true),
-						this.output_pattern_gen(~retSubs_dryBus, 3, 2, true),
-						this.output_pattern_gen(~retAlcove_dryBus, 3, 2, true)
-					]},
-
-					4, {[
-						this.output_pattern_gen(~atrSubs_dryBus, 4, 1, true),
-						this.output_pattern_gen(~atrCeiling_dryBus, 4, 2, true),
-						this.output_pattern_gen(~retSubs_dryBus, 4, 2, true),
-						this.output_pattern_gen(~retAlcove_dryBus, 4, 2, true)
-					]}
-
-				)
-
-		)});
-
-		outs.postln;
-
+			\false, {~instrumentBuses[\bass][\dryBus].index});
 
 		~appendLog.value("OK: Bass Buffers: " ++ buf.asString);
 
@@ -171,51 +122,7 @@ PlaybackSchema {
 
 			\stereo, {[[0, 1]]},
 			\stem, {[1]},
-			\blackhole, {this.interlace_n_arrays([
-				this.output_pattern_gen(~loArray, 2, 2, false),
-				this.output_pattern_gen(~subLFE, 2, 1, false)]
-			)},
-			\false, {this.interlace_n_arrays(
-
-				switch(intensity,
-
-					0, {[
-						this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false, 2),
-						this.output_pattern_gen(~atrCeiling_fxLBus, 2, 1, false, 2),
-						this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false, 2),
-						this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false, 2),
-					]},
-
-					1, {[
-						this.output_pattern_gen(~atrSubs_fxLBus, 2, 1, false, 2),
-						this.output_pattern_gen(~atrCeiling_fxLBus, 2, 1, false, 2),
-						this.output_pattern_gen(~retSubs_fxLBus, 2, 2, false, 2),
-						this.output_pattern_gen(~retAlcove_fxLBus, 2, 2, false, 2),
-					]},
-
-					2, {[
-						this.output_pattern_gen(~atrSubs_dryBus, 2, 1, true),
-						this.output_pattern_gen(~atrCeiling_dryBus, 2, 1, true),
-						this.output_pattern_gen(~retSubs_dryBus, 2, 2, true),
-						this.output_pattern_gen(~retAlcove_dryBus, 2, 2, true),
-					]},
-
-					3, {[
-						this.output_pattern_gen(~atrSubs_dryBus, 3, 1, true),
-						this.output_pattern_gen(~atrCeiling_dryBus, 3, 1, true),
-						this.output_pattern_gen(~retSubs_dryBus, 3, 2, true),
-						this.output_pattern_gen(~retAlcove_dryBus, 3, 2, true),
-					]},
-
-					4, {[
-						this.output_pattern_gen(~atrSubs_dryBus, 4, 1, true),
-						this.output_pattern_gen(~atrCeiling_dryBus, 4, 1, true),
-						this.output_pattern_gen(~retSubs_dryBus, 4, 2, true),
-						this.output_pattern_gen(~retAlcove_dryBus, 4, 2, true),
-					]}
-
-				)
-		)});
+			\false, {~instrumentBuses[\kick][\dryBus].index});
 
 		~appendLog.value("OK: Kick Buffers: " ++ buf.asString);
 
@@ -259,46 +166,7 @@ PlaybackSchema {
 
 			\stereo, {Array.fill(16, {rrand(0,1)})},
 			\stem, {[2]},
-			\blackhole, {this.interlace_n_arrays([
-				this.output_pattern_gen(~hiArray, 2, 2, false),
-				this.output_pattern_gen(~midArray, 2, 2, false)]
-			)},
-			\false, {this.interlace_n_arrays(
-
-				switch(intensity,
-					0, {[
-						this.output_pattern_gen(~atrCeiling_fxLBus, 3, 2, false, 2),
-						this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false, 2),
-						this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false, 2),
-						this.output_pattern_gen(~retAlcove_fxLBus, 3, 2, false, 2),
-					]},
-					1, {[
-						this.output_pattern_gen(~atrCeiling_fxLBus, 4, 2, false, 3),
-						this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false, 3),
-						this.output_pattern_gen(~retCeiling_fxLBus, 4, 2, false, 3),
-						this.output_pattern_gen(~retAlcove_fxLBus, 4, 2, false, 3),
-					]},
-					2, {[
-						this.output_pattern_gen(~atrCeiling_fxMBus, 5, 2, false),
-						this.output_pattern_gen(~atrWall_fxLBus, 5, 2, false),
-						this.output_pattern_gen(~retCeiling_fxMBus, 5, 2, true),
-						this.output_pattern_gen(~retAlcove_fxLBus, 5, 2, false),
-					]},
-					3, {[
-						this.output_pattern_gen(~atrCeiling_fxSBus, 6, 2, true),
-						this.output_pattern_gen(~atrWall_fxMBus, 6, 2, true),
-						this.output_pattern_gen(~retCeiling_fxSBus, 6, 2, true),
-						this.output_pattern_gen(~retAlcove_fxMBus, 6, 2, false),
-					]},
-					4, {[
-						this.output_pattern_gen(~atrCeiling_fxSBus, 7, 2, true),
-						this.output_pattern_gen(~atrWall_fxSBus, 7, 2, true),
-						this.output_pattern_gen(~retCeiling_fxSBus, 7, 2, true),
-						this.output_pattern_gen(~retAlcove_fxSBus, 7, 2, true),
-					]},
-				)
-
-		)});
+			\false, {~instrumentBuses[\clap][\dryBus].index});
 
 		~appendLog.value("OK: Clap Buffers: " ++ buf.asString);
 
@@ -338,42 +206,7 @@ PlaybackSchema {
 
 			\stereo, {Array.fill(8, {rrand(0,1)})},
 			\stem, {[3]},
-			\blackhole, {this.interlace_n_arrays([
-				this.output_pattern_gen(~loArray, 2, 2, false),
-				this.output_pattern_gen(~midArray, 2, 2, false)]
-			)},
-			\false, {this.interlace_n_arrays(
-
-				switch(intensity,
-					0, {[
-						this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false, 2),
-						this.output_pattern_gen(~retCeiling_fxLBus, 3, 3, false, 2),
-						this.output_pattern_gen(~retAlcove_fxLBus, 3, 2, false, 2),
-					]},
-					1, {[
-						this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false, 3),
-						this.output_pattern_gen(~retCeiling_fxLBus, 4, 3, false, 3),
-						this.output_pattern_gen(~retAlcove_fxLBus, 4, 2, false, 3),
-					]},
-					2, {[
-						this.output_pattern_gen(~atrWall_fxMBus, 5, 2, false),
-						this.output_pattern_gen(~retCeiling_fxMBus, 5, 3, true),
-						this.output_pattern_gen(~retAlcove_fxMBus, 5, 2, false),
-					]},
-					3, {[
-						this.output_pattern_gen(~atrWall_fxSBus, 6, 2, true, 2),
-						this.output_pattern_gen(~retCeiling_fxMBus, 6, 3, true, 2),
-						this.output_pattern_gen(~retAlcove_fxSBus, 6, 2, false, 2),
-					]},
-					4, {[
-						this.output_pattern_gen(~atrWall_fxSBus, 7, 2, true, 3),
-						this.output_pattern_gen(~retCeiling_fxSBus, 7, 3, true, 3),
-						this.output_pattern_gen(~retAlcove_fxSBus, 7, 2, false, 3),
-					]},
-				)
-
-		)});
-
+			\false, {~instrumentBuses[\snare][\dryBus].index});
 
 		~appendLog.value("OK: Snare Buffers: " ++ buf.asString);
 
@@ -429,35 +262,7 @@ PlaybackSchema {
 
 			\stereo, {Array.fill(4, {[0, 1, [0, 1]].choose([0.2, 0.2, 0.6])})},
 			\stem, {[4]},
-			\blackhole, {this.interlace_n_arrays([
-				this.output_pattern_gen(~hiArray, 4, 2, false)]
-			)},
-			\false, {this.interlace_n_arrays(
-
-				switch(intensity,
-					0, {[
-						this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false, 3),
-						this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false, 3),
-					]},
-					1, {[
-						this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false, 2),
-						this.output_pattern_gen(~retCeiling_fxMBus, 4, 2, false, 2),
-					]},
-					2, {[
-						this.output_pattern_gen(~atrWall_fxMBus, 5, 2, false),
-						this.output_pattern_gen(~retCeiling_fxMBus, 5, 2, true),
-					]},
-					3, {[
-						this.output_pattern_gen(~atrWall_fxSBus, 6, 2, true),
-						this.output_pattern_gen(~retCeiling_fxSBus, 6, 2, true),
-					]},
-					4, {[
-						this.output_pattern_gen(~atrWall_fxSBus, 7, 2, true, 2),
-						this.output_pattern_gen(~retCeiling_fxSBus, 7, 2, true, 2),
-					]},
-				)
-
-		)});
+			\false, {~instrumentBuses[\hat][\dryBus].index});
 
 		~appendLog.value("OK: Hat Buffers: " ++ buf.asString);
 
@@ -489,7 +294,7 @@ PlaybackSchema {
 			\stereo, {0},
 			\stem, {7},
 			\blackhole, {0},
-			\false, {~mixBus[0]});
+			\false, {~instrumentBuses[\loop][\dryBus].index});
 
 		~appendLog.value("OK: Loop Buffers: " ++ buf.asString);
 
@@ -536,46 +341,7 @@ PlaybackSchema {
 
 			\stereo, {Array.fill(4, {[0, 1, [0, 1]].choose([0.2, 0.2, 0.6])})},
 			\stem, {[5]},
-			\blackhole, {this.interlace_n_arrays([
-				this.output_pattern_gen(~loArray, 4, 2, false),
-				this.output_pattern_gen(~hiArray, 4, 2, false)]
-			)},
-			\false, {this.interlace_n_arrays(
-
-				switch(intensity,
-					0, {[
-						this.output_pattern_gen(~atrCeiling_fxLBus, 3, 3, false, 4),
-						this.output_pattern_gen(~atrWall_fxLBus, 3, 3, false, 4),
-						this.output_pattern_gen(~retCeiling_fxLBus, 3, 3, false, 4),
-						this.output_pattern_gen(~retAlcove_fxLBus, 3, 3, false, 4),
-					]},
-					1, {[
-						this.output_pattern_gen(~atrCeiling_fxLBus, 4, 3, false, 3),
-						this.output_pattern_gen(~atrWall_fxLBus, 4, 3, false, 3),
-						this.output_pattern_gen(~retCeiling_fxLBus, 4, 3, false, 3),
-						this.output_pattern_gen(~retAlcove_fxLBus, 4, 3, false, 3),
-					]},
-					2, {[
-						this.output_pattern_gen(~atrCeiling_fxMBus, 5, 3, false, 2),
-						this.output_pattern_gen(~atrWall_fxLBus, 5, 3, false, 2),
-						this.output_pattern_gen(~retCeiling_fxMBus, 5, 3, true, 2),
-						this.output_pattern_gen(~retAlcove_fxLBus, 5, 3, false, 2),
-					]},
-					3, {[
-						this.output_pattern_gen(~atrCeiling_fxSBus, 6, 3, true),
-						this.output_pattern_gen(~atrWall_fxMBus, 6, 3, true),
-						this.output_pattern_gen(~retCeiling_fxSBus, 6, 3, true),
-						this.output_pattern_gen(~retAlcove_fxMBus, 6, 3, false),
-					]},
-					4, {[
-						this.output_pattern_gen(~atrCeiling_fxSBus, 7, 3, true),
-						this.output_pattern_gen(~atrWall_fxMBus, 7, 3, true),
-						this.output_pattern_gen(~retCeiling_fxSBus, 7, 3, true),
-						this.output_pattern_gen(~retAlcove_fxMBus, 7, 3, true),
-					]},
-				)
-
-		)});
+			\false, {~instrumentBuses[\hit][\dryBus].index});
 
 		~appendLog.value("OK: Hit Buffers: " ++ buf.asString);
 
@@ -635,36 +401,7 @@ PlaybackSchema {
 
 			\stereo, {Array.fill(4, {[0, 1, [0, 1]].choose([0.2, 0.2, 0.6])})},
 			\stem, {[6]},
-			\blackhole, {this.interlace_n_arrays([
-				this.output_pattern_gen(~hiArray, 4, 1, false),
-				this.output_pattern_gen(~midArray, 4, 1, false)]
-			)},
-			\false, {this.interlace_n_arrays(
-
-				switch(intensity,
-					0, {[
-						this.output_pattern_gen(~atrWall_fxLBus, 3, 2, false, 3),
-						this.output_pattern_gen(~retCeiling_fxLBus, 3, 2, false, 3),
-					]},
-					1, {[
-						this.output_pattern_gen(~atrWall_fxLBus, 4, 2, false, 2),
-						this.output_pattern_gen(~retCeiling_fxLBus, 4, 2, false, 2),
-					]},
-					2, {[
-						this.output_pattern_gen(~atrWall_fxLBus, 5, 2, false),
-						this.output_pattern_gen(~retCeiling_fxLBus, 5, 2, true),
-					]},
-					3, {[
-						this.output_pattern_gen(~atrWall_fxMBus, 6, 2, true, 2),
-						this.output_pattern_gen(~retCeiling_fxMBus, 6, 2, true, 2),
-					]},
-					4, {[
-						this.output_pattern_gen(~atrWall_fxMBus, 7, 2, true, 3),
-						this.output_pattern_gen(~retCeiling_fxMBus, 7, 2, true, 3),
-					]},
-				)
-
-		)});
+			\false, {~instrumentBuses[\misc][\dryBus].index});
 
 		~appendLog.value("OK: Misc Buffers: " ++ buf.asString);
 
