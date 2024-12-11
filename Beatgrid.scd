@@ -1,13 +1,15 @@
 (
-~hardwareInputs = 1;
-~hardwareOutputs = 2;
+~hardwareInputs = 16;
+~hardwareOutputs = 16;
 ~ambiOrder = 3; // Third-order Ambisonics
 ~numAmbiChans = ( ~ambiOrder + 1 )**2; // = 16
 ~tempo = 30;
 ~kitOverride = false;
 
+
+~micLevel = 0.0;
 // can be \stereo, \stem, \false = default
-~mixdown = \stereo;
+~mixdown = \false;
 // master fader will only work if mixdown is false
 
 
@@ -79,81 +81,92 @@ s.reboot;
 ~loopLevel = 0.33;
 ~hitLevel = 0.51 * ~scl;
 ~miscLevel = 0.47 * ~scl;
+~loopLen = 60;
+
 
 ~instruments = [\bass, \kick, \snare, \clap, \hat, \loop, \hit, \misc];
-
-~instrumentBuses = (
-    \bass: (
-        dryBus: Bus.audio(s, 1),
-        fxBus:  Bus.audio(s, 1),
-        monoBus: Bus.audio(s, 1),
-		ambiBus: Bus.audio(s, ~numAmbiChans),
-        az: 0,
-        el: 0
-    ),
-    \kick: (
-        dryBus: Bus.audio(s, 1),
-        fxBus:  Bus.audio(s, 1),
-        monoBus: Bus.audio(s, 1),
-        ambiBus: Bus.audio(s, ~numAmbiChans),
-        az: 45,
-        el: 0
-    ),
-    \clap: (
-        dryBus: Bus.audio(s, 1),
-        fxBus:  Bus.audio(s, 1),
-        monoBus: Bus.audio(s, 1),
-        ambiBus: Bus.audio(s, ~numAmbiChans),
-        az: 90,
-        el: 0
-    ),
-    \snare: (
-        dryBus: Bus.audio(s, 1),
-        fxBus:  Bus.audio(s, 1),
-        monoBus: Bus.audio(s, 1),
-        ambiBus: Bus.audio(s, ~numAmbiChans),
-        az: 135,
-        el: 0
-    ),
-    \hat: (
-        dryBus: Bus.audio(s, 1),
-        fxBus:  Bus.audio(s, 1),
-        monoBus: Bus.audio(s, 1),
-        ambiBus: Bus.audio(s, ~numAmbiChans),
-        az: 180,
-        el: 0
-    ),
-    \loop: (
-        dryBus: Bus.audio(s, 1),
-        fxBus:  Bus.audio(s, 1),
-        monoBus: Bus.audio(s, 1),
-        ambiBus: Bus.audio(s, ~numAmbiChans),
-        az: 225,
-        el: 0
-    ),
-    \hit: (
-        dryBus: Bus.audio(s, 1),
-        fxBus:  Bus.audio(s, 1),
-        monoBus: Bus.audio(s, 1),
-        ambiBus: Bus.audio(s, ~numAmbiChans),
-        az: 270,
-        el: 0
-    ),
-    \misc: (
-        dryBus: Bus.audio(s, 1),
-        fxBus:  Bus.audio(s, 1),
-        monoBus: Bus.audio(s, 1),
-        ambiBus: Bus.audio(s, ~numAmbiChans),
-        az: 315,
-        el: 0
-    )
-);
-
-~loopLen = 60;
 
 s.waitForBoot {
 
 	s.sync;
+
+	~dryGroup = Group.tail(s);
+	~fxGroup = Group.tail(s);
+	~ambiBusGroup = Group.tail(s);
+	~ambiSumGroup = Group.tail(s);
+	~ambiMixGroup = Group.tail(s);
+	~finalMixGroup = Group.tail(s);
+	~gainStageGroup = Group.tail(s);
+
+	~instrumentBuses = (
+		\bass: (
+			dryBus: Bus.audio(s, 1),
+			fxBus:  Bus.audio(s, 1),
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 0,
+			el: 180
+		),
+		\kick: (
+			dryBus: Bus.audio(s, 1),
+			fxBus:  Bus.audio(s, 1),
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 45,
+			el: 90
+		),
+		\clap: (
+			dryBus: Bus.audio(s, 1),
+			fxBus:  Bus.audio(s, 1),
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: -90,
+			el: 0
+		),
+		\snare: (
+			dryBus: Bus.audio(s, 1),
+			fxBus:  Bus.audio(s, 1),
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 135,
+			el:270
+		),
+		\hat: (
+			dryBus: Bus.audio(s, 1),
+			fxBus:  Bus.audio(s, 1),
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 180,
+			el: 90
+		),
+		\loop: (
+			dryBus: Bus.audio(s, 1),
+			fxBus:  Bus.audio(s, 1),
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 225,
+			el: 0
+		),
+		\hit: (
+			dryBus: Bus.audio(s, 1),
+			fxBus:  Bus.audio(s, 1),
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 270,
+			el: 0
+		),
+		\misc: (
+			dryBus: Bus.audio(s, 1),
+			fxBus:  Bus.audio(s, 1),
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 315,
+			el: 90
+		)
+	);
+
+	~micAmbiBus = Bus.audio(s, 16);
+
 	~buffers = Dictionary.new;
 
 	if (thisProcess.nowExecutingPath.notNil == true, {
@@ -222,7 +235,6 @@ s.waitForBoot {
 			sig = PitchShift.ar(sig, 0.2, repitch, pdisp = 0.1, tdisp = 0.1);
 			Out.ar(out, sig * env * amp);
 		}).add;
-
 
 		SynthDef(\delay, {
 			arg in, out, delayTime = 0.33333,
@@ -301,19 +313,34 @@ s.waitForBoot {
 			Out.ar(out, dry + fx);
 		}).add;
 
+		SynthDef(\micIn, {
+			arg in, out, amp;
+			var sig = SoundIn.ar((0..15)); // all 16 mic channels, adjust as needed
+			sig = sig * amp;
+			Out.ar(out, sig);
+		}).add;
+
 		// One SynthDef to encode Ambisonics (3rd order)
 		SynthDef(\hoaEncodeGeneric, {
 			arg in, out, az=0, el=0, amp=1.0, order=3;
 			var sig = In.ar(in, 1),
 			encoded = HoaEncodeDirection.ar(sig, az.degrad, el.degrad, radius:3, order:3);
+			encoded = HoaTumble.ar(encoded, LFSaw.kr(0.25, mul: pi), 3);
+			encoded = HoaTilt.ar(encoded, LFSaw.kr(0.15, mul: pi), 3);
 			Out.ar(out, encoded);
 		}).add;
 
+		/*
+		SynthDef(\ambiMove, {
+			arg in, out, tumble;
+			var sig = In.ar(in, 16);
+			sig = HoaTumble.ar(in, LFSaw.kr(0.25, mul: pi), 3);
+			Out.ar(out, sig);
+		});*/
 
 		// SynthDef to sum two ambisonic signals
 		SynthDef(\ambiSum, { |out, inA, inB|
-			var sigA = In.ar(inA, 16);
-			var sigB = In.ar(inB, 16);
+			var sigA = In.ar(inA, 16), sigB = In.ar(inB, 16);
 			Out.ar(out, sigA + sigB);
 		}).add;
 
@@ -324,18 +351,39 @@ s.waitForBoot {
 			Out.ar(out, sig);
 		}).add;
 
+		SynthDef(\downmixToStereo, { |in|
+			var insig = In.ar(in, 16);
+			// Here we just take W and maybe some other channels to fake stereo:
+			var w = Select.ar(0, insig); // W channel is 0
+			var x = Select.ar(3, insig); // X channel
+			// simple fake stereo: w+(0.5*x) left, w-(0.5*x) right
+			var left = w + (0.5 * x);
+			var right = w - (0.5 * x);
+			Out.ar(0, [left, right]);
+		}).add;
+
+		SynthDef(\directAmbiOut, { |in|
+			var sig = In.ar(in, 16);
+			Out.ar(0, sig);
+		}).add;
+
 		s.sync;
+
+		~mic = Synth(\micIn, [\amp, ~micLevel, \out, ~micAmbiBus], ~dryGroup);
 
 		// Setup instruments
 		~instrumentBuses.keys.do { |instr|
 			var data = ~instrumentBuses[instr];
+
+			Synth(\delay, [\in, data[\dryBus], \out, data[\fxBus]], ~fxGroup);
+			Synth(\delay2, [\in, data[\dryBus], \out, data[\fxBus]], ~fxGroup);
 
 			// Mix dry + fx into mono
 			Synth(\mixInstrument, [
 				\inDry, data[\dryBus],
 				\inFx,  data[\fxBus],
 				\out,   data[\monoBus]
-			]);
+			], ~dryGroup);
 
 			// Encode to HOA
 			Synth(\hoaEncodeGeneric, [
@@ -343,26 +391,25 @@ s.waitForBoot {
 				\out, data[\ambiBus],
 				\az, data[\az],
 				\el, data[\el]
-			]);
+			], ~ambiBusGroup);
 		};
 
-		~ambiBuses = ~instrumentBuses.values.collect { |v| v[\ambiBus] };
-		~currentSumBus = ~ambiBuses[0];
+		~ambiBuses = ~instrumentBuses.values.collect({ |v| v[\ambiBus] }) ++ [~micAmbiBus];
+		~ambiSumBus = Bus.audio(s, ~numAmbiChans);
 
-		~ambiBuses[1..].do { |b|
-			var newSumBus = Bus.audio(s, ~numAmbiChans);
-			Synth(\ambiSum, [\out, newSumBus, \inA, ~currentSumBus, \inB, b]);
-			~currentSumBus = newSumBus;
-		};
+
+		(~numAmbiChans - 1).do ({ |i|
+			Synth(\ambiSum, [\out, ~ambiSumBus, \inA, ~ambiBuses[i], \inB, ~ambiBuses[i+1]], ~ambiSumGroup);
+		});
 
 		// Now currentSumBus is the final summed Ambisonic signal
-		~finalAmbiBus = ~currentSumBus;
+		~finalAmbiBus = ~ambiSumBus;
 
 		~processedAmbiBus = Bus.audio(s, ~numAmbiChans);
-		Synth(\mixIO, [\in, ~finalAmbiBus, \out, ~processedAmbiBus]);
+		Synth(\mixIO, [\in, ~finalAmbiBus, \out, ~processedAmbiBus], ~ambiMixGroup);
 
 		~finalGainBus = Bus.audio(s, ~numAmbiChans);
-		~masterGainSynth = Synth(\masterGain, [\in, ~processedAmbiBus, \out, ~finalGainBus, \amp, ~initLevel]);
+		~masterGainSynth = Synth(\masterGain, [\in, ~processedAmbiBus, \out, ~finalGainBus, \amp, ~initLevel], ~finalMixGroup);
 
 
 		// If we are just monitoring on headphones (2 channels), decode or downmix
@@ -371,24 +418,12 @@ s.waitForBoot {
 			// Simple downmix to stereo using a FOA->Stereo approximation or using just W channel:
 			// For a quick hack: take W channel only (first channel of ambisonics)
 			// A proper decode requires a decode matrix or ATK decode.
-			SynthDef(\downmixToStereo, { |in|
-				var insig = In.ar(in, 16);
-				// Here we just take W and maybe some other channels to fake stereo:
-				var w = Select.ar(0, insig); // W channel is 0
-				var x = Select.ar(3, insig); // X channel
-				// simple fake stereo: w+(0.5*x) left, w-(0.5*x) right
-				var left = w + (0.5 * x);
-				var right = w - (0.5 * x);
-				Out.ar(0, [left, right]);
-			}).add;
-			Synth(\downmixToStereo, [\in,  ~finalGainBus]);
+
+			Synth(\downmixToStereo, [\in,  ~finalGainBus], ~gainStageGroup);
 		} {
 			// If we have 16 hardware outputs, directly send them out:
-			SynthDef(\directAmbiOut, { |in|
-				var sig = In.ar(in, 16);
-				Out.ar(0, sig);
-			}).add;
-			Synth(\directAmbiOut, [\in,  ~finalGainBus]);
+
+			Synth(\directAmbiOut, [\in,  ~finalGainBus], ~gainStageGroup);
 		}
 		});
 
@@ -507,4 +542,67 @@ s.record(bus:0, numChannels:33, duration:100)
 
 c.kit
 c.intensity
+
+
+(
+SynthDef(\busAmplitudeReporter, { |inBus|
+    var sig = In.ar(inBus, 1);
+    var amp = Amplitude.kr(sig);
+    // Trigger once per second
+    // SendTrig format: SendTrig.kr(trig, id, value)
+    // We'll use 'inBus' as 'id', so we know which bus this is.
+    SendTrig.kr(Impulse.kr(1), inBus, amp);
+
+    // Silent output to keep the synth running
+    Out.ar(0, Silent.ar(1));
+}).add;
+)
+
+
+(
+~busNames = Dictionary.new;
+
+// For each instrument, add entries for dry, fx, mono, ambi buses:
+~instrumentBuses.keys.do { |instr|
+    var data = ~instrumentBuses[instr];
+    ~busNames[data[\dryBus].index] = (instr.asString ++ "_dry");
+    ~busNames[data[\fxBus].index] = (instr.asString ++ "_fx");
+    ~busNames[data[\monoBus].index] = (instr.asString ++ "_mono");
+    ~busNames[data[\ambiBus].index] = (instr.asString ++ "_ambi");
+};
+)
+
+(
+// Also add global or final buses if you have them:
+~busNames[~finalAmbiBus.index] = "finalAmbiBus";
+~busNames[~processedAmbiBus.index] = "processedAmbiBus";
+~busNames[~finalGainBus.index] = "finalGainBus";
+// Add any other relevant buses you want to monitor
+)
+(
+OSCdef(\busAmpReceiver, { |msg, time, addr, port|
+    // /tr messages: msg[2] = id (our inBus), msg[3] = value (amp)
+    var inBusIndex = msg[2].asInteger;
+    var ampValue = msg[3].asFloat;
+    var busName = ~busNames[inBusIndex] ?? ("Bus_" ++ inBusIndex.asString);
+
+    (busName ++ " amplitude: " ++ ampValue).postln;
+}, '/tr');
+)
+
+(
+~instrumentBuses.keys.do { |instr|
+    var data = ~instrumentBuses[instr];
+    Synth(\busAmplitudeReporter, [\inBus, data[\dryBus].index], ~gainStageGroup);
+    Synth(\busAmplitudeReporter, [\inBus, data[\fxBus].index], ~gainStageGroup);
+    Synth(\busAmplitudeReporter, [\inBus, data[\monoBus].index], ~gainStageGroup);
+    Synth(\busAmplitudeReporter, [\inBus, data[\ambiBus].index], ~gainStageGroup);
+	Synth(\busAmplitudeReporter, [\inBus, ~finalAmbiBus.index], ~gainStageGroup);
+	Synth(\busAmplitudeReporter, [\inBus, ~processedAmbiBus.index], ~gainStageGroup);
+	Synth(\busAmplitudeReporter, [\inBus, ~finalGainBus.index], ~gainStageGroup);
+};
+)
+
+
+// Add any other buses you want to track
 

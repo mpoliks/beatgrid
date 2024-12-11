@@ -78,7 +78,7 @@ PlaybackSchema {
 
 			\stereo, {[[0, 1]]},
 			\stem, {[0]},
-			\false, {~instrumentBuses[\bass][\dryBus].index});
+			\false, {[~instrumentBuses[\bass][\dryBus].index]});
 
 		~appendLog.value("OK: Bass Buffers: " ++ buf.asString);
 
@@ -122,7 +122,7 @@ PlaybackSchema {
 
 			\stereo, {[[0, 1]]},
 			\stem, {[1]},
-			\false, {~instrumentBuses[\kick][\dryBus].index});
+			\false, {[~instrumentBuses[\kick][\dryBus]]});
 
 		~appendLog.value("OK: Kick Buffers: " ++ buf.asString);
 
@@ -166,7 +166,7 @@ PlaybackSchema {
 
 			\stereo, {Array.fill(16, {rrand(0,1)})},
 			\stem, {[2]},
-			\false, {~instrumentBuses[\clap][\dryBus].index});
+			\false, {[~instrumentBuses[\clap][\dryBus]]});
 
 		~appendLog.value("OK: Clap Buffers: " ++ buf.asString);
 
@@ -206,7 +206,7 @@ PlaybackSchema {
 
 			\stereo, {Array.fill(8, {rrand(0,1)})},
 			\stem, {[3]},
-			\false, {~instrumentBuses[\snare][\dryBus].index});
+			\false, {[~instrumentBuses[\snare][\dryBus].index]});
 
 		~appendLog.value("OK: Snare Buffers: " ++ buf.asString);
 
@@ -262,7 +262,7 @@ PlaybackSchema {
 
 			\stereo, {Array.fill(4, {[0, 1, [0, 1]].choose([0.2, 0.2, 0.6])})},
 			\stem, {[4]},
-			\false, {~instrumentBuses[\hat][\dryBus].index});
+			\false, {[~instrumentBuses[\hat][\dryBus]]});
 
 		~appendLog.value("OK: Hat Buffers: " ++ buf.asString);
 
@@ -294,7 +294,7 @@ PlaybackSchema {
 			\stereo, {0},
 			\stem, {7},
 			\blackhole, {0},
-			\false, {~instrumentBuses[\loop][\dryBus].index});
+			\false, {[~instrumentBuses[\loop][\dryBus]]});
 
 		~appendLog.value("OK: Loop Buffers: " ++ buf.asString);
 
@@ -341,7 +341,7 @@ PlaybackSchema {
 
 			\stereo, {Array.fill(4, {[0, 1, [0, 1]].choose([0.2, 0.2, 0.6])})},
 			\stem, {[5]},
-			\false, {~instrumentBuses[\hit][\dryBus].index});
+			\false, {[~instrumentBuses[\hit][\dryBus]]});
 
 		~appendLog.value("OK: Hit Buffers: " ++ buf.asString);
 
@@ -401,7 +401,7 @@ PlaybackSchema {
 
 			\stereo, {Array.fill(4, {[0, 1, [0, 1]].choose([0.2, 0.2, 0.6])})},
 			\stem, {[6]},
-			\false, {~instrumentBuses[\misc][\dryBus].index});
+			\false, {[~instrumentBuses[\misc][\dryBus]]});
 
 		~appendLog.value("OK: Misc Buffers: " ++ buf.asString);
 
