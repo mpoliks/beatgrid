@@ -1,6 +1,6 @@
 (
 ~hardwareInputs = 16;
-~hardwareOutputs = 16;
+~hardwareOutputs = 2;
 ~ambiOrder = 3; // Third-order Ambisonics
 ~numAmbiChans = ( ~ambiOrder + 1 )**2; // = 16
 ~tempo = 30;
@@ -105,15 +105,33 @@ s.waitForBoot {
 			monoBus: Bus.audio(s, 1),
 			ambiBus: Bus.audio(s, ~numAmbiChans),
 			az: 0,
-			el: 180
+			el: 0,
+			tumbleRate: 0.0,
+			tiltRate: 0.0,
+			rotateRate: 0.02,
+			tumbleModAmount: 0.0,
+			tiltModAmount: 0.0,
+			rotateModAmount: 0.1,
+			tumbleModRate: 0.0,
+			tiltModRate: 0.0,
+			rotateModRate: 0.005
 		),
 		\kick: (
 			dryBus: Bus.audio(s, 1),
 			fxBus:  Bus.audio(s, 1),
 			monoBus: Bus.audio(s, 1),
 			ambiBus: Bus.audio(s, ~numAmbiChans),
-			az: 45,
-			el: 90
+			az: 0,
+			el: 0,
+			tumbleRate: 0.0,
+			tiltRate: 0.0,
+			rotateRate: 0.08,
+			tumbleModAmount: 0.0,
+			tiltModAmount: 0.0,
+			rotateModAmount: 0.08,
+			tumbleModRate: 0.0,
+			tiltModRate: 0.0,
+			rotateModRate: 0.005
 		),
 		\clap: (
 			dryBus: Bus.audio(s, 1),
@@ -121,7 +139,16 @@ s.waitForBoot {
 			monoBus: Bus.audio(s, 1),
 			ambiBus: Bus.audio(s, ~numAmbiChans),
 			az: -90,
-			el: 0
+			el: 0,
+			tumbleRate: 0.0,
+			tiltRate: 0.003,
+			rotateRate: 0.02,
+			tumbleModAmount: 0.0,
+			tiltModAmount: 0.02,
+			rotateModAmount: 0.1,
+			tumbleModRate: 0.0,
+			tiltModRate: 0.02,
+			rotateModRate: 0.005
 		),
 		\snare: (
 			dryBus: Bus.audio(s, 1),
@@ -129,7 +156,16 @@ s.waitForBoot {
 			monoBus: Bus.audio(s, 1),
 			ambiBus: Bus.audio(s, ~numAmbiChans),
 			az: 135,
-			el:270
+			el:270,
+			tumbleRate: 0.01,
+			tiltRate: 0.0,
+			rotateRate: 0.03,
+			tumbleModAmount: 0.001,
+			tiltModAmount: 0.0,
+			rotateModAmount: 0.1,
+			tumbleModRate: 0.02,
+			tiltModRate: 0.0,
+			rotateModRate: 0.005
 		),
 		\hat: (
 			dryBus: Bus.audio(s, 1),
@@ -137,7 +173,16 @@ s.waitForBoot {
 			monoBus: Bus.audio(s, 1),
 			ambiBus: Bus.audio(s, ~numAmbiChans),
 			az: 180,
-			el: 90
+			el: 90,
+			tumbleRate: 0.0,
+			tiltRate: 0.0,
+			rotateRate: 0.06,
+			tumbleModAmount: 0.0,
+			tiltModAmount: 0.0,
+			rotateModAmount: 0.1,
+			tumbleModRate: 0.0,
+			tiltModRate: 0.0,
+			rotateModRate: 0.005
 		),
 		\loop: (
 			dryBus: Bus.audio(s, 1),
@@ -145,7 +190,16 @@ s.waitForBoot {
 			monoBus: Bus.audio(s, 1),
 			ambiBus: Bus.audio(s, ~numAmbiChans),
 			az: 225,
-			el: 0
+			el: 0,
+			tumbleRate: 0.0,
+			tiltRate: 0.0,
+			rotateRate: 0.0,
+			tumbleModAmount: 0.0,
+			tiltModAmount: 0.0,
+			rotateModAmount: 0.0,
+			tumbleModRate: 0.0,
+			tiltModRate: 0.0,
+			rotateModRate: 0.0
 		),
 		\hit: (
 			dryBus: Bus.audio(s, 1),
@@ -153,7 +207,16 @@ s.waitForBoot {
 			monoBus: Bus.audio(s, 1),
 			ambiBus: Bus.audio(s, ~numAmbiChans),
 			az: 270,
-			el: 0
+			el: 0,
+			tumbleRate: 0.01,
+			tiltRate: 0.1,
+			rotateRate: 0.02,
+			tumbleModAmount: 0.01,
+			tiltModAmount: 0.04,
+			rotateModAmount: 0.1,
+			tumbleModRate: 0.06,
+			tiltModRate: 0.07,
+			rotateModRate: 0.002
 		),
 		\misc: (
 			dryBus: Bus.audio(s, 1),
@@ -161,7 +224,16 @@ s.waitForBoot {
 			monoBus: Bus.audio(s, 1),
 			ambiBus: Bus.audio(s, ~numAmbiChans),
 			az: 315,
-			el: 90
+			el: 90,
+			tumbleRate: 0.0,
+			tiltRate: 0.03,
+			rotateRate: 0.0,
+			tumbleModAmount: 0.0,
+			tiltModAmount: 0.01,
+			rotateModAmount: 0.0,
+			tumbleModRate: 0.0,
+			tiltModRate: 0.1,
+			rotateModRate: 0.0
 		)
 	);
 
@@ -320,29 +392,61 @@ s.waitForBoot {
 			Out.ar(out, sig);
 		}).add;
 
-		// One SynthDef to encode Ambisonics (3rd order)
 		SynthDef(\hoaEncodeGeneric, {
-			arg in, out, az=0, el=0, amp=1.0, order=3;
-			var sig = In.ar(in, 1),
-			encoded = HoaEncodeDirection.ar(sig, az.degrad, el.degrad, radius:3, order:3);
-			encoded = HoaTumble.ar(encoded, LFSaw.kr(0.25, mul: pi), 3);
-			encoded = HoaTilt.ar(encoded, LFSaw.kr(0.15, mul: pi), 3);
+			arg in = 0, out = 0,
+			az = 0, el = 0,
+			tumbleRate = 1, tiltRate = 1, rotateRate = 1,
+			tumbleModAmount = 0, tiltModAmount = 0, rotateModAmount = 0,
+			tumbleModRate = 0.1, tiltModRate = 0.1, rotateModRate = 0.1,
+			radius = 3, order = 3;
+
+			// Input signal
+			var sig = In.ar(in, 1);
+
+			// Modulation signals using SinOsc for smooth LFO modulation
+			var tumbleMod = SinOsc.kr(tumbleModRate, 0, tumbleModAmount, 0);
+			var tiltMod   = SinOsc.kr(tiltModRate,   0, tiltModAmount,   0);
+			var rotateMod = SinOsc.kr(rotateModRate, 0, rotateModAmount, 0);
+
+			// Encode the input signal into Ambisonics
+			var encoded = HoaEncodeDirection.ar(sig, az.degrad, el.degrad, radius, order:3);
+
+			// Apply tumble, tilt, and rotate with modulated rates
+			encoded = HoaTumble.ar(encoded, LFSaw.kr(tumbleRate + tumbleMod, mul: pi), order:3);
+			encoded = HoaTilt.ar(encoded, LFSaw.kr(tiltRate   + tiltMod,   mul: pi), order:3);
+			encoded = HoaRotate.ar(encoded, LFSaw.kr(rotateRate + rotateMod, mul: pi), order:3);
+
+			// Output the encoded Ambisonic signal
 			Out.ar(out, encoded);
 		}).add;
 
-		/*
-		SynthDef(\ambiMove, {
-			arg in, out, tumble;
-			var sig = In.ar(in, 16);
-			sig = HoaTumble.ar(in, LFSaw.kr(0.25, mul: pi), 3);
-			Out.ar(out, sig);
-		});*/
 
-		// SynthDef to sum two ambisonic signals
-		SynthDef(\ambiSum, { |out, inA, inB|
-			var sigA = In.ar(inA, 16), sigB = In.ar(inB, 16);
-			Out.ar(out, sigA + sigB);
+		SynthDef(\sumAmbisonicBuses, {
+			arg outBus,
+			inBus1 = 0, inBus2 = 0, inBus3 = 0, inBus4 = 0,
+			inBus5 = 0, inBus6 = 0, inBus7 = 0, inBus8 = 0,
+			inBus9 = 0;
+
+			// Collect all input signals
+			var signals = [
+				In.ar(inBus1, 16),
+				In.ar(inBus2, 16),
+				In.ar(inBus3, 16),
+				In.ar(inBus4, 16),
+				In.ar(inBus5, 16),
+				In.ar(inBus6, 16),
+				In.ar(inBus7, 16),
+				In.ar(inBus8, 16),
+				In.ar(inBus9, 16),
+			],
+
+			// Sum all signals
+			summedSignal = signals.sum;
+
+			// Output the summed signal
+			Out.ar(outBus, summedSignal);
 		}).add;
+
 
 		SynthDef(\masterGain, { |in, out, amp=1.0|
 			var sig = In.ar(in, 16);
@@ -390,17 +494,33 @@ s.waitForBoot {
 				\in, data[\monoBus],
 				\out, data[\ambiBus],
 				\az, data[\az],
-				\el, data[\el]
+				\el, data[\el],
+				\tumbleRate, data[\tumbleRate],
+				\tiltRate, data[\tiltRate],
+				\rotateRate, data[\rotateRate],
+				\tumbleModAmount, data[\tumbleModAmount],
+				\tiltModAmount, data[\tiltModAmount],
+				\rotateModAmount, data[\rotateModAmount],
+				\tumbleModRate, data[\tumbleModRate],
+				\tiltModRate, data[\tiltModRate],
+				\rotateModRate, data[\rotateModRate]
 			], ~ambiBusGroup);
 		};
 
 		~ambiBuses = ~instrumentBuses.values.collect({ |v| v[\ambiBus] }) ++ [~micAmbiBus];
 		~ambiSumBus = Bus.audio(s, ~numAmbiChans);
 
-
-		(~numAmbiChans - 1).do ({ |i|
-			Synth(\ambiSum, [\out, ~ambiSumBus, \inA, ~ambiBuses[i], \inB, ~ambiBuses[i+1]], ~ambiSumGroup);
-		});
+		Synth(\sumAmbisonicBuses, [
+			\outBus, ~ambiSumBus,
+			\inBus1, ~ambiBuses[0],
+			\inBus2, ~ambiBuses[1],
+			\inBus3, ~ambiBuses[2],
+			\inBus4, ~ambiBuses[3],
+			\inBus5, ~ambiBuses[4],
+			\inBus6, ~ambiBuses[5],
+			\inBus7, ~ambiBuses[6],
+			\inBus8, ~ambiBuses[7],
+			\inBus9, ~ambiBuses[8] ], ~ambiSumGroup);
 
 		// Now currentSumBus is the final summed Ambisonic signal
 		~finalAmbiBus = ~ambiSumBus;
@@ -442,6 +562,13 @@ s.waitForBoot {
     		{ arg slider; ~masterGainSynth.set(\amp, slider.value); },
     		0, false, 80, 45
 		).value_(~initLevel).setColors(Color.grey, Color.white);
+
+		~micFader = EZSlider.new(~w, Rect(20, 160, 430, 40), "mic fader",
+			ControlSpec.new(0.00, 1.5, \lin, 0.01, 1.0, ""), // default 1.0
+    		{ arg slider; ~mic.set(\amp, slider.value); },
+    		0, false, 80, 45
+		).value_(~micLevel).setColors(Color.grey, Color.white);
+
 
 		~startButton = Button(~w, Rect(20, 20, 420, 40))
 		.states_([["Start", Color.gray, Color.yellow], ["Halt", Color.gray, Color.red]])
