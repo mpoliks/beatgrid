@@ -527,6 +527,7 @@ s.waitForBoot {
 		~ambiBuses = ~instrumentBuses.values.collect({ |v| v[\ambiBus] }) ++ [~micAmbiBus];
 		~ambiSumBus = Bus.audio(s, ~numAmbiChans);
 
+
 		Synth(\sumAmbisonicBuses, [
 			\outBus, ~ambiSumBus,
 			\inBus1, ~ambiBuses[0],
