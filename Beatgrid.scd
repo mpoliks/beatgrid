@@ -584,7 +584,7 @@ s.waitForBoot {
 			~appendLog.value("~meditation set to TRUE. Initiating fade out.");
 			~fadeOut.value;
 			~meditationSynth = Synth(\playbackM, [
-				\buf, ~meditationBuffer,
+				\buf, ~meditationLoopBuffer,
 				\amp, ~meditationLevel,
 				\trig, 1,
 				\out, 0]);
