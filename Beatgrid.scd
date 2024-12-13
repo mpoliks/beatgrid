@@ -11,6 +11,8 @@
 // can be \stereo, \stem, \false = default
 ~mixdown = \false;
 // master fader will only work if mixdown is false
+~fadetime = 8.0; // Duration for fade in/out in seconds
+~meditation = false; // Initial meditation state
 
 
 
@@ -19,7 +21,7 @@
 // For Each Instrument (e.g. \kick):
 // Pattern (Pbind) output ---> dryBus + optional fxBus
 //
-// dryBus               fxBus
+// dryBus               fxBus (reverb, delay)
 //   |                   |
 //   v                   v
 //  [mixInstrument Synth]  -- mixes dry+fx --> monoBus
@@ -364,25 +366,30 @@ s.waitForBoot {
 		}).add;
 
 		SynthDef(\mixIO, { // compressor, limiter on the Ambisonic mix
-			arg out, in, amp = 1.0;
-			var sig = In.ar(in, 16), // Now reading all HOA channels
+			arg out, in, amp = 1.0, trig = 1;
+			var env, sig = In.ar(in, 16), // Now reading all HOA channels
 			lfo = SinOsc.kr(1 / (3* 60)).range(1, 10) + (LFNoise1.kr(0.01) * 0.5);
 			// Apply the same processing to each channel of the ambisonic field:
 			// Compander, EQ, Verb, Limiter all handle arrays gracefully.
+
 			sig = Compander.ar(sig, sig, thresh: 0.85, slopeBelow: 1.2, slopeAbove: 0.45, clampTime: 0.01, relaxTime: 0.01);
 			sig = BPeakEQ.ar(sig, 100, 1.0, 1.0);
 			sig = HDVerb.ar(sig, mix: 0.2, decay: lfo);
 			sig = sig * amp;
+			env = EnvGen.kr(Env.asr(~fadetime, 1, ~fadetime), gate: trig);
 			sig = Limiter.ar(sig, level: 0.94, dur: 0.1);
+			sig = sig * env;
 			Out.ar(out, sig);
+
 		}).add;
 
 		// One SynthDef to mix Dry+FX
 		SynthDef(\mixInstrument, {
-			arg inDry, inFx, out;
+			arg inDry, inFx, out, amp = 1.0;
 			var dry = In.ar(inDry, 1),
-			fx = In.ar(inFx, 1);
-			Out.ar(out, dry + fx);
+			fx = In.ar(inFx, 1),
+			mixed = (dry + fx) * amp; // Apply amplitude control
+			Out.ar(out, mixed);
 		}).add;
 
 		SynthDef(\micIn, {
@@ -471,23 +478,27 @@ s.waitForBoot {
 			Out.ar(0, sig);
 		}).add;
 
+
 		s.sync;
 
 		~mic = Synth(\micIn, [\amp, ~micLevel, \out, ~micAmbiBus], ~dryGroup);
 
-		// Setup instruments
 		~instrumentBuses.keys.do { |instr|
-			var data = ~instrumentBuses[instr];
+			var data = ~instrumentBuses[instr],
 
-			Synth(\delay, [\in, data[\dryBus], \out, data[\fxBus]], ~fxGroup);
-			Synth(\delay2, [\in, data[\dryBus], \out, data[\fxBus]], ~fxGroup);
+			fx1 = Synth(\delay, [\in, data[\dryBus], \out, data[\fxBus]], ~fxGroup),
+			fx2 = Synth(\delay2, [\in, data[\dryBus], \out, data[\fxBus]], ~fxGroup),
 
 			// Mix dry + fx into mono
-			Synth(\mixInstrument, [
+			mixSynth = Synth(\mixInstrument, [
 				\inDry, data[\dryBus],
 				\inFx,  data[\fxBus],
-				\out,   data[\monoBus]
+				\out,   data[\monoBus],
+				\amp, 1.0, // Start with full amplitude
+				\fadeBus, ~fadeBus // Pass the fadeBus to the Synth
 			], ~dryGroup);
+
+			~mixInstrumentSynths = ~mixInstrumentSynths.add(mixSynth); // Store Synth reference
 
 			// Encode to HOA
 			Synth(\hoaEncodeGeneric, [
@@ -506,6 +517,12 @@ s.waitForBoot {
 				\rotateModRate, data[\rotateModRate]
 			], ~ambiBusGroup);
 		};
+
+		Synth(\fadeController, [
+			\bus, ~fadeBus,
+			\target, 1.0,
+			\duration, 0.0 // Immediate set to 1.0
+		]);
 
 		~ambiBuses = ~instrumentBuses.values.collect({ |v| v[\ambiBus] }) ++ [~micAmbiBus];
 		~ambiSumBus = Bus.audio(s, ~numAmbiChans);
@@ -526,10 +543,14 @@ s.waitForBoot {
 		~finalAmbiBus = ~ambiSumBus;
 
 		~processedAmbiBus = Bus.audio(s, ~numAmbiChans);
-		Synth(\mixIO, [\in, ~finalAmbiBus, \out, ~processedAmbiBus], ~ambiMixGroup);
+		~mixIOSynth = Synth(\mixIO, [\in, ~finalAmbiBus, \out, ~processedAmbiBus], ~ambiMixGroup);
 
 		~finalGainBus = Bus.audio(s, ~numAmbiChans);
-		~masterGainSynth = Synth(\masterGain, [\in, ~processedAmbiBus, \out, ~finalGainBus, \amp, ~initLevel], ~finalMixGroup);
+		~masterGainSynth = Synth(
+			\masterGain, [
+				\in, ~processedAmbiBus,
+				\out, ~finalGainBus,
+				\amp, ~initLevel ], ~finalMixGroup);
 
 
 		// If we are just monitoring on headphones (2 channels), decode or downmix
@@ -547,6 +568,30 @@ s.waitForBoot {
 		}
 		});
 
+	// Function to fade out (set amp to 0)
+		~fadeOut = {
+			~appendLog.value("Fading out...");
+			~mixIOSynth.set(\trig, 0);
+		};
+
+	// Function to fade in (set amp to 1)
+		~fadeIn = {
+			~appendLog.value("Fading in...");
+			~mixIOSynth.set(\trig, 1);
+		};
+
+	// Toggle Meditation and Trigger Fade
+		~toggleMeditation = {
+			~meditation = ~meditation.not; // Toggle the meditation state
+			if (~meditation, {
+				~appendLog.value("~meditation set to TRUE. Initiating fade out.");
+				~fadeOut.value;
+			}, {
+				~appendLog.value("~meditation set to FALSE. Initiating fade in.");
+				~fadeIn.value;
+			});
+		};
+
 		s.sync;
 
 		~reTime = ReTime.new();
@@ -554,7 +599,7 @@ s.waitForBoot {
 		Window.closeAll;
 		s.meter (~hardwareInputs, ~hardwareOutputs);
 
-		~w = Window("GUI Controls", Rect(800,200,480,520)).front.alwaysOnTop_(true);
+		~w = Window("GUI Controls", Rect(800,200,460,660)).front.alwaysOnTop_(true);
 		~w.view.decorator_(FlowLayout(~w.bounds, 20@20, 20@20));
 
 		~masterFader = EZSlider.new(~w, Rect(20, 160, 430, 40), "master fader",
@@ -574,19 +619,18 @@ s.waitForBoot {
 		.states_([["Start", Color.gray, Color.yellow], ["Halt", Color.gray, Color.red]])
 		.action_({ arg state;
 			switch(state.value,
-				1, {
+				0, {
 					"OK: Running Patch".postln;
 					c.conduct(~seed);
 				},
-				0, {
+				1, {
 					"WARN: Stopping Patch".postln;
 					if (c.notNil == true, {
 						c.flag=false;
-						s.killAll;
 					});
 				}
 			);
-		});
+	}).value_(1);
 
 		~nextKitTrigger = EZNumber(~w, Rect(150, 10, 140, 30),"Change Kit",
 			ControlSpec.new(0,~buffers.size - 1,\lin,1), { arg n;
@@ -636,6 +680,12 @@ s.waitForBoot {
 			);
 		}).value_(0);
 
+		~meditationButton = Button(~w, Rect(20, 220, 420, 40))
+		.states_([["Toggle Meditation", Color.gray, Color.green]])
+		.action_({ arg state;
+			~toggleMeditation.value;
+		});
+
 		~instruments.do({
 			arg instrument;
 			Button(~w, Rect(120, 20, 60, 60))
@@ -667,69 +717,5 @@ s.waitForBoot {
 
 s.record(bus:0, numChannels:33, duration:100)
 
-c.kit
-c.intensity
 
-
-(
-SynthDef(\busAmplitudeReporter, { |inBus|
-    var sig = In.ar(inBus, 1);
-    var amp = Amplitude.kr(sig);
-    // Trigger once per second
-    // SendTrig format: SendTrig.kr(trig, id, value)
-    // We'll use 'inBus' as 'id', so we know which bus this is.
-    SendTrig.kr(Impulse.kr(1), inBus, amp);
-
-    // Silent output to keep the synth running
-    Out.ar(0, Silent.ar(1));
-}).add;
-)
-
-
-(
-~busNames = Dictionary.new;
-
-// For each instrument, add entries for dry, fx, mono, ambi buses:
-~instrumentBuses.keys.do { |instr|
-    var data = ~instrumentBuses[instr];
-    ~busNames[data[\dryBus].index] = (instr.asString ++ "_dry");
-    ~busNames[data[\fxBus].index] = (instr.asString ++ "_fx");
-    ~busNames[data[\monoBus].index] = (instr.asString ++ "_mono");
-    ~busNames[data[\ambiBus].index] = (instr.asString ++ "_ambi");
-};
-)
-
-(
-// Also add global or final buses if you have them:
-~busNames[~finalAmbiBus.index] = "finalAmbiBus";
-~busNames[~processedAmbiBus.index] = "processedAmbiBus";
-~busNames[~finalGainBus.index] = "finalGainBus";
-// Add any other relevant buses you want to monitor
-)
-(
-OSCdef(\busAmpReceiver, { |msg, time, addr, port|
-    // /tr messages: msg[2] = id (our inBus), msg[3] = value (amp)
-    var inBusIndex = msg[2].asInteger;
-    var ampValue = msg[3].asFloat;
-    var busName = ~busNames[inBusIndex] ?? ("Bus_" ++ inBusIndex.asString);
-
-    (busName ++ " amplitude: " ++ ampValue).postln;
-}, '/tr');
-)
-
-(
-~instrumentBuses.keys.do { |instr|
-    var data = ~instrumentBuses[instr];
-    Synth(\busAmplitudeReporter, [\inBus, data[\dryBus].index], ~gainStageGroup);
-    Synth(\busAmplitudeReporter, [\inBus, data[\fxBus].index], ~gainStageGroup);
-    Synth(\busAmplitudeReporter, [\inBus, data[\monoBus].index], ~gainStageGroup);
-    Synth(\busAmplitudeReporter, [\inBus, data[\ambiBus].index], ~gainStageGroup);
-	Synth(\busAmplitudeReporter, [\inBus, ~finalAmbiBus.index], ~gainStageGroup);
-	Synth(\busAmplitudeReporter, [\inBus, ~processedAmbiBus.index], ~gainStageGroup);
-	Synth(\busAmplitudeReporter, [\inBus, ~finalGainBus.index], ~gainStageGroup);
-};
-)
-
-
-// Add any other buses you want to track
 
