@@ -1,7 +1,77 @@
 # beatgrid
-Beatgrid is a generative queueing environment that utilizes Supercolliders pattern scheduler to daploy samples across a variety of rhythms and rhythmic substructures.
+Beatgrid is a generative queueing environment that utilizes Supercolliders pattern scheduler to deploy samples across a variety of rhythms and rhythmic substructures.
 
 From the "ground up" there are a number of key classes and concepts that all enlist each other asynchronously.
+
+# signal flow
+
+	For Each Instrument (e.g. \kick):
+	Pattern (Pbind) output ---> dryBus + optional fxBus
+
+	dryBus              fxBus (reverb, delay)    [dryGroup, fxGroup]
+	|                   |
+	v                   v
+	[mixInstrument Synth]  -- mixes dry+fx --> monoBus
+	|
+	v
+	[hoaEncodeGeneric Synth] -- encodes mono into HOA --> ambiBus [ambiBusGroup]
+
+	After all instruments are encoded:
+	ambiBus_1, ambiBus_2, ... ambiBus_n -- here's where instrument-based spat occurs
+	|        |               |
+	v        v               v
+	[ambiSum Synths chain them together] --> finalAmbiBus [ambiSumGroup]
+
+	finalAmbiBus
+	|
+	v
+	[mixIO Synth] (Compander, EQ, Verb, Limiter) --> processedAmbiBus (mix processing)
+
+	processedAmbiBus [ambiMixGroup]
+	|
+	v
+	[masterGain Synth] (master amplitude control) --> finalGainBus
+
+	finalGainBus [gainStageGroup]
+	|
+	+--> If monitoring in stereo: [downmixToStereo Synth] --> Out.ar(0,1) hardware outputs
+	|
+	+--> If 16-channel system: [directAmbiOut Synth] --> Out.ar(0..15) hardware outputs
+
+## Ambisonic Spat Reminders
+
+Diagram of Ambisonic Audio Axes (Cartesian Coordinate System):
+
+                      +X (Front)
+                      |
+                      |
+                      |
+                      |
+                      |
+                      |
+       +Y (Left)      |      -Y (Right)
+       <--------------+------------->
+                      |
+                      |
+                      |
+                      |
+                      |
+                      |
+                     -X (Back)
+
+                    +Z (Up)
+                     /
+                    /
+                   /
+                  /
+                 /
+                -Z (Down)
+
+Key:
+ - X-axis: Front (+) / Back (-) direction
+ - Y-axis: Left (+) / Right (-) direction
+ - Z-axis: Up (+) / Down (-) direction (height)
+
 
 ## PatternGen
 Takes a seed (the global var ~seed) and trains a pattern generation model. Uses this model to generate different pattern types per instrument type and intensity level. Hit, Snare, Clap all use the /hit instrument pattern type. Loop uses the /long pattern type (currently overridden to directly meet curatorial demand).

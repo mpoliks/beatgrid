@@ -87,10 +87,10 @@ PlaybackSchema {
 			\instrument, \playback,
 			\dur, Pseq(dur, inf),
 			\buf, Pseq(buf, inf),
-			//\atk, Pwhite(atk / 2, atk * 2),
+			\atk, Pwhite(atk / 2, atk * 2),
 			\rel, Pwhite(rel / 2, rel),
-			//\hcut, Pwhite(hcut / 2, hcut),
-			//\lcut, Pwhite(lcut / 2, lcut),
+			\hcut, Pwhite(hcut / 2, hcut),
+			\lcut, Pwhite(lcut / 2, lcut),
 			\amp, Pseq(amps, inf),
 			\out, Pseq(outs, inf);
 		);
@@ -130,8 +130,8 @@ PlaybackSchema {
 			\instrument, \playback,
 			\dur, Pseq(dur, inf),
 			\buf, Pseq(buf, inf),
-			//\hcut, Pwhite(hcut / 1.3, hcut),
-			//\atk, 0.2,
+			\hcut, Pwhite(hcut / 1.3, hcut),
+			\atk, 0.06,
 			\amp, Pseq(amps, inf),
 			\out, Pseq(outs, inf)
 		);
