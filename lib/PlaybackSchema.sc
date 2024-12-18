@@ -325,11 +325,11 @@ PlaybackSchema {
 		onbeat = rrand(0, 1),
 		hcut = rrand(800, 10000),
 		lcut = rrand(40, 1000),
-		pitch = Array.fill(modifier2 * modifier, {
+		/*pitch = Array.fill(modifier2 * modifier, {
 			var temp = [1.0, 1.125, 1.25],
 			try = [0.2, 0.2, 0.2].windex;
 			temp[try];
-		}),
+		}),*/
 		amps = Array.fill((pattern.size * modifier), {
 			arg i;
 			var amp = rrand(~hitLevel / 1.3, ~hitLevel);
@@ -349,7 +349,7 @@ PlaybackSchema {
 			\instrument, \playbackP,
 			\dur, Pseq(dur, inf),
 			\buf, Pseq(buf, inf),
-			\repitch, Pseq(pitch, inf),
+			//\repitch, Pseq(pitch, inf),
 			\hcut, Pwhite(hcut / 2, hcut),
 			\lcut, Pwhite(lcut / 2, lcut),
 			\atk, Pwhite(0.01, 1.0),
@@ -374,7 +374,7 @@ PlaybackSchema {
 		hcut = rrand(800, 14000),
 		lcut = rrand(40, 4000),
 		pitch = Array.fill(modifier2 * modifier, {
-			var temp = [0.5, 1.0, 1.125, 1.25, 1.333, 1.5, 1.667, 1.875],
+			var temp = [1.0, 1.0, 1.125, 1.25, 1.333, 1.5, 1.667, 1.875],
 			try = [0.2, 0.6, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2].windex;
 			temp[try];
 		}),

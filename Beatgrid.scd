@@ -4,7 +4,7 @@
 
 ~hardwareInputs = 16; // should be 16 for 3o ambisonic system
 ~hardwareOutputs = 2; // can be 2 or 16
-~ambiOrder = 3; // third-order ambisonics = 16c hannels
+~ambiOrder = 3; // third-order ambisonics = 16 channels
 ~numAmbiChans = ( ~ambiOrder + 1 )**2; // = 16
 ~tempo = 30;
 ~kitOverride = false; // for specific kit testing
@@ -54,19 +54,25 @@ s.reboot; // initialize audio server
 	1, 0, 1, 0,
 ]; // random 4x8 matrix to seed pattern generation
 
+// a little manual mixer for live relevelling
 ~initLevel = 1.00; // default audio level for patterns
 ~scl = 0.51; // to scale instruments against loop
-~bassLevel = 0.50 * ~scl;
-~kickLevel = 0.40 * ~scl;
+~bassLevel = 0.33 * ~scl;
+~kickLevel = 0.33 * ~scl;
 ~snareLevel = 0.42 * ~scl;
 ~clapLevel = 0.50 * ~scl;
 ~hatLevel = 0.57 * ~scl;
 ~loopLevel = 0.33;
 ~hitLevel = 0.51 * ~scl;
-~miscLevel = 0.47 * ~scl;
+~miscLevel = 0.22 * ~scl;
 ~loopLen = 60; // to set length of any looped multichannel background material
 
 ~instruments = [\bass, \kick, \snare, \clap, \hat, \loop, \hit, \misc];
+~micMetrics = Dictionary.new;
+// for audio gate:
+~micGateThreshold = 0.1;
+~micGateAttack = 0.25;
+~micGateRelease = 0.25;
 
 
 
@@ -82,6 +88,7 @@ s.waitForBoot {
 	// allocate Groups to order I/O flow
 	~dryGroup = Group.tail(s);
 	~fxGroup = Group.tail(s);
+	~analysisGroup = Group.tail(s);
 	~ambiBusGroup = Group.tail(s);
 	~ambiSumGroup = Group.tail(s);
 	~ambiMixGroup = Group.tail(s);
@@ -287,7 +294,8 @@ s.waitForBoot {
 		//complete the dictionary
 		~buffers.putAll(bufs);
 	});
-	~meditationLoopBuffer = Buffer.read(s, thisProcess.nowExecutingPath.dirname +/+ "Meditation Loop/meditation.wav");
+	~meditationLoopBuffer = Buffer.read(s, thisProcess.nowExecutingPath.dirname
+		+/+ "Meditation Loop/meditation.wav");
 	~appendLog.value("OK: Loading....");
 	// wait for the server
 	s.sync;
@@ -324,7 +332,7 @@ s.waitForBoot {
 		env = EnvGen.kr( Env.new([0,1,0], [atk, rel], [1, -1]), doneAction:2);
 		sig = HPF.ar(sig, lcut);
 		sig = LPF.ar(sig, hcut);
-		sig = PitchShift.ar(sig, 0.2, repitch, pdisp = 0.1, tdisp = 0.1);
+		//sig = PitchShift.ar(sig, 0.2, repitch, pdisp = 0.1, tdisp = 0.1);
 		Out.ar(out, sig * env * amp);
 	}).add;
 
@@ -337,6 +345,7 @@ s.waitForBoot {
 		// final output with amplitude control
 		Out.ar(out, sig * env * amp);
 	}).add;
+
 
 	SynthDef(\delay, {
 		arg in, out, delayTime = 0.33333,
@@ -378,15 +387,50 @@ s.waitForBoot {
 		arg inDry, inFx, out, amp = 1.0;
 		var dry = In.ar(inDry, 1),
 		fx = In.ar(inFx, 1),
-		mixed = (dry + fx) * amp;
+		mixed = (dry + (0.5 * fx)) * amp;
 		Out.ar(out, mixed);
 	}).add;
 
 	SynthDef(\micIn, { // 16 channel mic input
-		arg in, out, amp;
-		var sig = SoundIn.ar((0..15));
-		sig = sig * amp;
+		arg in, out, amp, threshold=0.01, attack=0.25, release=0.25;
+		var sig = SoundIn.ar((0..15)), // mic in
+		ampEst = Amplitude.ar(sig), // estimate amplitude
+		isLoud = ampEst > threshold, // gate condition
+		// smoothly ramp gain between 0 and 1 depending on gate
+		gateEnv = LagUD.kr(isLoud, attack, release);
+
+		// apply the gateEnv as a multiplier to the mic signal
+		sig = sig * amp * gateEnv;
+
 		Out.ar(out, sig);
+	}).add;
+
+	SynthDef(\inputAnalysis, {
+		arg in;
+		// full spectral analysis
+		var
+		sig = In.ar (in, 1),
+		peak = Amplitude.ar(sig),
+		rms = RMS.ar(sig),
+		freq = Pitch.kr(sig),
+		chain = FFT(LocalBuf(2048), sig),
+		centroid = SpecCentroid.kr(chain),
+		flat = SpecFlatness.kr(chain),
+		rolloff = SpecPcile.kr(chain, 0.5),
+		trig = Impulse.kr(1);
+		// send analysis results over OSC
+		SendReply.kr(trig,
+			'/analysis',[
+				in,
+				peak,
+				rms,
+				freq[0],
+				freq[1],
+				centroid,
+				flat,
+				rolloff
+			],
+			10);
 	}).add;
 
 	SynthDef(\hoaEncodeGeneric, { // to encode mono instruments in HOA ambisonic space
@@ -395,7 +439,7 @@ s.waitForBoot {
 		tumbleRate = 1, tiltRate = 1, rotateRate = 1,
 		tumbleModAmount = 0, tiltModAmount = 0, rotateModAmount = 0,
 		tumbleModRate = 0.1, tiltModRate = 0.1, rotateModRate = 0.1,
-		radius = 3, order = 3;
+		radius = 2, order = 3;
 		var sig = In.ar(in, 1),
 		// modulation signals using SinOsc for smooth LFO modulation
 		tumbleMod = SinOsc.kr(tumbleModRate, 0, tumbleModAmount, 0),
@@ -411,12 +455,11 @@ s.waitForBoot {
 		Out.ar(out, encoded);
 	}).add;
 
-	SynthDef(\sumAmbisonicBuses, { // matrix mixer for (8 instruments + mix) * 16
+	SynthDef(\sumAmbisonicBuses, { // matrix mixer for 8 instruments * 16
 		arg outBus,
 		inBus1 = 0, inBus2 = 0, inBus3 = 0, inBus4 = 0,
-		inBus5 = 0, inBus6 = 0, inBus7 = 0, inBus8 = 0,
-		inBus9 = 0;
-		// collect all input signals
+		inBus5 = 0, inBus6 = 0, inBus7 = 0, inBus8 = 0;
+		// collect all ambisonic signals
 		var signals = [
 			In.ar(inBus1, 16),
 			In.ar(inBus2, 16),
@@ -426,7 +469,6 @@ s.waitForBoot {
 			In.ar(inBus6, 16),
 			In.ar(inBus7, 16),
 			In.ar(inBus8, 16),
-			In.ar(inBus9, 16),
 		],
 		// sum all signals
 		summedSignal = signals.sum;
@@ -436,23 +478,25 @@ s.waitForBoot {
 
 	SynthDef(\mixIO, { // compressor, limiter on the Ambisonic mix prior to final gain stage
 		arg out, in, amp = 1.0, trig = 1;
-		var env, sig = In.ar(in, 16), // Now reading all HOA channels
+		var env, verb, sig = In.ar(in, 16), // Now reading all HOA channels
 		lfo = SinOsc.kr(1 / (3* 60)).range(1, 10) + (LFNoise1.kr(0.01) * 0.5);
 		// apply the same processing to each channel of the ambisonic field
 		sig = Compander.ar(sig, sig, thresh: 0.85, slopeBelow: 1.2, slopeAbove: 0.45, clampTime: 0.01, relaxTime: 0.01);
 		sig = BPeakEQ.ar(sig, 100, 1.0, 1.0);
-		sig = HDVerb.ar(sig, mix: 0.2, decay: lfo);
-		sig = sig * amp;
+		verb = HDVerb.ar(sig, mix: 0.2, decay: lfo);
+		sig = ((sig * 0.6) + (verb * 0.6)) * amp;
 		env = EnvGen.kr(Env.asr(~fadetime, 1, ~fadetime), gate: trig); // for triggering fadein/out for meditation blocks
 		sig = Limiter.ar(sig, level: 0.94, dur: 0.1);
 		sig = sig * env;
 		Out.ar(out, sig);
 	}).add;
 
-	SynthDef(\masterGain, { |in, out, amp=1.0|
-		var sig = In.ar(in, 16);
-		// just for master fader
+	SynthDef(\masterGain, { |in, micIn, out, amp=1.0|
+		var sig = In.ar(in, 16), mic = In.ar(micIn, 16);
+		// master fader
 		sig = sig * amp;
+		// add in ambisonic mic post-fader
+		sig = sig + mic;
 		Out.ar(out, sig);
 	}).add;
 
@@ -482,7 +526,31 @@ s.waitForBoot {
 
 /* ----- INSTANCES ----- */
 
-	~mic = Synth(\micIn, [\amp, ~micLevel, \out, ~micAmbiBus], ~dryGroup);
+	~mic = Synth(\micIn, [
+		\amp, ~micLevel,
+		\out, ~micAmbiBus,
+		\threshold, ~micGateThreshold,
+		\attack, ~micGateAttack,
+		\release, ~micGateRelease
+	], ~dryGroup);
+	OSCdef(
+		\analysis_listener, {
+			arg msg;
+			var pitch = 0;
+
+			if (msg[7] == 0.0, { pitch = 0; }, {pitch = msg[6]; });
+
+			~micMetrics.putAll(
+				Dictionary[msg[3].asString ->
+					Dictionary[
+						\peak -> msg[4],
+						\rms -> msg[5],
+						\pitch -> pitch,
+						\hasPitch -> msg[7],
+						\cent -> msg[8],
+						\flat -> msg[9],
+						\rolloff -> msg[10]]]);
+	}, '/analysis');
 
 	~instrumentBuses.keys.do { |instr|
 		var data = ~instrumentBuses[instr],
@@ -518,7 +586,7 @@ s.waitForBoot {
 	};
 
 	// add the mic signal alongside the converted instrument buses
-	~ambiBuses = ~instrumentBuses.values.collect({ |v| v[\ambiBus] }) ++ [~micAmbiBus];
+	~ambiBuses = ~instrumentBuses.values.collect({ |v| v[\ambiBus] });
 	// declare the sum bus for all of the ambisonic signals
 	~ambiSumBus = Bus.audio(s, ~numAmbiChans);
 	// sum them together
@@ -531,8 +599,7 @@ s.waitForBoot {
 		\inBus5, ~ambiBuses[4],
 		\inBus6, ~ambiBuses[5],
 		\inBus7, ~ambiBuses[6],
-		\inBus8, ~ambiBuses[7],
-		\inBus9, ~ambiBuses[8] ], ~ambiSumGroup);
+		\inBus8, ~ambiBuses[7]], ~ambiSumGroup);
 	~finalAmbiBus = ~ambiSumBus;
 	// declare the output bus for mixIO on top of the summed buses
 	~processedAmbiBus = Bus.audio(s, ~numAmbiChans);
@@ -544,6 +611,7 @@ s.waitForBoot {
 	~masterGainSynth = Synth(
 		\masterGain, [
 			\in, ~processedAmbiBus,
+			\micIn, ~micAmbiBus,
 			\out, ~finalGainBus,
 			\amp, ~initLevel ], ~finalMixGroup);
 
@@ -746,3 +814,70 @@ s.waitForBoot {
 	c.conduct(~seed, s);
 
 });
+
+
+
+
+
+
+
+/* ----- UTILITIES FOR INPUT MONITORING ----- */
+
+(
+~micMetrics.keysValuesDo({ |channel, metrics|
+    ("Channel: " ++ channel ++ ", Metrics: " ++ metrics).postln;
+})
+)
+
+(
+~getChannelWithHighestRMS = {
+    var maxRMS = -1;
+    var maxChannel = nil;
+
+    ~micMetrics.keysValuesDo({ |channel, metrics|
+        if (metrics[\rms] > maxRMS) {
+            maxRMS = metrics[\rms];
+            maxChannel = channel;
+        };
+    });
+
+    [maxChannel, maxRMS]; // Return as an array: [channel, rms]
+}.value.postln;
+)
+
+(
+~averageMetrics = {
+    var sumMetrics = Dictionary[
+        \peak -> 0,
+        \rms -> 0,
+        \pitch -> 0,
+        \hasPitch -> 0,
+        \cent -> 0,
+        \flat -> 0,
+        \rolloff -> 0
+    ];
+
+    var numChannels = ~micMetrics.size;
+
+    // Use keysValuesDo to iterate through each key-value pair in the dictionary
+    ~micMetrics.keysValuesDo({ |channel, metrics|
+        sumMetrics[\peak] = sumMetrics[\peak] + metrics[\peak];
+        sumMetrics[\rms] = sumMetrics[\rms] + metrics[\rms];
+        sumMetrics[\pitch] = sumMetrics[\pitch] + metrics[\pitch];
+        sumMetrics[\hasPitch] = sumMetrics[\hasPitch] + metrics[\hasPitch];
+        sumMetrics[\cent] = sumMetrics[\cent] + metrics[\cent];
+        sumMetrics[\flat] = sumMetrics[\flat] + metrics[\flat];
+        sumMetrics[\rolloff] = sumMetrics[\rolloff] + metrics[\rolloff];
+    });
+
+    // Divide each metric by the number of channels
+    sumMetrics.keysValuesDo({ |key, value|
+        sumMetrics[key] = value / numChannels;
+    });
+
+	sumMetrics; // Return the averaged metrics dictionary
+}.value.postln;
+)
+
+// to tweak mic gate
+~mic.set(\threshold, 0.02, \attack, 0.3, \release, 0.3);

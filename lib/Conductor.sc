@@ -13,16 +13,16 @@ Conductor {
 
 	eventPlayer{
 		arg seed;
-		var intensity_level,
+		var intensity_level = 0,
 		minute = event_time.minute % 13, swing = 0.2, set_kit,
 		next = rrand(1,4), next_kit = rrand(0, 2);
 
 		if (((event_time.hour < 11) || (event_time.hour >= 20)), { intensity_level = 0; });
-		if (((event_time.hour >= 11) && (event_time.hour < 12)), { intensity_level = 1; });
-		if (((event_time.hour >= 12) && (event_time.hour < 14)), { intensity_level = 2; });
-		if (((event_time.hour >= 14) && (event_time.hour < 17)), { intensity_level = 1; });
-		if (((event_time.hour >= 17) && (event_time.hour < 18)), { intensity_level = 2; });
-		if (((event_time.hour >= 18) && (event_time.hour < 20)), { intensity_level = 1; });
+		if (((event_time.hour >= 11) && (event_time.hour < 12)), { intensity_level = 0; });
+		if (((event_time.hour >= 12) && (event_time.hour < 14)), { intensity_level = 0; });
+		if (((event_time.hour >= 14) && (event_time.hour < 17)), { intensity_level = 0; });
+		if (((event_time.hour >= 17) && (event_time.hour < 18)), { intensity_level = 0; });
+		if (((event_time.hour >= 18) && (event_time.hour < 20)), { intensity_level = 0; });
 
 		if (((minute >= 0) && (minute < 4)), { intensity_level = intensity_level + 0; });
 		if (((minute >= 4) && (minute < 11)), { intensity_level = intensity_level + 1; });
