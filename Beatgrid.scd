@@ -68,6 +68,7 @@ s.reboot; // initialize audio server
 ~loopLen = 60; // to set length of any looped multichannel background material
 
 ~instruments = [\bass, \kick, \snare, \clap, \hat, \loop, \hit, \misc];
+~micMetrics = Dictionary.new;
 
 
 
@@ -83,6 +84,7 @@ s.waitForBoot {
 	// allocate Groups to order I/O flow
 	~dryGroup = Group.tail(s);
 	~fxGroup = Group.tail(s);
+	~analysisGroup = Group.tail(s);
 	~ambiBusGroup = Group.tail(s);
 	~ambiSumGroup = Group.tail(s);
 	~ambiMixGroup = Group.tail(s);
@@ -340,6 +342,7 @@ s.waitForBoot {
 		Out.ar(out, sig * env * amp);
 	}).add;
 
+
 	SynthDef(\delay, {
 		arg in, out, delayTime = 0.33333,
 		decayTime = 3, hcut = 100, lcut = 10000, amp = 0.2, decay = 10;
@@ -386,9 +389,37 @@ s.waitForBoot {
 
 	SynthDef(\micIn, { // 16 channel mic input
 		arg in, out, amp;
-		var sig = SoundIn.ar((0..15));
-		sig = sig * amp;
+		var sig = SoundIn.ar((0..15)); // mic in
+		sig = sig * amp; // post-analysis mic input level
 		Out.ar(out, sig);
+	}).add;
+
+	SynthDef(\inputAnalysis, {
+		arg in;
+		// full spectral analysis
+		var
+		sig = In.ar (in, 1),
+		peak = Amplitude.ar(sig),
+		rms = RMS.ar(sig),
+		freq = Pitch.kr(sig),
+		chain = FFT(LocalBuf(2048), sig),
+		centroid = SpecCentroid.kr(chain),
+		flat = SpecFlatness.kr(chain),
+		rolloff = SpecPcile.kr(chain, 0.5),
+		trig = Impulse.kr(1);
+		// send analysis results over OSC
+		SendReply.kr(trig,
+			'/analysis',[
+				in,
+				peak,
+				rms,
+				freq[0],
+				freq[1],
+				centroid,
+				flat,
+				rolloff
+			],
+			10);
 	}).add;
 
 	SynthDef(\hoaEncodeGeneric, { // to encode mono instruments in HOA ambisonic space
@@ -487,6 +518,27 @@ s.waitForBoot {
 /* ----- INSTANCES ----- */
 
 	~mic = Synth(\micIn, [\amp, ~micLevel, \out, ~micAmbiBus], ~dryGroup);
+		~analysis = 16.do({|i|
+		Synth(\inputAnalysis, [\in, i], ~analysisGroup);
+	});
+	OSCdef(
+		\analysis_listener, {
+			arg msg;
+			var pitch = 0;
+
+			if (msg[7] == 0.0, { pitch = 0; }, {pitch = msg[6]; });
+
+			~micMetrics.putAll(
+				Dictionary[msg[3].asString ->
+					Dictionary[
+						\peak -> msg[4],
+						\rms -> msg[5],
+						\pitch -> pitch,
+						\hasPitch -> msg[7],
+						\cent -> msg[8],
+						\flat -> msg[9],
+						\rolloff -> msg[10]]]);
+	}, '/analysis');
 
 	~instrumentBuses.keys.do { |instr|
 		var data = ~instrumentBuses[instr],
@@ -750,3 +802,69 @@ s.waitForBoot {
 	c.conduct(~seed, s);
 
 });
+
+
+
+
+
+
+
+/* ----- UTILITIES FOR INPUT MONITORING ----- */
+
+(
+~micMetrics.keysValuesDo({ |channel, metrics|
+    ("Channel: " ++ channel ++ ", Metrics: " ++ metrics).postln;
+})
+)
+
+(
+~getChannelWithHighestRMS = {
+    var maxRMS = -1;
+    var maxChannel = nil;
+
+    ~micMetrics.keysValuesDo({ |channel, metrics|
+        if (metrics[\rms] > maxRMS) {
+            maxRMS = metrics[\rms];
+            maxChannel = channel;
+        };
+    });
+
+    [maxChannel, maxRMS]; // Return as an array: [channel, rms]
+}.value.postln;
+)
+
+(
+~averageMetrics = {
+    var sumMetrics = Dictionary[
+        \peak -> 0,
+        \rms -> 0,
+        \pitch -> 0,
+        \hasPitch -> 0,
+        \cent -> 0,
+        \flat -> 0,
+        \rolloff -> 0
+    ];
+
+    var numChannels = ~micMetrics.size;
+
+    // Use keysValuesDo to iterate through each key-value pair in the dictionary
+    ~micMetrics.keysValuesDo({ |channel, metrics|
+        sumMetrics[\peak] = sumMetrics[\peak] + metrics[\peak];
+        sumMetrics[\rms] = sumMetrics[\rms] + metrics[\rms];
+        sumMetrics[\pitch] = sumMetrics[\pitch] + metrics[\pitch];
+        sumMetrics[\hasPitch] = sumMetrics[\hasPitch] + metrics[\hasPitch];
+        sumMetrics[\cent] = sumMetrics[\cent] + metrics[\cent];
+        sumMetrics[\flat] = sumMetrics[\flat] + metrics[\flat];
+        sumMetrics[\rolloff] = sumMetrics[\rolloff] + metrics[\rolloff];
+    });
+
+    // Divide each metric by the number of channels
+    sumMetrics.keysValuesDo({ |key, value|
+        sumMetrics[key] = value / numChannels;
+    });
+
+    sumMetrics; // Return the averaged metrics dictionary
+}.value.postln;
+)
+
+// Example usage:
