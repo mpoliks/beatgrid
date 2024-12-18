@@ -69,6 +69,10 @@ s.reboot; // initialize audio server
 
 ~instruments = [\bass, \kick, \snare, \clap, \hat, \loop, \hit, \misc];
 ~micMetrics = Dictionary.new;
+// for audio gate:
+~micGateThreshold = 0.1;
+~micGateAttack = 0.25;
+~micGateRelease = 0.25;
 
 
 
@@ -388,9 +392,16 @@ s.waitForBoot {
 	}).add;
 
 	SynthDef(\micIn, { // 16 channel mic input
-		arg in, out, amp;
-		var sig = SoundIn.ar((0..15)); // mic in
-		sig = sig * amp; // post-analysis mic input level
+		arg in, out, amp, threshold=0.01, attack=0.25, release=0.25;
+		var sig = SoundIn.ar((0..15)), // mic in
+		ampEst = Amplitude.ar(sig), // estimate amplitude
+		isLoud = ampEst > threshold, // gate condition
+		// smoothly ramp gain between 0 and 1 depending on gate
+		gateEnv = LagUD.kr(isLoud, attack, release);
+
+		// apply the gateEnv as a multiplier to the mic signal
+		sig = sig * amp * gateEnv;
+
 		Out.ar(out, sig);
 	}).add;
 
@@ -444,12 +455,11 @@ s.waitForBoot {
 		Out.ar(out, encoded);
 	}).add;
 
-	SynthDef(\sumAmbisonicBuses, { // matrix mixer for (8 instruments + mix) * 16
+	SynthDef(\sumAmbisonicBuses, { // matrix mixer for 8 instruments * 16
 		arg outBus,
 		inBus1 = 0, inBus2 = 0, inBus3 = 0, inBus4 = 0,
-		inBus5 = 0, inBus6 = 0, inBus7 = 0, inBus8 = 0,
-		micBus = 0;
-		// collect all input signals
+		inBus5 = 0, inBus6 = 0, inBus7 = 0, inBus8 = 0;
+		// collect all ambisonic signals
 		var signals = [
 			In.ar(inBus1, 16),
 			In.ar(inBus2, 16),
@@ -459,7 +469,6 @@ s.waitForBoot {
 			In.ar(inBus6, 16),
 			In.ar(inBus7, 16),
 			In.ar(inBus8, 16),
-			In.ar(micBus, 16),
 		],
 		// sum all signals
 		summedSignal = signals.sum;
@@ -517,10 +526,13 @@ s.waitForBoot {
 
 /* ----- INSTANCES ----- */
 
-	~mic = Synth(\micIn, [\amp, ~micLevel, \out, ~micAmbiBus], ~dryGroup);
-		~analysis = 16.do({|i|
-		Synth(\inputAnalysis, [\in, i], ~analysisGroup);
-	});
+	~mic = Synth(\micIn, [
+		\amp, ~micLevel,
+		\out, ~micAmbiBus,
+		\threshold, ~micGateThreshold,
+		\attack, ~micGateAttack,
+		\release, ~micGateRelease
+	], ~dryGroup);
 	OSCdef(
 		\analysis_listener, {
 			arg msg;
@@ -863,8 +875,9 @@ s.waitForBoot {
         sumMetrics[key] = value / numChannels;
     });
 
-    sumMetrics; // Return the averaged metrics dictionary
+	sumMetrics; // Return the averaged metrics dictionary
 }.value.postln;
 )
 
-// Example usage:
+// to tweak mic gate
+~mic.set(\threshold, 0.02, \attack, 0.3, \release, 0.3);
