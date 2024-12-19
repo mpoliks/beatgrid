@@ -2,8 +2,8 @@
 
 /* ----- MAIN PARAMETERS ----- */
 
-~hardwareInputs = 16; // should be 16 for 3o ambisonic system
-~hardwareOutputs = 2; // can be 2 or 16
+~hardwareInputs = 12; // should be 12 for 3o ambisonic system
+~hardwareOutputs = 20; // can be 2 or 18 (16 + 2x sub)
 ~ambiOrder = 3; // third-order ambisonics = 16 channels
 ~numAmbiChans = ( ~ambiOrder + 1 )**2; // = 16
 ~tempo = 30;
@@ -17,6 +17,7 @@
 ~fadetime = 8.0; // Duration for fade in/out in seconds
 ~meditation = false; // initial state of whether or not the meditation playback is invoked
 ~meditationLevel = 0.6;
+~nFLevel = 0.2; // night fountain level
 
 
 
@@ -26,7 +27,8 @@
 
 /* ----- SERVER SPECS ----- */
 
-//ServerOptions.devices; -- use this if you need to specifically invoke a hardware object
+ServerOptions.devices; //-- use this if you need to specifically invoke a hardware object
+//Server.default.options.device = 0;
 Server.default.options.numInputBusChannels = ~hardwareInputs;
 Server.default.options.numOutputBusChannels = ~hardwareOutputs;
 s.options.memSize = 365536;
@@ -55,13 +57,13 @@ s.reboot; // initialize audio server
 ]; // random 4x8 matrix to seed pattern generation
 
 // a little manual mixer for live relevelling
-~initLevel = 1.00; // default audio level for patterns
+~initLevel = 0.3; // default audio level for patterns
 ~scl = 0.51; // to scale instruments against loop
-~bassLevel = 0.33 * ~scl;
-~kickLevel = 0.33 * ~scl;
+~bassLevel = 0.4 * ~scl;
+~kickLevel = 0.45 * ~scl;
 ~snareLevel = 0.42 * ~scl;
 ~clapLevel = 0.50 * ~scl;
-~hatLevel = 0.57 * ~scl;
+~hatLevel = 0.47 * ~scl;
 ~loopLevel = 0.33;
 ~hitLevel = 0.51 * ~scl;
 ~miscLevel = 0.22 * ~scl;
@@ -241,7 +243,89 @@ s.waitForBoot {
 		)
 	);
 
-	~micAmbiBus = Bus.audio(s, 16); // declares 16-channel bus to handle microphone input
+
+
+
+
+
+
+/* ----- MIC ----- */
+
+	~micAmbiBus = Bus.audio(s, 12); // declares 16-channel bus to handle microphone input
+	~micBuses = (
+		\a: (
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 0,
+			el: 30,
+		),
+		\b: (
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 90,
+			el: 30,
+		),
+		\c: (
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 180,
+			el: 30,
+		),
+		\d: (
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 270,
+			el: 30,
+		),
+		\e: (
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 45,
+			el: 150,
+		),
+		\f: (
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 135,
+			el: 150,
+		),
+		\g: (
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 225,
+			el: 150,
+		),
+		\h: (
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 315,
+			el: 150,
+		),
+		\i: (
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 30,
+			el: 270,
+		),
+		\j: (
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 120,
+			el: 270,
+		),
+		\k: (
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 210,
+			el: 270,
+		),
+		\l: (
+			monoBus: Bus.audio(s, 1),
+			ambiBus: Bus.audio(s, ~numAmbiChans),
+			az: 300,
+			el: 270,
+		)
+	);
 
 
 
@@ -296,6 +380,8 @@ s.waitForBoot {
 	});
 	~meditationLoopBuffer = Buffer.read(s, thisProcess.nowExecutingPath.dirname
 		+/+ "Meditation Loop/meditation.wav");
+	~nightFountainLoopBuffer = Buffer.read(s, thisProcess.nowExecutingPath.dirname
+		+/+ "Meditation Loop/nightfountain.wav");
 	~appendLog.value("OK: Loading....");
 	// wait for the server
 	s.sync;
@@ -346,6 +432,12 @@ s.waitForBoot {
 		Out.ar(out, sig * env * amp);
 	}).add;
 
+	SynthDef(\playbackFountain, { // playback fountain
+		arg buf, amp = 0.0, out;
+		var sig = PlayBuf.ar(2, BufRateScale.ir(buf) * 1.0, loop: 1.0),
+		fx = Greyhole.ar(sig, 1.0, (60/~tempo) * 0.333);
+		Out.ar(out, ((sig + (0.3 * fx)) * amp));
+	}).add;
 
 	SynthDef(\delay, {
 		arg in, out, delayTime = 0.33333,
@@ -387,21 +479,14 @@ s.waitForBoot {
 		arg inDry, inFx, out, amp = 1.0;
 		var dry = In.ar(inDry, 1),
 		fx = In.ar(inFx, 1),
-		mixed = (dry + (0.5 * fx)) * amp;
+		mixed = (dry + (0.8 * fx)) * amp;
 		Out.ar(out, mixed);
 	}).add;
 
-	SynthDef(\micIn, { // 16 channel mic input
-		arg in, out, amp, threshold=0.01, attack=0.25, release=0.25;
-		var sig = SoundIn.ar((0..15)), // mic in
-		ampEst = Amplitude.ar(sig), // estimate amplitude
-		isLoud = ampEst > threshold, // gate condition
-		// smoothly ramp gain between 0 and 1 depending on gate
-		gateEnv = LagUD.kr(isLoud, attack, release);
-
-		// apply the gateEnv as a multiplier to the mic signal
-		sig = sig * amp * gateEnv;
-
+	SynthDef(\micIn, { // mic input
+		arg in, out;
+		var sig = SoundIn.ar(in);
+		//sig = HPF.ar(sig, 1000);
 		Out.ar(out, sig);
 	}).add;
 
@@ -477,30 +562,36 @@ s.waitForBoot {
 	}).add;
 
 	SynthDef(\mixIO, { // compressor, limiter on the Ambisonic mix prior to final gain stage
-		arg out, in, amp = 1.0, trig = 1;
+		arg out, in, amp = 1.0, trig = 1,
+		eqGains = #[1.0, 1.0, 1.0, 0.9, 0.9, 1.0, 1.0, 1.0],
+		eqQ = 1.0; // a default Q for all bands
 		var env, verb, sig = In.ar(in, 16), // Now reading all HOA channels
-		lfo = SinOsc.kr(1 / (3* 60)).range(1, 10) + (LFNoise1.kr(0.01) * 0.5);
+		lfo = SinOsc.kr(1 / (3* 60)).range(1, 10) + (LFNoise1.kr(0.01) * 0.5),
+		eqFreqs = [63, 125, 250, 500, 1000, 2000, 4000, 8000], rq = 1 / eqQ;
 		// apply the same processing to each channel of the ambisonic field
 		sig = Compander.ar(sig, sig, thresh: 0.85, slopeBelow: 1.2, slopeAbove: 0.45, clampTime: 0.01, relaxTime: 0.01);
-		sig = BPeakEQ.ar(sig, 100, 1.0, 1.0);
+		eqFreqs.do{|freq, i|
+			sig = BPeakEQ.ar(sig, freq, rq, eqGains[i]);
+		};
 		verb = HDVerb.ar(sig, mix: 0.2, decay: lfo);
-		sig = ((sig * 0.6) + (verb * 0.6)) * amp;
+		sig = ((sig * 0.5) + (verb * 0.8)) * amp;
 		env = EnvGen.kr(Env.asr(~fadetime, 1, ~fadetime), gate: trig); // for triggering fadein/out for meditation blocks
 		sig = Limiter.ar(sig, level: 0.94, dur: 0.1);
 		sig = sig * env;
 		Out.ar(out, sig);
 	}).add;
 
-	SynthDef(\masterGain, { |in, micIn, out, amp=1.0|
-		var sig = In.ar(in, 16), mic = In.ar(micIn, 16);
+	SynthDef(\masterGain, { |in, micIn, out, amp=1.0, micAmp=0.0|
+		var sig = In.ar(in, 16), mic = In.ar(micIn, 12);
 		// master fader
 		sig = sig * amp;
+		mic = mic * micAmp;
 		// add in ambisonic mic post-fader
 		sig = sig + mic;
 		Out.ar(out, sig);
 	}).add;
 
-	SynthDef(\downmixToStereo, { |in|
+	SynthDef(\downmixToStereo, { |in, out = 0|
 		var insig = In.ar(in, 16);
 		// take W and maybe some other channels to fake stereo:
 		var w = Select.ar(0, insig); // W channel is 0
@@ -508,7 +599,7 @@ s.waitForBoot {
 		// simple fake stereo: w+(0.5*x) left, w-(0.5*x) right
 		var left = w + (0.5 * x);
 		var right = w - (0.5 * x);
-		Out.ar(0, [left, right]);
+		Out.ar(out, [left, right]);
 	}).add;
 
 	SynthDef(\directAmbiOut, { |in|
@@ -526,13 +617,23 @@ s.waitForBoot {
 
 /* ----- INSTANCES ----- */
 
-	~mic = Synth(\micIn, [
-		\amp, ~micLevel,
-		\out, ~micAmbiBus,
-		\threshold, ~micGateThreshold,
-		\attack, ~micGateAttack,
-		\release, ~micGateRelease
-	], ~dryGroup);
+	~micBuses.keys.do {
+		|micChan|
+		var data = ~micBuses[micChan];
+
+		Synth(\micIn, [
+			\out, data[\monoBus],
+			\in, micChan
+		], ~dryGroup);
+
+		Synth(\hoaEncodeGeneric, [
+			\in, data[\monoBus],
+			\out, data[\ambiBus],
+			\az, data[\az],
+			\el, data[\el]
+		], ~ambiBusGroup);
+	};
+
 	OSCdef(
 		\analysis_listener, {
 			arg msg;
@@ -600,6 +701,20 @@ s.waitForBoot {
 		\inBus6, ~ambiBuses[5],
 		\inBus7, ~ambiBuses[6],
 		\inBus8, ~ambiBuses[7]], ~ambiSumGroup);
+	~micAmbiBuses = ~micBuses.values.collect({ |v| v[\ambiBus] });
+	// declare the sum bus for all of the ambisonic signals
+	~micSumBus = Bus.audio(s, ~numAmbiChans);
+	// sum them together
+	Synth(\sumAmbisonicBuses, [
+		\outBus, ~micSumBus,
+		\inBus1, ~micAmbiBuses[0],
+		\inBus2, ~micAmbiBuses[1],
+		\inBus3, ~micAmbiBuses[2],
+		\inBus4, ~micAmbiBuses[3],
+		\inBus5, ~micAmbiBuses[4],
+		\inBus6, ~micAmbiBuses[5],
+		\inBus7, ~micAmbiBuses[6],
+		\inBus8, ~micAmbiBuses[7]], ~ambiSumGroup);
 	~finalAmbiBus = ~ambiSumBus;
 	// declare the output bus for mixIO on top of the summed buses
 	~processedAmbiBus = Bus.audio(s, ~numAmbiChans);
@@ -611,9 +726,11 @@ s.waitForBoot {
 	~masterGainSynth = Synth(
 		\masterGain, [
 			\in, ~processedAmbiBus,
-			\micIn, ~micAmbiBus,
+			\micIn, ~micSumBus,
 			\out, ~finalGainBus,
 			\amp, ~initLevel ], ~finalMixGroup);
+
+	~subwooferMix = Synth(\downmixToStereo, [\in,  ~finalGainBus, \out, 18], ~gainStageGroup);
 
 	// if we are just monitoring on headphones (2 channels), decode or downmix
 	// if we have 16 outputs (the install), route directly:
@@ -626,6 +743,8 @@ s.waitForBoot {
 		// If we have 16 hardware outputs, directly send them out:
 		Synth(\directAmbiOut, [\in,  ~finalGainBus], ~gainStageGroup);
 	});
+
+	~nFSynth = Synth(\nightFountain, [\out, 0, \buf, ~nightFountainBuffer], ~gainStageGroup);
 
 
 
@@ -701,9 +820,16 @@ s.waitForBoot {
 
 	~micFader = EZSlider.new(~w, Rect(20, 160, 430, 40), "mic fader",
 		ControlSpec.new(0.00, 1.5, \lin, 0.01, 1.0, ""), // default 1.0
-		{ arg slider; ~mic.set(\amp, slider.value); },
+		{ arg slider; ~masterGainSynth.set(\micAmp, slider.value); },
 		0, false, 80, 45
 	).value_(~micLevel).setColors(Color.grey, Color.white);
+	// mic input fader
+
+	~fountainFader = EZSlider.new(~w, Rect(20, 160, 430, 40), "fountain fader",
+		ControlSpec.new(0.00, 1.5, \lin, 0.01, 1.0, ""), // default 1.0
+		{ arg slider; ~nFSynth.set(\amp, slider.value); },
+		0, false, 80, 45
+	).value_(~nFLevel).setColors(Color.grey, Color.white);
 	// mic input fader
 
 	~startButton = Button(~w, Rect(20, 20, 420, 40))
