@@ -8,6 +8,7 @@
 ~numAmbiChans = ( ~ambiOrder + 1 )**2; // = 16
 ~tempo = 30;
 ~kitOverride = false; // for specific kit testing
+~timeOverride = false; // for time-locking
 
 
 ~micLevel = 0.0; // input level of ambisonic mic
@@ -59,8 +60,8 @@ s.reboot; // initialize audio server
 // a little manual mixer for live relevelling
 ~initLevel = 0.3; // default audio level for patterns
 ~scl = 0.51; // to scale instruments against loop
-~bassLevel = 0.4 * ~scl;
-~kickLevel = 0.45 * ~scl;
+~bassLevel = 0.67 * ~scl;
+~kickLevel = 0.65 * ~scl;
 ~snareLevel = 0.42 * ~scl;
 ~clapLevel = 0.50 * ~scl;
 ~hatLevel = 0.47 * ~scl;
@@ -112,6 +113,7 @@ s.waitForBoot {
 			ambiBus: Bus.audio(s, ~numAmbiChans),
 			az: 0, // starting azimuth of audio
 			el: 0, // starting elevation of audio
+			mix: 1.0,
 			tumbleRate: 0.0, // rotation around y-axis
 			tiltRate: 0.0, // rotation around z-axis
 			rotateRate: 0.02, // rotation around x-axis
@@ -129,6 +131,7 @@ s.waitForBoot {
 			ambiBus: Bus.audio(s, ~numAmbiChans),
 			az: 0,
 			el: 0,
+			mix: 1.0,
 			tumbleRate: 0.0,
 			tiltRate: 0.0,
 			rotateRate: 0.08,
@@ -146,6 +149,7 @@ s.waitForBoot {
 			ambiBus: Bus.audio(s, ~numAmbiChans),
 			az: -90,
 			el: 0,
+			mix: 1.0,
 			tumbleRate: 0.0,
 			tiltRate: 0.003,
 			rotateRate: 0.02,
@@ -163,6 +167,7 @@ s.waitForBoot {
 			ambiBus: Bus.audio(s, ~numAmbiChans),
 			az: 135,
 			el:270,
+			mix: 1.0,
 			tumbleRate: 0.01,
 			tiltRate: 0.0,
 			rotateRate: 0.03,
@@ -180,6 +185,7 @@ s.waitForBoot {
 			ambiBus: Bus.audio(s, ~numAmbiChans),
 			az: 180,
 			el: 90,
+			mix: 0.7,
 			tumbleRate: 0.0,
 			tiltRate: 0.0,
 			rotateRate: 0.06,
@@ -214,6 +220,7 @@ s.waitForBoot {
 			ambiBus: Bus.audio(s, ~numAmbiChans),
 			az: 270,
 			el: 0,
+			mix: 1.0,
 			tumbleRate: 0.01,
 			tiltRate: 0.1,
 			rotateRate: 0.02,
@@ -231,6 +238,7 @@ s.waitForBoot {
 			ambiBus: Bus.audio(s, ~numAmbiChans),
 			az: 315,
 			el: 90,
+			mix: 0.3,
 			tumbleRate: 0.0,
 			tiltRate: 0.03,
 			rotateRate: 0.0,
@@ -476,10 +484,10 @@ s.waitForBoot {
 	}).add;
 
 	SynthDef(\mixInstrument, { // for dry/wet mix at the instrument level
-		arg inDry, inFx, out, amp = 1.0;
+		arg inDry, inFx, out, amp = 1.0, mix = 1.0;
 		var dry = In.ar(inDry, 1),
 		fx = In.ar(inFx, 1),
-		mixed = (dry + (0.8 * fx)) * amp;
+		mixed = ((dry * mix) + (0.9 * fx)) * amp;
 		Out.ar(out, mixed);
 	}).add;
 
@@ -574,7 +582,7 @@ s.waitForBoot {
 			sig = BPeakEQ.ar(sig, freq, rq, eqGains[i]);
 		};
 		verb = HDVerb.ar(sig, mix: 0.2, decay: lfo);
-		sig = ((sig * 0.5) + (verb * 0.8)) * amp;
+		sig = ((sig * 0.4) + (verb * 0.8)) * amp;
 		env = EnvGen.kr(Env.asr(~fadetime, 1, ~fadetime), gate: trig); // for triggering fadein/out for meditation blocks
 		sig = Limiter.ar(sig, level: 0.94, dur: 0.1);
 		sig = sig * env;
@@ -663,6 +671,7 @@ s.waitForBoot {
 			\inDry, data[\dryBus],
 			\inFx,  data[\fxBus],
 			\out,   data[\monoBus],
+			\mix, data[\mix],
 			\amp, 1.0, // Start with full amplitude
 			\fadeBus, ~fadeBus // Pass the fadeBus to the Synth
 		], ~dryGroup);

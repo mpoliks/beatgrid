@@ -15,7 +15,7 @@ Conductor {
 		arg seed;
 		var intensity_level = 0,
 		minute = event_time.minute % 13, swing = 0.2, set_kit,
-		next = rrand(1,4), next_kit = rrand(0, 2);
+		next = rrand(1,3), next_kit = rrand(0, 2);
 
 		if (((event_time.hour < 11) || (event_time.hour >= 20)), { intensity_level = 0; });
 		if (((event_time.hour >= 11) && (event_time.hour < 12)), { intensity_level = 0; });
@@ -25,7 +25,7 @@ Conductor {
 		if (((event_time.hour >= 18) && (event_time.hour < 20)), { intensity_level = 0; });
 
 		if (((minute >= 0) && (minute < 4)), { intensity_level = intensity_level + 0; });
-		if (((minute >= 4) && (minute < 11)), { intensity_level = intensity_level + 1; });
+		if (((minute >= 7) && (minute < 11)), { intensity_level = intensity_level + 1; });
 		if (((minute >= 11) && (minute <= 13)), { intensity_level = intensity_level + 2; });
 
 		if (~intensityOverride == true, {
@@ -63,7 +63,7 @@ Conductor {
 		~appendLog.value("OK: New Event using Kit" + set_kit.asString);
 
 		swing = rrand(0.01, 0.55);
-		if (next == 4, {swing = 0.01});
+		//if (next == 4, {swing = 0.01});
 		if (next == 2, {swing = 0.01});
 
 		if (intensity_level == 4, { next = rrand (1,3) });
@@ -116,7 +116,7 @@ Conductor {
 				current_time.hour = (time_override + ((current_time.hour - hour_lock) % 24)) % 24;
 			});
 
-			if (current_time.second % 10 == 0, {
+			if (current_time.second % 30 == 0, {
 
 				~appendLog.value( "\n" ++
 					"LOG: CURRENT STATUS ------------------ \n" ++
@@ -146,8 +146,8 @@ Conductor {
 			{
 
 				if(
-					((current_time.hour >= event_time.hour) &&
-						(current_time.minute >= event_time.minute)) ||
+					((current_time.hour * 60 + current_time.minute) >=
+						(event_time.hour * 60 + event_time.minute)) ||
 					(~transitionOverride == true), {
 
 						~transitionOverride = false;
