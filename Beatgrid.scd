@@ -467,12 +467,12 @@ s.waitForBoot {
 		gain3 = 1.0 / ch3Speakers.size;
 
 		sig = BhobLoShelf.ar(sig, 800, 6);
-		//sig = JPverb.ar(sig);
         ch0Speakers.do { |spk| outSig[spk] = outSig[spk] + sig[0]*gain0; };
         ch1Speakers.do { |spk| outSig[spk] = outSig[spk] + sig[1]*gain1; };
 		ch2Speakers.do { |spk| outSig[spk] = outSig[spk] + sig[2]*gain2; };
         ch3Speakers.do { |spk| outSig[spk] = outSig[spk] + sig[3]*gain3; };
 
+		outSig = JPverb.ar(outSig);
         Out.ar(0, outSig * amp);
     }).add;
 
@@ -820,7 +820,6 @@ s.waitForBoot {
 	~masterGainSynth = Synth(
 		\masterGain, [
 			\in, ~processedAmbiBus,
-			\micIn, ~micSumBus,
 			\soloIn, ~micBuses[\a][\soloAmbiBus],
 			\out, ~finalGainBus,
 			\amp, ~initLevel ], ~finalMixGroup);
