@@ -11,15 +11,15 @@
 ~kitOverride = false; // for specific kit testing
 ~timeOverride = false; // for time-locking
 
-~initLevel = 0.3; // default audio level for patterns
-~micLevel = 0.0; // input level of ambisonic mic
+~initLevel = 0.25; // default audio level for patterns
+~micLevel = 0.3; // input level of ambisonic mic
 // can be \stereo, \stem, \false = default (live, no mixdown)
-~soloLevel = 1.3; // level of solo bird
-~sfLevel = 0.34; // level of soundfield
+~soloLevel = 1.0; // level of solo bird
+~sfLevel = 0.3; // level of soundfield
 
 ~mixdown = \false;
 // master fader will only work if mixdown is false
-~fadetime = 8.0; // Duration for fade in/out in seconds
+~fadetime = 30.0; // Duration for fade in/out in seconds
 ~meditation = false; // initial state of whether or not the meditation playback is invoked
 ~meditationLevel = 0.6;
 
@@ -450,7 +450,7 @@ s.waitForBoot {
 
     SynthDef(\play4ChSpatial, {
 		arg buf, amp = 1.0;
-        var sig = PlayBuf.ar(4, buf, BufRateScale.kr(buf), startPos:0, loop:0, doneAction:2),
+        var sig = PlayBuf.ar(4, buf, BufRateScale.kr(buf), startPos:0, loop:0, doneAction:2), fx, env, trig = 1,
 
         // Define speaker sets for each channel (0-based indexing in SuperCollider):
         ch0Speakers = [0, 1, 2, 3, 8, 9],      // for sig[0]
@@ -466,14 +466,16 @@ s.waitForBoot {
 		gain2 = 1.0 / ch2Speakers.size,
 		gain3 = 1.0 / ch3Speakers.size;
 
-		sig = BhobLoShelf.ar(sig, 800, 6);
+		sig = BhobLoShelf.ar(sig, 800, 3);
         ch0Speakers.do { |spk| outSig[spk] = outSig[spk] + sig[0]*gain0; };
         ch1Speakers.do { |spk| outSig[spk] = outSig[spk] + sig[1]*gain1; };
 		ch2Speakers.do { |spk| outSig[spk] = outSig[spk] + sig[2]*gain2; };
         ch3Speakers.do { |spk| outSig[spk] = outSig[spk] + sig[3]*gain3; };
 
-		outSig = JPverb.ar(outSig);
-        Out.ar(0, outSig * amp);
+		env = EnvGen.kr(Env.asr(~fadetime, 1, ~fadetime * 2), gate: trig);
+		outSig = outSig * env;
+		fx = JPverb.ar(outSig);
+		Out.ar(0, ((outSig * 0.4) + (fx * 1.2)) * amp);
     }).add;
 
 	SynthDef(\delay, {
@@ -527,8 +529,11 @@ s.waitForBoot {
 	}).add;
 
 	SynthDef(\micDryOut, {
-		arg in, out, amp = 1.0;
-		var sig = In.ar(in, 19);
+		arg in, out, amp = 1.0, trig = 0;
+		var sig = In.ar(in, 19),
+		env = EnvGen.kr(Env.asr(~fadetime * 2, 1, ~fadetime), gate: trig);
+		// for triggering fadein/out for meditation blocks
+		sig = sig * env;
 		Out.ar(out, sig * amp);
 	}).add;
 
@@ -702,23 +707,20 @@ s.waitForBoot {
 
 	~micDryBuses = Bus.audio(s, 19);
 	~micDryIndex = ~micDryBuses.index;
-	~micBuses.keys.do {
-		|micChan, i|
+	~micBuses.keys.do { |micChan, i|
 		var data = ~micBuses[micChan];
-
-		data[\outmap].do {
-		|chan|
-
-		chan.postln;
-		Synth(\micIn, [
-			\out, ~micDryIndex + chan,
-			\in, i
+		data[\outmap].do { |chan|
+			Synth(\micIn, [
+				\out, ~micDryIndex + chan,
+				\in, i
 		], ~dryGroup)};
 	};
 
 	~micDryOut = Synth(\micDryOut, [
 		\out, 0,
-		\in, ~micDryBuses], ~fxGroup);
+		\in, ~micDryBuses,
+		\amp, ~micLevel,
+	], ~fxGroup);
 
 	~soloSynth = Synth (\birdSolo, [
 		\in, 0,
@@ -821,6 +823,7 @@ s.waitForBoot {
 		\masterGain, [
 			\in, ~processedAmbiBus,
 			\soloIn, ~micBuses[\a][\soloAmbiBus],
+			\soloAmp, ~soloLevel,
 			\out, ~finalGainBus,
 			\amp, ~initLevel ], ~finalMixGroup);
 
@@ -876,6 +879,23 @@ s.waitForBoot {
 		});
 	};
 
+	~realspace = Task({
+    loop {
+		~appendLog.value("Transitioning to Hyperspacespace");
+		~mixIOSynth.set(\trig, 1);
+		~sfSynth.set(\trig, 1);
+		~micDryOut.set(\trig, 0);
+        600.wait; // wait 10 minutes
+		~appendLog.value("Transitioning to Realspace");
+		~mixIOSynth.set(\trig, 0);
+		~sfSynth.set(\trig, 0);
+		~micDryOut.set(\trig, 1);
+		60.wait;
+    }
+	});
+
+	// Start the Task on the SystemClock
+	~realspace.start(SystemClock);
 
 
 
