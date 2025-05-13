@@ -163,12 +163,19 @@ PlaybackSchema {
 		}),
 
 		outs = switch (~mixdown,
-
 			\stereo, {Array.fill(16, {rrand(0,1)})},
 			\stem, {[2]},
 			\false, {[~instrumentBuses[\clap][\dryBus]]});
 
-		~appendLog.value("OK: Clap Buffers: " ++ buf.asString);
+		~appendLog.value("PATTERN: Clap pattern generated with parameters:");
+		~appendLog.value("INFO: Buffer variation: " ++ buffer_variation);
+		~appendLog.value("INFO: Pattern modifiers: " ++ [modifier, modifier2, modifier3]);
+		~appendLog.value("INFO: Duration: " ++ dur);
+		~appendLog.value("INFO: Onbeat probability: " ++ onbeat);
+		~appendLog.value("INFO: Filter cutoffs - High: " ++ hcut ++ " Low: " ++ lcut);
+		~appendLog.value("INFO: Output routing: " ++ outs);
+		~appendLog.value("INFO: Amplitude sequence (first 4): " ++ amps[0..3]);
+		~appendLog.value("INFO: Selected buffers: " ++ buf);
 
 		^Pbind(
 			\instrument, \playback,
@@ -296,7 +303,14 @@ PlaybackSchema {
 			\blackhole, {0},
 			\false, {[~instrumentBuses[\loop][\dryBus]]});
 
-		~appendLog.value("OK: Loop Buffers: " ++ buf.asString);
+		~appendLog.value("PATTERN: Loop pattern generated with parameters:");
+		~appendLog.value("INFO: Buffer variation: " ++ buffer_variation);
+		~appendLog.value("INFO: Duration: " ++ dur);
+		~appendLog.value("INFO: Attack/Release: " ++ [atk, rel]);
+		~appendLog.value("INFO: Loop ratio sequence: " ++ loop_ratio);
+		~appendLog.value("INFO: Envelope timing - Attack: " ++ env_atk ++ " Release: " ++ env_rel);
+		~appendLog.value("INFO: Output routing: " ++ out);
+		~appendLog.value("INFO: Selected buffers: " ++ buf);
 
 		^Pbind(
 			\instrument, \playbackLoop,
@@ -325,11 +339,6 @@ PlaybackSchema {
 		onbeat = rrand(0, 1),
 		hcut = rrand(800, 10000),
 		lcut = rrand(40, 1000),
-		/*pitch = Array.fill(modifier2 * modifier, {
-			var temp = [1.0, 1.125, 1.25],
-			try = [0.2, 0.2, 0.2].windex;
-			temp[try];
-		}),*/
 		amps = Array.fill((pattern.size * modifier), {
 			arg i;
 			var amp = rrand(~hitLevel / 1.3, ~hitLevel);
@@ -338,18 +347,24 @@ PlaybackSchema {
 		}),
 
 		outs = switch (~mixdown,
-
 			\stereo, {Array.fill(4, {[0, 1, [0, 1]].choose([0.2, 0.2, 0.6])})},
 			\stem, {[5]},
 			\false, {[~instrumentBuses[\hit][\dryBus]]});
 
-		~appendLog.value("OK: Hit Buffers: " ++ buf.asString);
+		~appendLog.value("PATTERN: Hit pattern generated with parameters:");
+		~appendLog.value("INFO: Buffer variation: " ++ buffer_variation);
+		~appendLog.value("INFO: Pattern modifiers: " ++ [modifier, modifier2, modifier3]);
+		~appendLog.value("INFO: Duration: " ++ dur);
+		~appendLog.value("INFO: Onbeat probability: " ++ onbeat);
+		~appendLog.value("INFO: Filter cutoffs - High: " ++ hcut ++ " Low: " ++ lcut);
+		~appendLog.value("INFO: Output routing: " ++ outs);
+		~appendLog.value("INFO: Amplitude sequence (first 4): " ++ amps[0..3]);
+		~appendLog.value("INFO: Selected buffers: " ++ buf);
 
 		^Pbind(
 			\instrument, \playbackP,
 			\dur, Pseq(dur, inf),
 			\buf, Pseq(buf, inf),
-			//\repitch, Pseq(pitch, inf),
 			\hcut, Pwhite(hcut / 2, hcut),
 			\lcut, Pwhite(lcut / 2, lcut),
 			\atk, Pwhite(0.01, 1.0),

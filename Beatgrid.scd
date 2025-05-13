@@ -478,6 +478,15 @@ s.waitForBoot {
 		Out.ar(0, ((outSig * 0.4) + (fx * 1.2)) * amp);
     }).add;
 
+    // 20-channel playback SynthDef
+    SynthDef(\play20Ch, {
+        arg buf, amp = 1.0, trig = 1;
+        var sig = PlayBuf.ar(20, buf, BufRateScale.kr(buf), startPos:0, loop:0, doneAction:2),
+        env = EnvGen.kr(Env.asr(~fadetime, 1, ~fadetime * 2), gate: trig);
+        sig = sig * env;
+        Out.ar(0, sig);
+    }).add;
+
 	SynthDef(\delay, {
 		arg in, out, delayTime = 0.33333,
 		decayTime = 3, hcut = 100, lcut = 10000, amp = 0.2, decay = 10;
@@ -655,6 +664,14 @@ s.waitForBoot {
 		Out.ar(out, sig);
 	}).add;
 
+	SynthDef(\masterFade, { |in, meditationIn, introIn, out, gate = 1|
+		var sig = In.ar(in, 16);
+		var meditationSig = In.ar(meditationIn, 20);
+		var introSig = In.ar(introIn, 20);
+		var env = EnvGen.kr(Env.asr(10, 1, 10), gate);  // 10 second fade in/out
+		Out.ar(out, (sig ++ (meditationSig + introSig)) * env);  // Sum meditation and intro, then apply master fade
+	}).add;
+
 	SynthDef(\downmixToStereo, { |in, out = 0|
 		var insig = In.ar(in, 16);
 		// take W and maybe some other channels to fake stereo:
@@ -684,10 +701,10 @@ s.waitForBoot {
     ~playSoundField = {
 		var chosen = ~soundFields.choose;
             {
-                var buf = Buffer.readChannel(s, chosen.fullPath, channels:[0,1,2,3]), dur;
+                var buf = Buffer.readChannel(s, chosen.fullPath, channels: (0..19)), dur;
                 s.sync;
                 dur = buf.duration;
-                ~sfSynth = Synth(\play4ChSpatial, [\buf, buf]);
+                ~sfSynth = Synth(\play20Ch, [\buf, buf]);
                 SystemClock.sched(dur, {
                     buf.free;
                     ~playSoundField.value;
@@ -706,6 +723,7 @@ s.waitForBoot {
 /* ----- INSTANCES ----- */
 
 	~micDryBuses = Bus.audio(s, 19);
+	~finalFadeBus = Bus.audio(s, 16);  // New bus for fade control
 	~micDryIndex = ~micDryBuses.index;
 	~micBuses.keys.do { |micChan, i|
 		var data = ~micBuses[micChan];
@@ -824,10 +842,82 @@ s.waitForBoot {
 			\in, ~processedAmbiBus,
 			\soloIn, ~micBuses[\a][\soloAmbiBus],
 			\soloAmp, ~soloLevel,
-			\out, ~finalGainBus,
+			\out, ~finalFadeBus,  // Changed to output to fade bus
 			\amp, ~initLevel ], ~finalMixGroup);
 
-	~subwooferMix = Synth(\downmixToStereo, [\in,  ~finalGainBus, \out, 18], ~gainStageGroup);
+	~masterFadeSynth = Synth(\masterFade, [
+		\in, ~finalFadeBus,
+		\meditationIn, ~meditationBus,
+		\introIn, ~introBus,
+		\out, ~finalGainBus,
+		\gate, 1
+	], ~gainStageGroup);
+
+	~subwooferMix = Synth(\downmixToStereo, [\in, ~finalGainBus, \out, 18], ~gainStageGroup);
+
+	// Serial port setup for mute button
+	try {
+		~appendLog.value("\nSERIAL: Attempting to open serial port COM3");
+		~serialPort = SerialPort(
+			"COM3",
+			baudrate: 38400,
+			databits: 8,
+			stopbit: true,
+			parity: nil
+		);
+
+		~appendLog.value("SERIAL: Successfully opened serial port");
+		~appendLog.value("CONFIG: Baud rate: 38400, Data bits: 8, Stop bit: true");
+
+		// Create a routine to handle incoming serial data
+		~serialRoutine = Routine({
+			var byte, str = "";
+			~appendLog.value("SERIAL: Starting serial monitoring routine");
+			
+			loop {
+				while({ byte = ~serialPort.read; byte.notNil }, {
+					if(byte == 10, {  // newline
+						if(str.contains("DICIND"), {
+							var parts = str.split($ );
+							~appendLog.value("SERIAL: Received command: " ++ str);
+							
+							if(parts[1] == "1", {  // input 1
+								if(parts[2] == "1", {  // button pressed
+									~appendLog.value("MUTE: Button press detected - initiating mute sequence");
+									// Start fade out sequence
+									~appendLog.value("FADE: Starting 10-second fade out");
+									~masterFadeSynth.set(\gate, 0);  // 10 second fade out
+									
+									// Schedule fade in after 30 minutes
+									~appendLog.value("SCHEDULE: Setting 30-minute timer for fade in");
+									SystemClock.sched(1800, {  // 30 minutes = 1800 seconds
+										~appendLog.value("FADE: 30 minutes elapsed - starting 10-second fade in");
+										~masterFadeSynth.set(\gate, 1);  // 10 second fade in
+										nil;  // Don't repeat
+									});
+								});
+							});
+						});
+						str = "";
+					}, {
+						str = str ++ byte.asAscii;
+					});
+				});
+				0.01.wait;
+			}
+		}).play;
+	} { |error|
+		~appendLog.value("ERROR: Failed to open serial port: " ++ error);
+	};
+
+	// Cleanup on shutdown
+	ShutDown.add {
+		~appendLog.value("SHUTDOWN: Cleaning up serial port connection");
+		if(~serialPort.notNil) {
+			~serialPort.close;
+			~appendLog.value("SHUTDOWN: Serial port closed");
+		};
+	};
 
 	// if we are just monitoring on headphones (2 channels), decode or downmix
 	// if we have 16 outputs (the install), route directly:
@@ -848,6 +938,117 @@ s.waitForBoot {
 
 
 /* ----- FADES ----- */
+
+	// Meditation schedule times (24-hour format)
+	~meditationTimes = [10, 12, 14, 16, 18, 20];  // 10am, 12pm, 2pm, 4pm, 6pm, 8pm
+	~meditationFadeTime = 15;  // 15 second crossfades
+	~meditationBus = Bus.audio(s, 20);  // Bus for meditation audio before master fade
+	~introBus = Bus.audio(s, 20);  // Bus for intro audio
+
+	// SynthDef for intro playback (continuous 20-min loop)
+	SynthDef(\introPlayer, { |buf, out, gate = 1, ducking = 1, amp = 1|
+		var sig = PlayBuf.ar(20, buf, BufRateScale.kr(buf), loop: 1);
+		var env = EnvGen.kr(Env.asr(5, 1, 5), gate);  // 5 second fade for smooth transitions
+		Out.ar(out, sig * env * ducking * amp);
+	}).add;
+
+	// SynthDef for meditation playback
+	SynthDef(\meditationPlayer, { |buf, out, gate = 0, amp = 1|
+		var sig = PlayBuf.ar(20, buf, BufRateScale.kr(buf), doneAction: 2);
+		var env = EnvGen.kr(Env.asr(~meditationFadeTime, 1, ~meditationFadeTime), gate);
+		Out.ar(out, sig * env * amp);
+	}).add;
+
+	// Function to check and schedule next meditation time
+	~scheduleNextMeditation = {
+		var now = Date.getDate;
+		var currentHour = now.hour;
+		var nextTime;
+
+		~appendLog.value("\nMEDITATION: Calculating next meditation time");
+		~appendLog.value("TIME: Current hour: " ++ currentHour);
+
+		// Find the next meditation time
+		nextTime = ~meditationTimes.detect({ |hour|
+			hour > currentHour
+		});
+
+		// If no next time today, use first time tomorrow
+		if(nextTime.isNil, {
+			nextTime = ~meditationTimes[0];
+			var waitTime = ((24 - currentHour + nextTime) * 3600) - (now.minute * 60) - now.second;
+			~appendLog.value("SCHEDULE: No more meditations today, next meditation tomorrow at " ++ nextTime ++ ":00");
+			~appendLog.value("WAIT: " ++ (waitTime/3600).round(0.01) ++ " hours until next meditation");
+			waitTime;
+		}, {
+			var waitTime = ((nextTime - currentHour) * 3600) - (now.minute * 60) - now.second;
+			~appendLog.value("SCHEDULE: Next meditation today at " ++ nextTime ++ ":00");
+			~appendLog.value("WAIT: " ++ (waitTime/3600).round(0.01) ++ " hours until next meditation");
+			waitTime;
+		});
+	};
+
+	// Function to start meditation playback
+	~startMeditation = {
+		~appendLog.value("\nMEDITATION: Starting meditation sequence");
+		
+		// Fade out generative audio and duck intro
+		~appendLog.value("FADE: Starting fade out of generative audio");
+		~mixIOSynth.set(\gate, 0);
+		~appendLog.value("DUCK: Ducking intro audio");
+		~introSynth.set(\ducking, 0);
+		
+		// Start meditation playback after fade out begins
+		~appendLog.value("FADE: Waiting " ++ ~meditationFadeTime ++ " seconds for crossfade");
+		s.makeBundle(~meditationFadeTime, {
+			~appendLog.value("PLAYBACK: Starting meditation audio");
+			~meditationSynth = Synth(\meditationPlayer, [
+				\buf, ~meditationLoopBuffer,
+				\out, ~meditationBus,
+				\gate, 1,
+				\amp, 1
+			], ~dryGroup);
+		});
+	};
+
+	// Function to end meditation
+	~endMeditation = {
+		~appendLog.value("\nMEDITATION: Ending meditation sequence");
+		
+		if(~meditationSynth.notNil, {
+			// Fade out meditation
+			~appendLog.value("FADE: Starting fade out of meditation audio");
+			~meditationSynth.set(\gate, 0);
+			
+			// Fade in generative audio and intro
+			~appendLog.value("FADE: Waiting " ++ ~meditationFadeTime ++ " seconds for crossfade");
+			s.makeBundle(~meditationFadeTime, {
+				~appendLog.value("FADE: Restoring generative and intro audio");
+				~mixIOSynth.set(\gate, 1);
+				~introSynth.set(\ducking, 1);
+			});
+		});
+		
+		// Schedule next meditation
+		var nextWaitTime = ~scheduleNextMeditation.value;
+		~appendLog.value("SCHEDULE: Scheduling next meditation in " ++ (nextWaitTime/3600).round(0.01) ++ " hours");
+		SystemClock.sched(nextWaitTime, {
+			~startMeditation.value;
+			nil;  // Don't repeat
+		});
+	};
+
+	// Start the meditation scheduling system
+	{
+		~appendLog.value("\nMEDITATION: Initializing meditation schedule system");
+		~appendLog.value("CONFIG: Meditation times: " ++ ~meditationTimes);
+		~appendLog.value("CONFIG: Fade time: " ++ ~meditationFadeTime ++ " seconds");
+		var initialWait = ~scheduleNextMeditation.value;
+		SystemClock.sched(initialWait, {
+			~startMeditation.value;
+			nil;  // Don't repeat
+		});
+	}.value;
 
 	// function declarations for fading in/out instruments
 	~fadeOut = {
@@ -896,6 +1097,15 @@ s.waitForBoot {
 
 	// Start the Task on the SystemClock
 	~realspace.start(SystemClock);
+
+	// Start the intro playback
+	~introSynth = Synth(\introPlayer, [
+		\buf, ~introBuffer,
+		\out, ~introBus,
+		\gate, 1,
+		\ducking, 1,
+		\amp, 0.7  // Adjust this level as needed
+	], ~dryGroup);
 
 
 
@@ -951,6 +1161,24 @@ s.waitForBoot {
 		0, false, 80, 45
 	).value_(~sfLevel).setColors(Color.grey, Color.white);
 	// solo input fader
+
+	~introFader = EZSlider.new(~w, Rect(20, 160, 430, 40), "intro fader",
+		ControlSpec.new(0.00, 1.5, \lin, 0.01, 0.7, ""), // default 0.7
+		{ arg slider; ~introSynth.set(\amp, slider.value); },
+		0, false, 80, 45
+	).value_(0.7).setColors(Color.grey, Color.white);
+	// intro fader
+
+	~meditationFader = EZSlider.new(~w, Rect(20, 160, 430, 40), "meditation fader",
+		ControlSpec.new(0.00, 1.5, \lin, 0.01, 1.0, ""), // default 1.0
+		{ arg slider; 
+			if(~meditationSynth.notNil, {
+				~meditationSynth.set(\amp, slider.value);
+			});
+		},
+		0, false, 80, 45
+	).value_(1.0).setColors(Color.grey, Color.white);
+	// meditation fader
 
 	~startButton = Button(~w, Rect(20, 20, 420, 40))
 	.states_([["Start", Color.gray, Color.yellow], ["Halt", Color.gray, Color.red]])
